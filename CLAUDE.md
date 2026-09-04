@@ -109,6 +109,9 @@ Each entry: what it does, where its logic lives, and the gotcha worth knowing be
 
 UI organization: per-pane actions (infer, export docs, insert-preset, generate-sample, upload, manage references, OpenAPI import) live in that pane's own `OverflowMenu` (its header's "⋯"), not in the global `Toolbar` — keeps the top bar to cross-cutting controls only (draft version, realtime/batch settings, saved, share, theme). Follow this placement for new pane-specific actions; don't grow `Toolbar.tsx`.
 
+## Tests
+No test framework/dependency — `npm test` runs `node --experimental-strip-types --test src/lib/*.test.ts` (Node's built-in test runner + `assert`, both zero-dependency). Not every `lib/` file has a `.test.ts` yet; add one for new non-trivial pure logic (branching, recursion, edge cases), following `requiredFix.test.ts`/`summarizeSchema.test.ts` as examples. Import the module under test with an explicit `.ts` extension (`./foo.ts`, not `./foo`) — the strip-types loader doesn't do bundler-style extension resolution.
+
 ## Where logic lives — hard rule
 - `lib/` = pure functions, **zero React imports**, unit-testable standalone. One file per concern (parse, validate, serialize, infer, generate, share, history, workspaces, presets, schemaFields, docgen, autofix, refs, openapi).
 - `components/` = presentational only, no parsing/validation/storage logic inline.

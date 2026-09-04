@@ -6,6 +6,7 @@ export interface ErrorItem {
   line?: number;
   path?: string;
   keyword?: string;
+  missingProperty?: string;
 }
 
 interface ErrorGroup {
@@ -31,6 +32,7 @@ export function ErrorList({
   onExportPdf,
   onAutoFix,
   onCopyIssue,
+  onAddRequired,
 }: {
   errors: ErrorItem[];
   success: boolean | null;
@@ -39,6 +41,7 @@ export function ErrorList({
   onExportPdf: () => void;
   onAutoFix?: () => void;
   onCopyIssue?: () => void;
+  onAddRequired?: (path: string, propName: string) => void;
 }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -105,6 +108,17 @@ export function ErrorList({
                       {err.path && <code>{err.path}</code>}
                       {err.line && <span className="line-ref">line {err.line}</span>}
                       <span>{err.message}</span>
+                      {onAddRequired && err.missingProperty && (
+                        <button
+                          className="quick-fix-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAddRequired(err.path ?? "", err.missingProperty as string);
+                          }}
+                        >
+                          Make optional
+                        </button>
+                      )}
                     </div>
                     {explanation && <div className="error-explain">{explanation}</div>}
                   </div>

@@ -29,6 +29,9 @@ For agent-facing architecture notes and control flow, see [CLAUDE.md](CLAUDE.md)
 - **Copy as code snippet** — one click copies a ready-to-run Node.js (ajv) or Python (jsonschema) script that re-runs the same check outside the browser.
 - **Plain-English error explanations** — common ajv errors (missing required field, wrong type, pattern mismatch, etc.) get a one-line explanation, not just the raw ajv message.
 - **Copy error list as a GitHub issue** — one click copies a markdown checklist of the current errors, ready to paste into a bug tracker.
+- **Plain-English schema summary** — a one-line description of what the schema expects, shown above the editors.
+- **"Make optional" quick-fix** — a missing-required-field error gets a one-click button to loosen the schema instead of hand-editing it.
+- **Keyboard shortcuts modal** — press `?` (or the toolbar button) for a cheat-sheet of every shortcut.
 - **Keyboard shortcuts** — Cmd/Ctrl+Enter to validate, Cmd/Ctrl+S to save to history.
 - Dark/light theme, persisted.
 - Premium dark-glass UI, full-height layout. Pane-specific actions live in each editor's own "⋯" menu rather than one crowded toolbar — the top bar only holds cross-cutting controls (draft, settings, saved, share, theme).

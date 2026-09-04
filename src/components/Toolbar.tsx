@@ -13,6 +13,7 @@ export function Toolbar({
   onToggleBatchMode,
   onOpenSaved,
   onSaveAs,
+  onOpenShortcuts,
 }: {
   theme: "dark" | "light";
   onToggleTheme: () => void;
@@ -25,6 +26,7 @@ export function Toolbar({
   onToggleBatchMode: () => void;
   onOpenSaved: () => void;
   onSaveAs: () => void;
+  onOpenShortcuts: () => void;
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -67,6 +69,9 @@ export function Toolbar({
         </button>
         <button onClick={onShare} title="Copy a shareable link">
           Share
+        </button>
+        <button onClick={onOpenShortcuts} title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">
+          ?
         </button>
         <button onClick={onToggleTheme} title="Toggle light/dark theme" aria-label="Toggle light/dark theme" className="theme-btn">
           {theme === "dark" ? "☀︎" : "☾"}

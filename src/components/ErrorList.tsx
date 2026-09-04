@@ -44,6 +44,14 @@ export function ErrorList({
   onAddRequired?: (path: string, propName: string) => void;
 }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [filter, setFilter] = useState("");
+  // React's documented "adjusting state during render" pattern: reset the filter the moment a
+  // fresh validation's `errors` array shows up, without a useEffect (which would re-render twice).
+  const [prevErrors, setPrevErrors] = useState(errors);
+  if (errors !== prevErrors) {
+    setPrevErrors(errors);
+    setFilter("");
+  }
 
   if (success === null) return null;
 
@@ -65,7 +73,9 @@ export function ErrorList({
     );
   }
 
-  const groups = groupErrors(errors);
+  const q = filter.trim().toLowerCase();
+  const visibleErrors = q ? errors.filter((e) => e.message.toLowerCase().includes(q) || e.path?.toLowerCase().includes(q)) : errors;
+  const groups = groupErrors(visibleErrors);
 
   return (
     <div className="result failure">
@@ -92,6 +102,16 @@ export function ErrorList({
           </button>
         </span>
       </div>
+      {errors.length > 5 && (
+        <input
+          className="error-filter"
+          type="search"
+          placeholder="Filter errors by path or message…"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        />
+      )}
+      {q && <p className="error-filter-count">Showing {visibleErrors.length} of {errors.length}</p>}
       <ul>
         {groups.map((group) => {
           const isGroup = group.items.length > 1;

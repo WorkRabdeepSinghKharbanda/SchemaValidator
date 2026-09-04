@@ -75,6 +75,7 @@ export function EditorPane({
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<typeof Monaco | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [cursor, setCursor] = useState({ line: 1, column: 1 });
 
   const handleMount: OnMount = (editor, monacoInstance) => {
     editorRef.current = editor;
@@ -83,6 +84,7 @@ export function EditorPane({
     // liveSchema-diagnostics effect below already ran and no-opped on a null monacoRef —
     // apply the current liveSchema now that we actually have an instance to apply it to.
     applyLiveSchema(monacoInstance);
+    editor.onDidChangeCursorPosition((e) => setCursor({ line: e.position.lineNumber, column: e.position.column }));
   };
 
   function applyLiveSchema(monacoInstance: typeof Monaco) {
@@ -164,17 +166,25 @@ export function EditorPane({
         <span>{label}</span>
         {actions && <span className="editor-actions">{actions}</span>}
       </div>
-      <Editor
-        height="100%"
-        path={path}
-        language={LANGUAGE_BY_FORMAT[language] ?? language}
-        value={value}
-        onChange={(v) => onChange(v ?? "")}
-        onMount={handleMount}
-        theme={theme === "dark" ? "vs-dark" : "vs"}
-        options={{ minimap: { enabled: false }, fontSize: 13, scrollBeyondLastLine: false }}
-      />
-      {dragOver && <div className="drop-overlay">Drop file to load</div>}
+      <div className="editor-monaco-wrap">
+        <Editor
+          height="100%"
+          path={path}
+          language={LANGUAGE_BY_FORMAT[language] ?? language}
+          value={value}
+          onChange={(v) => onChange(v ?? "")}
+          onMount={handleMount}
+          theme={theme === "dark" ? "vs-dark" : "vs"}
+          options={{ minimap: { enabled: false }, fontSize: 13, scrollBeyondLastLine: false }}
+        />
+        {dragOver && <div className="drop-overlay">Drop file to load</div>}
+      </div>
+      <div className="editor-status-bar">
+        <span>
+          Ln {cursor.line}, Col {cursor.column}
+        </span>
+        <span>{value.length.toLocaleString()} chars</span>
+      </div>
     </div>
   );
 }

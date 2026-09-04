@@ -22,6 +22,7 @@ import { loadWorkspaces, saveWorkspace, removeWorkspace, type Workspace } from "
 import { schemaToFields, fieldsToSchema, type SchemaField } from "./lib/schemaFields";
 import { generateSchemaDocs } from "./lib/docgen";
 import { tryAutoFix } from "./lib/autofix";
+import { exportValidationReportPdf, exportBatchReportPdf, exportSchemaDocsPdf } from "./lib/pdf";
 import { refsCacheKey, type ReferenceSchema } from "./lib/refs";
 import { useDebounce } from "./hooks/useDebounce";
 import "./App.css";
@@ -301,9 +302,25 @@ function App() {
     );
   }
 
-  function handleExportReport() {
+  function handleExportReportJson() {
     const report = { valid: success, format, draft, errors, timestamp: new Date().toISOString() };
     download("validation-report.json", JSON.stringify(report, null, 2), "application/json");
+  }
+
+  function handleExportReportPdf() {
+    exportValidationReportPdf({ valid: success, format, draft, errors }).catch((e) =>
+      toast(`Couldn't generate PDF: ${(e as Error).message}`, "error"),
+    );
+  }
+
+  function handleExportBatchJson() {
+    if (!batchRows) return;
+    download("batch-validation-report.json", JSON.stringify(batchRows, null, 2), "application/json");
+  }
+
+  function handleExportBatchPdf() {
+    if (!batchRows) return;
+    exportBatchReportPdf(batchRows).catch((e) => toast(`Couldn't generate PDF: ${(e as Error).message}`, "error"));
   }
 
   async function handleAutoFix() {
@@ -328,6 +345,15 @@ function App() {
       return;
     }
     download("schema-docs.md", generateSchemaDocs(schemaResult.data), "text/markdown");
+  }
+
+  function handleExportDocsPdf() {
+    const schemaResult = parse(schemaText, "json");
+    if (schemaResult.error) {
+      toast(`Schema is invalid JSON: ${schemaResult.error.message}`, "error");
+      return;
+    }
+    exportSchemaDocsPdf(schemaResult.data).catch((e) => toast(`Couldn't generate PDF: ${(e as Error).message}`, "error"));
   }
 
   function handleSchemaFieldsChange(fields: SchemaField[]) {
@@ -490,7 +516,8 @@ function App() {
                 <OverflowMenu
                   actions={[
                     { label: "Infer from data", onClick: handleInferSchema },
-                    { label: "Export field docs", onClick: handleExportDocs },
+                    { label: "Export field docs (Markdown)", onClick: handleExportDocs },
+                    { label: "Export field docs (PDF)", onClick: handleExportDocsPdf },
                     { label: "Insert: Email field", onClick: () => handleInsertPreset({ type: "string", format: "email" }) },
                     { label: "Insert: UUID field", onClick: () => handleInsertPreset({ type: "string", format: "uuid" }) },
                     { label: "Insert: Date field", onClick: () => handleInsertPreset({ type: "string", format: "date" }) },
@@ -551,9 +578,16 @@ function App() {
       )}
 
       {batchMode ? (
-        batchRows && <BatchTable rows={batchRows} />
+        batchRows && <BatchTable rows={batchRows} onExportJson={handleExportBatchJson} onExportPdf={handleExportBatchPdf} />
       ) : (
-        <ErrorList errors={errors} success={success} onJump={setJumpLine} onExport={handleExportReport} onAutoFix={canAutoFix ? handleAutoFix : undefined} />
+        <ErrorList
+          errors={errors}
+          success={success}
+          onJump={setJumpLine}
+          onExportJson={handleExportReportJson}
+          onExportPdf={handleExportReportPdf}
+          onAutoFix={canAutoFix ? handleAutoFix : undefined}
+        />
       )}
 
       <AdSlot id="footer" />

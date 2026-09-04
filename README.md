@@ -24,7 +24,7 @@ For agent-facing architecture notes and control flow, see [CLAUDE.md](CLAUDE.md)
 - **Saved workspaces** — name and pin a schema/data pair for reuse, separate from the last-20 auto-saved recent history. Both live in one "Saved" drawer.
 - **Batch validation mode** — validate an array of records, per-row pass/fail table with a progress bar.
 - **Diff from last valid** — after an invalid edit, compare the current data against the last version that passed.
-- **Export report** (JSON) and **export field docs** (a Markdown table generated from the schema, for sharing with non-engineers).
+- **Export report** (JSON or a branded PDF) for both single and batch validation results, and **export field docs** (Markdown or PDF table generated from the schema, for sharing with non-engineers). PDFs share the app's dark theme and brand mark rather than a plain report.
 - **Keyboard shortcuts** — Cmd/Ctrl+Enter to validate, Cmd/Ctrl+S to save to history.
 - Dark/light theme, persisted.
 - Premium dark-glass UI, full-height layout. Pane-specific actions live in each editor's own "⋯" menu rather than one crowded toolbar — the top bar only holds cross-cutting controls (draft, settings, saved, share, theme).

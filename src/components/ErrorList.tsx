@@ -25,13 +25,15 @@ export function ErrorList({
   errors,
   success,
   onJump,
-  onExport,
+  onExportJson,
+  onExportPdf,
   onAutoFix,
 }: {
   errors: ErrorItem[];
   success: boolean | null;
   onJump: (line: number) => void;
-  onExport: () => void;
+  onExportJson: () => void;
+  onExportPdf: () => void;
   onAutoFix?: () => void;
 }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -41,7 +43,17 @@ export function ErrorList({
   if (success) {
     return (
       <div className="result success">
-        <span className="result-check">✓</span> Valid
+        <span>
+          <span className="result-check">✓</span> Valid
+        </span>
+        <span className="result-actions">
+          <button className="export-btn" onClick={onExportJson}>
+            Export JSON
+          </button>
+          <button className="export-btn" onClick={onExportPdf}>
+            Export PDF
+          </button>
+        </span>
       </div>
     );
   }
@@ -60,8 +72,11 @@ export function ErrorList({
               Try auto-fix
             </button>
           )}
-          <button className="export-btn" onClick={onExport}>
-            Export report
+          <button className="export-btn" onClick={onExportJson}>
+            Export JSON
+          </button>
+          <button className="export-btn" onClick={onExportPdf}>
+            Export PDF
           </button>
         </span>
       </div>

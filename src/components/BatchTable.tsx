@@ -4,7 +4,15 @@ export interface BatchRow {
   errorSummary: string;
 }
 
-export function BatchTable({ rows }: { rows: BatchRow[] }) {
+export function BatchTable({
+  rows,
+  onExportJson,
+  onExportPdf,
+}: {
+  rows: BatchRow[];
+  onExportJson: () => void;
+  onExportPdf: () => void;
+}) {
   const passCount = rows.filter((r) => r.valid).length;
   const passPercent = rows.length ? Math.round((passCount / rows.length) * 100) : 0;
 
@@ -14,9 +22,17 @@ export function BatchTable({ rows }: { rows: BatchRow[] }) {
         <span>
           {passCount} / {rows.length} records valid ({passPercent}%)
         </span>
-        <div className="batch-progress">
-          <div className="batch-progress-fill" style={{ width: `${passPercent}%` }} />
-        </div>
+        <span className="result-actions">
+          <button className="export-btn" onClick={onExportJson}>
+            Export JSON
+          </button>
+          <button className="export-btn" onClick={onExportPdf}>
+            Export PDF
+          </button>
+        </span>
+      </div>
+      <div className="batch-progress">
+        <div className="batch-progress-fill" style={{ width: `${passPercent}%` }} />
       </div>
       <table className="batch-table">
         <thead>

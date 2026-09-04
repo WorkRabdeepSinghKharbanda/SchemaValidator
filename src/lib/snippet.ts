@@ -9,11 +9,11 @@ const AJV_IMPORT: Record<Draft, string> = {
   "2020-12": "ajv/dist/2020",
 };
 
-export function generateNodeSnippet(schemaText: string, draft: Draft): string {
+export function generateNodeSnippet(schema: unknown, draft: Draft): string {
   return `const Ajv = require("${AJV_IMPORT[draft]}");
 const addFormats = require("ajv-formats");
 
-const schema = ${schemaText};
+const schema = ${JSON.stringify(schema, null, 2)};
 const data = /* your data here */ {};
 
 const ajv = new Ajv({ allErrors: true, strict: false });
@@ -34,12 +34,17 @@ const JSONSCHEMA_LIB: Record<Draft, string> = {
   "2020-12": "Draft202012Validator",
 };
 
-export function generatePythonSnippet(schemaText: string, draft: Draft): string {
+export function generatePythonSnippet(schema: unknown, draft: Draft): string {
   const validatorClass = JSONSCHEMA_LIB[draft];
+  // Embed the schema as a JSON string literal (via a second JSON.stringify), not raw/triple-quoted
+  // text: JSON's own escaping (\", \\, \n, \uXXXX, ...) is a subset of Python string-literal escaping,
+  // so this can't be broken out of by a schema field containing quotes or Python syntax — unlike a
+  // raw r'''...''' passthrough, which a value containing "'''" would terminate early.
+  const schemaLiteral = JSON.stringify(JSON.stringify(schema));
   return `import json
 from jsonschema import ${validatorClass} as Validator
 
-schema = json.loads(r'''${schemaText}''')
+schema = json.loads(${schemaLiteral})
 data = {}  # your data here
 
 validator = Validator(schema)

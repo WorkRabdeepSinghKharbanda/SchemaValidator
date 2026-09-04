@@ -351,7 +351,13 @@ function App() {
   }
 
   function handleCopySnippet(lang: "node" | "python") {
-    const snippet = lang === "node" ? generateNodeSnippet(schemaText, draft) : generatePythonSnippet(schemaText, draft);
+    const schemaResult = parse(schemaText, "json");
+    if (schemaResult.error) {
+      toast(`Schema is invalid JSON: ${schemaResult.error.message}`, "error");
+      return;
+    }
+    const snippet =
+      lang === "node" ? generateNodeSnippet(schemaResult.data, draft) : generatePythonSnippet(schemaResult.data, draft);
     navigator.clipboard.writeText(snippet).then(
       () => toast(`Copied ${lang === "node" ? "Node.js" : "Python"} validation snippet`, "success"),
       () => toast(snippet, "info"),

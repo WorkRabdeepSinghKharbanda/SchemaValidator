@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { explainError } from "../lib/explainError";
 
 export interface ErrorItem {
   message: string;
   line?: number;
   path?: string;
+  keyword?: string;
 }
 
 interface ErrorGroup {
@@ -28,6 +30,7 @@ export function ErrorList({
   onExportJson,
   onExportPdf,
   onAutoFix,
+  onCopyIssue,
 }: {
   errors: ErrorItem[];
   success: boolean | null;
@@ -35,6 +38,7 @@ export function ErrorList({
   onExportJson: () => void;
   onExportPdf: () => void;
   onAutoFix?: () => void;
+  onCopyIssue?: () => void;
 }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -72,6 +76,11 @@ export function ErrorList({
               Try auto-fix
             </button>
           )}
+          {onCopyIssue && (
+            <button className="export-btn" onClick={onCopyIssue}>
+              Copy as issue
+            </button>
+          )}
           <button className="export-btn" onClick={onExportJson}>
             Export JSON
           </button>
@@ -88,17 +97,19 @@ export function ErrorList({
 
           return (
             <li key={group.message} className="error-group">
-              {shown.map((err, i) => (
-                <div
-                  key={i}
-                  className={`error-row ${err.line ? "clickable" : ""}`}
-                  onClick={() => err.line && onJump(err.line)}
-                >
-                  {err.path && <code>{err.path}</code>}
-                  {err.line && <span className="line-ref">line {err.line}</span>}
-                  <span>{err.message}</span>
-                </div>
-              ))}
+              {shown.map((err, i) => {
+                const explanation = explainError(err.keyword);
+                return (
+                  <div key={i} className="error-item">
+                    <div className={`error-row ${err.line ? "clickable" : ""}`} onClick={() => err.line && onJump(err.line)}>
+                      {err.path && <code>{err.path}</code>}
+                      {err.line && <span className="line-ref">line {err.line}</span>}
+                      <span>{err.message}</span>
+                    </div>
+                    {explanation && <div className="error-explain">{explanation}</div>}
+                  </div>
+                );
+              })}
               {isGroup && (
                 <button
                   className="group-toggle"

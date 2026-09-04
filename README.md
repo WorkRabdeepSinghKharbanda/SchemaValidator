@@ -25,6 +25,10 @@ For agent-facing architecture notes and control flow, see [CLAUDE.md](CLAUDE.md)
 - **Batch validation mode** — validate an array of records, per-row pass/fail table with a progress bar.
 - **Diff from last valid** — after an invalid edit, compare the current data against the last version that passed.
 - **Export report** (JSON or a branded PDF) for both single and batch validation results, and **export field docs** (Markdown or PDF table generated from the schema, for sharing with non-engineers). PDFs share the app's dark theme and brand mark rather than a plain report.
+- **Schema diff** — compare the current schema against any saved workspace, line diff shown inline.
+- **Copy as code snippet** — one click copies a ready-to-run Node.js (ajv) or Python (jsonschema) script that re-runs the same check outside the browser.
+- **Plain-English error explanations** — common ajv errors (missing required field, wrong type, pattern mismatch, etc.) get a one-line explanation, not just the raw ajv message.
+- **Copy error list as a GitHub issue** — one click copies a markdown checklist of the current errors, ready to paste into a bug tracker.
 - **Keyboard shortcuts** — Cmd/Ctrl+Enter to validate, Cmd/Ctrl+S to save to history.
 - Dark/light theme, persisted.
 - Premium dark-glass UI, full-height layout. Pane-specific actions live in each editor's own "⋯" menu rather than one crowded toolbar — the top bar only holds cross-cutting controls (draft, settings, saved, share, theme).
@@ -68,7 +72,6 @@ Two real gaps, not fixed here:
 [src/components/AdSlot.tsx](src/components/AdSlot.tsx) is a placeholder ad unit rendered at the bottom of the page (`<AdSlot id="footer" />` in `App.tsx`). Swap its inner div for an ad network's script/tag when ready — isolated in its own component so ad code never touches the validator logic.
 
 ## Remaining backlog
-- Diff mode between two schemas (the diff we have compares data, not schemas) — e.g. compare the current schema against a saved workspace.
 - Custom ajv keywords/formats, user-registrable (see "Intentionally not built" — the sandboxing question needs resolving first).
 - Full accessibility pass (some ARIA/keyboard work landed — dialog roles, Escape-to-close, labeled icon buttons — but no screen-reader testing has been done).
 - i18n — translatable error messages.

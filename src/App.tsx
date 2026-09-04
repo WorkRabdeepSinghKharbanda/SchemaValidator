@@ -29,6 +29,8 @@ import { generateIssueMarkdown } from "./lib/issueMarkdown";
 import { makeFieldOptional } from "./lib/requiredFix";
 import { summarizeSchema } from "./lib/summarizeSchema";
 import { ShortcutsModal } from "./components/ShortcutsModal";
+import { CommandPalette, type Command } from "./components/CommandPalette";
+import { nextThemePref, resolveTheme, isThemePref, type ThemePref } from "./lib/theme";
 import { useDebounce } from "./hooks/useDebounce";
 import "./App.css";
 
@@ -66,7 +68,12 @@ function download(filename: string, content: string, mime: string) {
 function App() {
   const shared = useMemo(() => readShareStateFromUrl(), []);
 
-  const [theme, setTheme] = useState<"dark" | "light">(() => (localStorage.getItem("theme") as "dark" | "light") || "dark");
+  const [themePref, setThemePref] = useState<ThemePref>(() => {
+    const stored = localStorage.getItem("theme");
+    return isThemePref(stored) ? stored : "dark";
+  });
+  const [systemPrefersDark, setSystemPrefersDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const theme = resolveTheme(themePref, systemPrefersDark);
   const [realtime, setRealtime] = useState(false);
   const [draft, setDraft] = useState<Draft>(shared?.draft ?? "2020-12");
   const [batchMode, setBatchMode] = useState(false);
@@ -91,14 +98,25 @@ function App() {
 
   const [savedOpen, setSavedOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const [history, setHistory] = useState<HistoryEntry[]>(() => loadHistory());
   const [workspaces, setWorkspaces] = useState<Workspace[]>(() => loadWorkspaces());
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem("theme", themePref);
+  }, [themePref]);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => setSystemPrefersDark(media.matches);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
 
   function toast(text: string, tone: ToastMessage["tone"] = "info") {
     const id = ++toastId;
@@ -231,7 +249,10 @@ function App() {
   useEffect(() => {
     function onKeydown(e: KeyboardEvent) {
       const meta = e.metaKey || e.ctrlKey;
-      if (meta && e.key === "Enter") {
+      if (meta && e.key === "k") {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      } else if (meta && e.key === "Enter") {
         e.preventDefault();
         handleValidateRef.current(true);
       } else if (meta && e.key === "s") {
@@ -481,10 +502,32 @@ function App() {
     return schemaToFields(schemaParseResult.data);
   }, [schemaView, schemaParseResult]);
 
+  const commands: Command[] = [
+    { label: "Validate", hint: "⌘⏎", run: () => handleValidate(true) },
+    { label: "Save as workspace…", run: handleSaveAs },
+    { label: "Open saved / history", run: () => setSavedOpen(true) },
+    { label: "Copy shareable link", run: handleShare },
+    { label: `Toggle batch mode (currently ${batchMode ? "on" : "off"})`, run: () => setBatchMode((v) => !v) },
+    { label: `Toggle realtime validation (currently ${realtime ? "on" : "off"})`, run: () => setRealtime((v) => !v) },
+    { label: "Export report as JSON", run: handleExportReportJson },
+    { label: "Export report as PDF", run: handleExportReportPdf },
+    { label: "Export field docs (Markdown)", run: handleExportDocs },
+    { label: "Export field docs (PDF)", run: handleExportDocsPdf },
+    { label: "Copy schema as Node.js snippet", run: () => handleCopySnippet("node") },
+    { label: "Copy schema as Python snippet", run: () => handleCopySnippet("python") },
+    { label: "Infer schema from data", run: handleInferSchema },
+    { label: "Generate sample data from schema", run: handleGenerateSample },
+    { label: "Manage reference schemas…", run: () => setRefsOpen(true) },
+    { label: "Import from OpenAPI…", run: () => setOpenApiOpen(true) },
+    { label: "Cycle theme (dark / light / auto)", run: () => setThemePref(nextThemePref) },
+    { label: "Show keyboard shortcuts", hint: "?", run: () => setShortcutsOpen(true) },
+  ];
+
   return (
     <div className="app">
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
       <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      {paletteOpen && <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} commands={commands} />}
       <SavedPanel
         open={savedOpen}
         onClose={() => setSavedOpen(false)}
@@ -524,8 +567,8 @@ function App() {
       </header>
 
       <Toolbar
-        theme={theme}
-        onToggleTheme={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+        themePref={themePref}
+        onToggleTheme={() => setThemePref(nextThemePref)}
         realtime={realtime}
         onToggleRealtime={() => setRealtime((v) => !v)}
         draft={draft}
@@ -542,6 +585,7 @@ function App() {
         onOpenSaved={() => setSavedOpen(true)}
         onSaveAs={handleSaveAs}
         onOpenShortcuts={() => setShortcutsOpen(true)}
+        onOpenPalette={() => setPaletteOpen(true)}
       />
 
       {schemaSummary && <p className="schema-summary">{schemaSummary}</p>}

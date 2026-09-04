@@ -32,6 +32,10 @@ For agent-facing architecture notes and control flow, see [CLAUDE.md](CLAUDE.md)
 - **Plain-English schema summary** — a one-line description of what the schema expects, shown above the editors.
 - **"Make optional" quick-fix** — a missing-required-field error gets a one-click button to loosen the schema instead of hand-editing it.
 - **Keyboard shortcuts modal** — press `?` (or the toolbar button) for a cheat-sheet of every shortcut.
+- **Command palette** — press `⌘/Ctrl+K` (or the toolbar button) to search and run any action without hunting through menus.
+- **Auto theme** — theme now cycles dark → light → auto (follows your OS setting live), not just a two-way toggle.
+- **Error search** — once there are more than a handful of errors, a filter box narrows the list by path or message.
+- **Editor status bar** — line/column and character count shown under each editor pane.
 - **Keyboard shortcuts** — Cmd/Ctrl+Enter to validate, Cmd/Ctrl+S to save to history.
 - Dark/light theme, persisted.
 - Premium dark-glass UI, full-height layout. Pane-specific actions live in each editor's own "⋯" menu rather than one crowded toolbar — the top bar only holds cross-cutting controls (draft, settings, saved, share, theme).

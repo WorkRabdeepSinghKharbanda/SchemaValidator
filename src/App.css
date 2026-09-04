@@ -262,9 +262,21 @@ header p {
   border-color: var(--accent);
 }
 
-.editor-pane > div:last-child {
+.editor-monaco-wrap {
   flex: 1;
   min-height: 0;
+  position: relative;
+}
+
+.editor-status-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 12px;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .editor-label {
@@ -600,6 +612,78 @@ header p {
 
 .shortcuts-modal {
   width: 280px;
+}
+
+.command-overlay {
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 14vh;
+}
+
+.command-palette {
+  width: 480px;
+  max-width: calc(100vw - 32px);
+  max-height: 60vh;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.command-input {
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  padding: 14px 16px;
+  font-size: 14px;
+  outline: none;
+}
+
+.command-list {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+}
+
+.command-list button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.command-list button.active,
+.command-list button:hover {
+  background: var(--bg-panel);
+}
+
+.command-list button kbd {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 1px 5px;
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.command-empty {
+  padding: 10px;
+  color: var(--text-dim);
+  font-size: 13px;
 }
 
 .shortcuts-list {
@@ -1008,6 +1092,23 @@ header p {
 .error-item {
   display: flex;
   flex-direction: column;
+}
+
+.error-filter {
+  width: 100%;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 12.5px;
+  margin: 8px 0 4px;
+}
+
+.error-filter-count {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin: 0 0 4px;
 }
 
 .quick-fix-btn {

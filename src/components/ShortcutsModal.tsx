@@ -3,6 +3,7 @@ import { useEffect } from "react";
 const SHORTCUTS: [string, string][] = [
   ["⌘/Ctrl + Enter", "Validate"],
   ["⌘/Ctrl + S", "Validate and save to history"],
+  ["⌘/Ctrl + K", "Open command palette"],
   ["?", "Show this shortcuts list"],
   ["Esc", "Close any open panel"],
 ];

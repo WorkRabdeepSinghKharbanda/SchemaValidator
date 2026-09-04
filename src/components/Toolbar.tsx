@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { DRAFTS, type Draft } from "../lib/validate";
+import type { ThemePref } from "../lib/theme";
+
+const THEME_ICON: Record<ThemePref, string> = { dark: "☾", light: "☀︎", auto: "🖥" };
+const THEME_LABEL: Record<ThemePref, string> = { dark: "Dark theme", light: "Light theme", auto: "Auto (system) theme" };
 
 export function Toolbar({
-  theme,
+  themePref,
   onToggleTheme,
   realtime,
   onToggleRealtime,
@@ -14,8 +18,9 @@ export function Toolbar({
   onOpenSaved,
   onSaveAs,
   onOpenShortcuts,
+  onOpenPalette,
 }: {
-  theme: "dark" | "light";
+  themePref: ThemePref;
   onToggleTheme: () => void;
   realtime: boolean;
   onToggleRealtime: () => void;
@@ -27,6 +32,7 @@ export function Toolbar({
   onOpenSaved: () => void;
   onSaveAs: () => void;
   onOpenShortcuts: () => void;
+  onOpenPalette: () => void;
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -70,11 +76,14 @@ export function Toolbar({
         <button onClick={onShare} title="Copy a shareable link">
           Share
         </button>
+        <button onClick={onOpenPalette} title="Command palette (⌘K)" aria-label="Command palette">
+          ⌘K
+        </button>
         <button onClick={onOpenShortcuts} title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">
           ?
         </button>
-        <button onClick={onToggleTheme} title="Toggle light/dark theme" aria-label="Toggle light/dark theme" className="theme-btn">
-          {theme === "dark" ? "☀︎" : "☾"}
+        <button onClick={onToggleTheme} title={`${THEME_LABEL[themePref]} — click to cycle`} aria-label="Cycle theme" className="theme-btn">
+          {THEME_ICON[themePref]}
         </button>
       </div>
     </div>

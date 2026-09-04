@@ -24,6 +24,8 @@ import { generateSchemaDocs } from "./lib/docgen";
 import { tryAutoFix } from "./lib/autofix";
 import { exportValidationReportPdf, exportBatchReportPdf, exportSchemaDocsPdf } from "./lib/pdf";
 import { refsCacheKey, type ReferenceSchema } from "./lib/refs";
+import { generateNodeSnippet, generatePythonSnippet } from "./lib/snippet";
+import { generateIssueMarkdown } from "./lib/issueMarkdown";
 import { useDebounce } from "./hooks/useDebounce";
 import "./App.css";
 
@@ -78,6 +80,7 @@ function App() {
   const [canAutoFix, setCanAutoFix] = useState(false);
   const [lastValidData, setLastValidData] = useState<string | null>(null);
   const [showDiff, setShowDiff] = useState(false);
+  const [schemaDiffTarget, setSchemaDiffTarget] = useState("");
 
   const [refSchemas, setRefSchemas] = useState<ReferenceSchema[]>(shared?.refSchemas ?? []);
   const [refsOpen, setRefsOpen] = useState(false);
@@ -136,7 +139,7 @@ function App() {
     });
     return {
       ok: outcome.valid,
-      items: outcome.errors.map((e) => ({ message: e.message, path: e.path, line: e.line })),
+      items: outcome.errors.map((e) => ({ message: e.message, path: e.path, line: e.line, keyword: e.keyword })),
       markers: outcome.errors.filter((e) => e.line).map((e) => ({ line: e.line as number, message: e.message })),
       autoFixable: false,
     };
@@ -347,6 +350,28 @@ function App() {
     download("schema-docs.md", generateSchemaDocs(schemaResult.data), "text/markdown");
   }
 
+  function handleCopySnippet(lang: "node" | "python") {
+    const schemaResult = parse(schemaText, "json");
+    if (schemaResult.error) {
+      toast(`Schema is invalid JSON: ${schemaResult.error.message}`, "error");
+      return;
+    }
+    const snippet =
+      lang === "node" ? generateNodeSnippet(schemaResult.data, draft) : generatePythonSnippet(schemaResult.data, draft);
+    navigator.clipboard.writeText(snippet).then(
+      () => toast(`Copied ${lang === "node" ? "Node.js" : "Python"} validation snippet`, "success"),
+      () => toast(snippet, "info"),
+    );
+  }
+
+  function handleCopyIssueMarkdown() {
+    const markdown = generateIssueMarkdown(errors, format, draft);
+    navigator.clipboard.writeText(markdown).then(
+      () => toast("Copied issue markdown to clipboard", "success"),
+      () => toast(markdown, "info"),
+    );
+  }
+
   function handleExportDocsPdf() {
     const schemaResult = parse(schemaText, "json");
     if (schemaResult.error) {
@@ -523,7 +548,27 @@ function App() {
                     { label: "Insert: Date field", onClick: () => handleInsertPreset({ type: "string", format: "date" }) },
                     { label: `Manage references (${refSchemas.length})`, onClick: () => setRefsOpen(true) },
                     { label: "Import from OpenAPI…", onClick: () => setOpenApiOpen(true) },
+                    { label: "Copy as Node.js snippet", onClick: () => handleCopySnippet("node") },
+                    { label: "Copy as Python snippet", onClick: () => handleCopySnippet("python") },
                   ]}
+                  extra={
+                    workspaces.length > 0 && (
+                      <label className="overflow-select-row">
+                        Compare with
+                        <select
+                          value={schemaDiffTarget}
+                          onChange={(e) => setSchemaDiffTarget(e.target.value)}
+                        >
+                          <option value="">Choose saved schema…</option>
+                          {workspaces.map((w) => (
+                            <option key={w.id} value={w.id}>
+                              {w.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    )
+                  }
                 />
               </>
             }
@@ -550,6 +595,24 @@ function App() {
         }
       />
       </Suspense>
+
+      {schemaDiffTarget && (() => {
+        const target = workspaces.find((w) => w.id === schemaDiffTarget);
+        if (!target) return null;
+        return (
+          <div className="schema-diff-wrap">
+            <div className="schema-diff-header">
+              <span>Comparing current schema with "{target.name}"</span>
+              <button className="export-btn" onClick={() => setSchemaDiffTarget("")}>
+                Close
+              </button>
+            </div>
+            <Suspense fallback={<div className="editor-loading">Loading…</div>}>
+              <DiffView before={target.schema} after={schemaText} />
+            </Suspense>
+          </div>
+        );
+      })()}
 
       {schemaView === "visual" && schemaParseResult.error && (
         <p className="builder-empty">Schema has a JSON error — fix it in Code mode to keep editing it visually.</p>
@@ -587,6 +650,7 @@ function App() {
           onExportJson={handleExportReportJson}
           onExportPdf={handleExportReportPdf}
           onAutoFix={canAutoFix ? handleAutoFix : undefined}
+          onCopyIssue={handleCopyIssueMarkdown}
         />
       )}
 

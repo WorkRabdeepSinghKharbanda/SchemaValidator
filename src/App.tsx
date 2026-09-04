@@ -1,0 +1,564 @@
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { FormatTabs } from "./components/FormatTabs";
+import type { EditorMarker } from "./components/EditorPane";
+import { ErrorList, type ErrorItem } from "./components/ErrorList";
+import { ResizableSplit } from "./components/ResizableSplit";
+import { Toolbar } from "./components/Toolbar";
+import { SavedPanel } from "./components/SavedPanel";
+import { ReferencesPanel } from "./components/ReferencesPanel";
+import { OpenApiImportPanel } from "./components/OpenApiImportPanel";
+import { BatchTable, type BatchRow } from "./components/BatchTable";
+import { ToastStack, type ToastMessage } from "./components/Toast";
+import { OverflowMenu } from "./components/OverflowMenu";
+import { AdSlot } from "./components/AdSlot";
+import { parse, type Format } from "./lib/parse";
+import { serialize } from "./lib/serialize";
+import { validate, type Draft } from "./lib/validate";
+import { inferSchema } from "./lib/infer";
+import { generateSample } from "./lib/generate";
+import { buildShareUrl, readShareStateFromUrl } from "./lib/share";
+import { loadHistory, saveToHistory, clearHistory, removeHistoryEntry, type HistoryEntry } from "./lib/history";
+import { loadWorkspaces, saveWorkspace, removeWorkspace, type Workspace } from "./lib/workspaces";
+import { schemaToFields, fieldsToSchema, type SchemaField } from "./lib/schemaFields";
+import { generateSchemaDocs } from "./lib/docgen";
+import { tryAutoFix } from "./lib/autofix";
+import { refsCacheKey, type ReferenceSchema } from "./lib/refs";
+import { useDebounce } from "./hooks/useDebounce";
+import "./App.css";
+
+// Monaco is the single largest dependency in this app (~500kB minified) — lazy-loading the
+// editor component keeps it out of the initial bundle so the page shell paints immediately.
+const EditorPane = lazy(() => import("./components/EditorPane").then((m) => ({ default: m.EditorPane })));
+const SchemaBuilder = lazy(() => import("./components/SchemaBuilder").then((m) => ({ default: m.SchemaBuilder })));
+const DiffView = lazy(() => import("./components/DiffView").then((m) => ({ default: m.DiffView })));
+
+const SAMPLE_SCHEMA = `{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "age": { "type": "integer", "minimum": 0 }
+  },
+  "required": ["name"]
+}`;
+
+const SAMPLE_DATA = `{
+  "name": "Ada",
+  "age": 30
+}`;
+
+let toastId = 0;
+
+function download(filename: string, content: string, mime: string) {
+  const blob = new Blob([content], { type: mime });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function App() {
+  const shared = useMemo(() => readShareStateFromUrl(), []);
+
+  const [theme, setTheme] = useState<"dark" | "light">(() => (localStorage.getItem("theme") as "dark" | "light") || "dark");
+  const [realtime, setRealtime] = useState(false);
+  const [draft, setDraft] = useState<Draft>(shared?.draft ?? "2020-12");
+  const [batchMode, setBatchMode] = useState(false);
+  const [format, setFormat] = useState<Format>(shared?.format ?? "json");
+  const [schemaText, setSchemaText] = useState(shared?.schema ?? SAMPLE_SCHEMA);
+  const [dataText, setDataText] = useState(shared?.data ?? SAMPLE_DATA);
+  const [schemaView, setSchemaView] = useState<"code" | "visual">("code");
+
+  const [success, setSuccess] = useState<boolean | null>(null);
+  const [errors, setErrors] = useState<ErrorItem[]>([]);
+  const [dataMarkers, setDataMarkers] = useState<EditorMarker[]>([]);
+  const [batchRows, setBatchRows] = useState<BatchRow[] | null>(null);
+  const [jumpLine, setJumpLine] = useState<number | undefined>();
+  const [canAutoFix, setCanAutoFix] = useState(false);
+  const [lastValidData, setLastValidData] = useState<string | null>(null);
+  const [showDiff, setShowDiff] = useState(false);
+
+  const [refSchemas, setRefSchemas] = useState<ReferenceSchema[]>(shared?.refSchemas ?? []);
+  const [refsOpen, setRefsOpen] = useState(false);
+  const [openApiOpen, setOpenApiOpen] = useState(false);
+
+  const [savedOpen, setSavedOpen] = useState(false);
+  const [history, setHistory] = useState<HistoryEntry[]>(() => loadHistory());
+  const [workspaces, setWorkspaces] = useState<Workspace[]>(() => loadWorkspaces());
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  function toast(text: string, tone: ToastMessage["tone"] = "info") {
+    const id = ++toastId;
+    setToasts((prev) => [...prev, { id, text, tone }]);
+  }
+  function dismissToast(id: number) {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }
+
+  function runSingleValidation(): { ok: boolean; items: ErrorItem[]; markers: EditorMarker[]; autoFixable: boolean } {
+    const dataResult = parse(dataText, format);
+    if (dataResult.error) {
+      const line = dataResult.error.line;
+      return {
+        ok: false,
+        items: [{ message: dataResult.error.message, line }],
+        markers: line ? [{ line, message: dataResult.error.message }] : [],
+        autoFixable: format === "json",
+      };
+    }
+
+    if (schemaText.trim() === "") {
+      return { ok: true, items: [], markers: [], autoFixable: false };
+    }
+
+    const schemaResult = parse(schemaText, "json");
+    if (schemaResult.error) {
+      return {
+        ok: false,
+        items: [{ message: `Schema is invalid JSON: ${schemaResult.error.message}` }],
+        markers: [],
+        autoFixable: false,
+      };
+    }
+
+    const outcome = validate(dataResult.data, schemaResult.data, {
+      sourceText: dataText,
+      sourceFormat: format,
+      draft,
+      schemaCacheKey: `${schemaText}::refs:${refsCacheKey(refSchemas)}`,
+      refSchemas,
+    });
+    return {
+      ok: outcome.valid,
+      items: outcome.errors.map((e) => ({ message: e.message, path: e.path, line: e.line })),
+      markers: outcome.errors.filter((e) => e.line).map((e) => ({ line: e.line as number, message: e.message })),
+      autoFixable: false,
+    };
+  }
+
+  function runBatchValidation() {
+    const dataResult = parse(dataText, format);
+    if (dataResult.error || !Array.isArray(dataResult.data)) {
+      toast("Batch mode needs the data pane to contain an array of records.", "error");
+      setBatchRows(null);
+      return;
+    }
+    if (schemaText.trim() === "") {
+      setBatchRows(dataResult.data.map((_, index) => ({ index, valid: true, errorSummary: "" })));
+      return;
+    }
+
+    const schemaResult = parse(schemaText, "json");
+    if (schemaResult.error) {
+      toast(`Schema is invalid JSON: ${schemaResult.error.message}`, "error");
+      setBatchRows(null);
+      return;
+    }
+    const rows: BatchRow[] = dataResult.data.map((item, index) => {
+      const outcome = validate(item, schemaResult.data, {
+        draft,
+        schemaCacheKey: `${schemaText}::refs:${refsCacheKey(refSchemas)}`,
+        refSchemas,
+      });
+      return {
+        index,
+        valid: outcome.valid,
+        errorSummary: outcome.valid ? "" : outcome.errors.map((e) => `${e.path}: ${e.message}`).join("; "),
+      };
+    });
+    setBatchRows(rows);
+  }
+
+  function handleValidate(saveHistory: boolean) {
+    setJumpLine(undefined);
+    setShowDiff(false);
+
+    if (batchMode) {
+      runBatchValidation();
+      return;
+    }
+    setBatchRows(null);
+
+    const result = runSingleValidation();
+    setSuccess(result.ok);
+    setErrors(result.items);
+    setDataMarkers(result.markers);
+    setCanAutoFix(result.autoFixable);
+    if (result.ok) setLastValidData(dataText);
+
+    if (saveHistory) {
+      const updated = saveToHistory({ schema: schemaText, data: dataText, format, draft, refSchemas, valid: result.ok });
+      setHistory(updated);
+    }
+  }
+
+  const debouncedSchema = useDebounce(schemaText, 500);
+  const debouncedData = useDebounce(dataText, 500);
+  useEffect(() => {
+    if (!realtime) return;
+    handleValidate(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSchema, debouncedData, format, draft, realtime, batchMode]);
+
+  const liveSchema = useMemo(() => {
+    if (format !== "json") return undefined;
+    const result = parse(debouncedSchema, "json");
+    return result.error ? undefined : result.data;
+  }, [debouncedSchema, format]);
+
+  const handleValidateRef = useRef(handleValidate);
+  handleValidateRef.current = handleValidate;
+  const batchModeRef = useRef(batchMode);
+  batchModeRef.current = batchMode;
+  const formatRef = useRef(format);
+  formatRef.current = format;
+  const dataTextRef = useRef(dataText);
+  dataTextRef.current = dataText;
+
+  useEffect(() => {
+    function onKeydown(e: KeyboardEvent) {
+      const meta = e.metaKey || e.ctrlKey;
+      if (meta && e.key === "Enter") {
+        e.preventDefault();
+        handleValidateRef.current(true);
+      } else if (meta && e.key === "s") {
+        e.preventDefault();
+        handleValidateRef.current(true);
+        if (!batchModeRef.current) toast("Saved to history", "success");
+      }
+    }
+    window.addEventListener("keydown", onKeydown);
+    return () => window.removeEventListener("keydown", onKeydown);
+  }, []);
+
+  function handleInferSchema() {
+    const result = parse(dataText, format);
+    if (result.error) {
+      toast(`Can't infer schema: ${result.error.message}`, "error");
+      return;
+    }
+    setSchemaText(JSON.stringify(inferSchema(result.data), null, 2));
+    toast("Schema inferred from data", "success");
+  }
+
+  async function handleGenerateSample() {
+    const schemaResult = parse(schemaText, "json");
+    if (schemaResult.error) {
+      toast(`Schema is invalid JSON: ${schemaResult.error.message}`, "error");
+      return;
+    }
+    const dataSnapshot = dataTextRef.current;
+    try {
+      const sample = await generateSample(schemaResult.data);
+      if (dataTextRef.current !== dataSnapshot) {
+        toast("Data changed while generating a sample — click again to apply it.", "info");
+        return;
+      }
+      setDataText(serialize(sample, formatRef.current));
+      toast("Sample data generated", "success");
+    } catch (e) {
+      toast(`Couldn't generate sample: ${(e as Error).message}`, "error");
+    }
+  }
+
+  function handleConvertTo(target: Format) {
+    const result = parse(dataText, format);
+    if (result.error) {
+      toast(`Can't convert invalid data: ${result.error.message}`, "error");
+      return;
+    }
+    setDataText(serialize(result.data, target));
+    setFormat(target);
+  }
+
+  function handleInsertPreset(snippet: unknown) {
+    const schemaResult = parse(schemaText, "json");
+    if (schemaResult.error || typeof schemaResult.data !== "object" || schemaResult.data === null) {
+      toast("Fix the schema JSON before inserting a preset", "error");
+      return;
+    }
+    const schema = schemaResult.data as Record<string, unknown>;
+    const properties = (schema.properties as Record<string, unknown>) ?? {};
+    let key = "newField";
+    let n = 1;
+    while (key in properties) key = `newField${n++}`;
+    properties[key] = snippet;
+    schema.properties = properties;
+    schema.type = schema.type ?? "object";
+    setSchemaText(JSON.stringify(schema, null, 2));
+  }
+
+  function handleShare() {
+    const url = buildShareUrl({ schema: schemaText, data: dataText, format, draft, refSchemas });
+    navigator.clipboard.writeText(url).then(
+      () => toast("Shareable link copied to clipboard", "success"),
+      () => toast(url, "info"),
+    );
+  }
+
+  function handleExportReport() {
+    const report = { valid: success, format, draft, errors, timestamp: new Date().toISOString() };
+    download("validation-report.json", JSON.stringify(report, null, 2), "application/json");
+  }
+
+  async function handleAutoFix() {
+    const dataSnapshot = dataTextRef.current;
+    const fixed = await tryAutoFix(dataSnapshot);
+    if (!fixed) {
+      toast("Couldn't auto-fix — the JSON is too broken to guess at.", "error");
+      return;
+    }
+    if (dataTextRef.current !== dataSnapshot) {
+      toast("Data changed before the fix finished — try again.", "info");
+      return;
+    }
+    setDataText(fixed);
+    toast("Applied a best-effort fix — re-check the result", "success");
+  }
+
+  function handleExportDocs() {
+    const schemaResult = parse(schemaText, "json");
+    if (schemaResult.error) {
+      toast(`Schema is invalid JSON: ${schemaResult.error.message}`, "error");
+      return;
+    }
+    download("schema-docs.md", generateSchemaDocs(schemaResult.data), "text/markdown");
+  }
+
+  function handleSchemaFieldsChange(fields: SchemaField[]) {
+    const schemaResult = parse(schemaText, "json");
+    const base = schemaResult.error ? {} : schemaResult.data;
+    setSchemaText(JSON.stringify(fieldsToSchema(fields, base), null, 2));
+  }
+
+  function handleSwitchToVisual() {
+    const result = parse(schemaText, "json");
+    if (result.error) {
+      toast("Fix the schema JSON before switching to Visual mode", "error");
+      return;
+    }
+    setSchemaView("visual");
+  }
+
+  function handleAddRef(id: string, schema: unknown) {
+    if (schema === null) {
+      toast(`Couldn't add "${id}" as a reference schema`, "error");
+      return;
+    }
+    setRefSchemas((prev) => [...prev.filter((r) => r.id !== id), { id, schema }]);
+    toast(`Added reference schema "${id}"`, "success");
+  }
+
+  function handleImportOpenApi(name: string, schemas: Record<string, unknown>) {
+    setSchemaText(JSON.stringify(schemas[name], null, 2));
+    const others = Object.entries(schemas)
+      .filter(([n]) => n !== name)
+      .map(([id, schema]) => ({ id, schema }));
+    setRefSchemas((prev) => [...prev.filter((r) => !Object.hasOwn(schemas, r.id)), ...others]);
+    setSchemaView("code");
+    setOpenApiOpen(false);
+    toast(`Imported "${name}" (${others.length} sibling schema${others.length !== 1 ? "s" : ""} added as references)`, "success");
+  }
+
+  function handleSaveAs() {
+    const name = window.prompt("Name this workspace:");
+    if (!name) return;
+    const updated = saveWorkspace({ name, schema: schemaText, data: dataText, format, draft, refSchemas });
+    setWorkspaces(updated);
+    toast(`Saved "${name}"`, "success");
+  }
+
+  function handleRestoreHistory(entry: HistoryEntry) {
+    setSchemaText(entry.schema);
+    setDataText(entry.data);
+    setFormat(entry.format);
+    setDraft(entry.draft);
+    setRefSchemas(entry.refSchemas);
+    setSavedOpen(false);
+    toast("Restored from history", "success");
+  }
+
+  function handleRestoreWorkspace(w: Workspace) {
+    setSchemaText(w.schema);
+    setDataText(w.data);
+    setFormat(w.format);
+    setDraft(w.draft);
+    setRefSchemas(w.refSchemas);
+    setSavedOpen(false);
+    toast(`Loaded "${w.name}"`, "success");
+  }
+
+  // The schema code editor stays visible and editable in Visual mode (switching modes doesn't
+  // lock it), so schemaText can go from valid to invalid while SchemaBuilder is showing. Track
+  // the parse result itself, not just the derived fields, so the render below can tell "empty
+  // schema" apart from "unparseable schema" — conflating them let handleSchemaFieldsChange
+  // silently rebuild (discard) a broken schema from an empty `{}` base. See handleSchemaFieldsChange.
+  const schemaParseResult = useMemo(() => parse(schemaText, "json"), [schemaText]);
+  const schemaFields = useMemo(() => {
+    if (schemaView !== "visual" || schemaParseResult.error) return [];
+    return schemaToFields(schemaParseResult.data);
+  }, [schemaView, schemaParseResult]);
+
+  return (
+    <div className="app">
+      <ToastStack toasts={toasts} onDismiss={dismissToast} />
+      <SavedPanel
+        open={savedOpen}
+        onClose={() => setSavedOpen(false)}
+        history={history}
+        onRestoreHistory={handleRestoreHistory}
+        onRemoveHistory={(id) => setHistory(removeHistoryEntry(id))}
+        onClearHistory={() => setHistory(clearHistory())}
+        workspaces={workspaces}
+        onRestoreWorkspace={handleRestoreWorkspace}
+        onRemoveWorkspace={(id) => setWorkspaces(removeWorkspace(id))}
+      />
+      <ReferencesPanel
+        open={refsOpen}
+        onClose={() => setRefsOpen(false)}
+        refs={refSchemas}
+        onAdd={handleAddRef}
+        onRemove={(id) => setRefSchemas((prev) => prev.filter((r) => r.id !== id))}
+        onError={(message) => toast(message, "error")}
+      />
+      <OpenApiImportPanel
+        open={openApiOpen}
+        onClose={() => setOpenApiOpen(false)}
+        onImport={handleImportOpenApi}
+        onError={(message) => toast(message, "error")}
+        onWarning={(message) => toast(message, "info")}
+      />
+
+      <header>
+        <div className="brand">
+          <span className="brand-mark">◆</span>
+          <div>
+            <h1>Schema Validator</h1>
+            <p>Validate JSON / YAML / TOML data against a JSON Schema — entirely in your browser.</p>
+          </div>
+        </div>
+        <span className="brand-pill">100% client-side</span>
+      </header>
+
+      <Toolbar
+        theme={theme}
+        onToggleTheme={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+        realtime={realtime}
+        onToggleRealtime={() => setRealtime((v) => !v)}
+        draft={draft}
+        onDraftChange={setDraft}
+        onShare={handleShare}
+        batchMode={batchMode}
+        onToggleBatchMode={() => {
+          setBatchMode((v) => !v);
+          setDataMarkers([]);
+          setErrors([]);
+          setSuccess(null);
+          setBatchRows(null);
+        }}
+        onOpenSaved={() => setSavedOpen(true)}
+        onSaveAs={handleSaveAs}
+      />
+
+      <Suspense fallback={<div className="editor-loading">Loading editor…</div>}>
+      <ResizableSplit
+        left={
+          <EditorPane
+            label="Schema (JSON Schema)"
+            language="json"
+            value={schemaText}
+            onChange={setSchemaText}
+            theme={theme}
+            path="schema.json"
+            onDropFile={setSchemaText}
+            onDropError={(message) => toast(message, "error")}
+            actions={
+              <>
+                <div className="view-toggle">
+                  <button className={schemaView === "code" ? "active" : ""} onClick={() => setSchemaView("code")}>
+                    Code
+                  </button>
+                  <button className={schemaView === "visual" ? "active" : ""} onClick={handleSwitchToVisual}>
+                    Visual
+                  </button>
+                </div>
+                <OverflowMenu
+                  actions={[
+                    { label: "Infer from data", onClick: handleInferSchema },
+                    { label: "Export field docs", onClick: handleExportDocs },
+                    { label: "Insert: Email field", onClick: () => handleInsertPreset({ type: "string", format: "email" }) },
+                    { label: "Insert: UUID field", onClick: () => handleInsertPreset({ type: "string", format: "uuid" }) },
+                    { label: "Insert: Date field", onClick: () => handleInsertPreset({ type: "string", format: "date" }) },
+                    { label: `Manage references (${refSchemas.length})`, onClick: () => setRefsOpen(true) },
+                    { label: "Import from OpenAPI…", onClick: () => setOpenApiOpen(true) },
+                  ]}
+                />
+              </>
+            }
+          />
+        }
+        right={
+          <div className="data-pane-wrap">
+            <FormatTabs value={format} onChange={setFormat} onConvertTo={handleConvertTo} />
+            <EditorPane
+              label="Data"
+              language={format}
+              value={dataText}
+              onChange={setDataText}
+              jumpToLine={jumpLine}
+              markers={dataMarkers}
+              theme={theme}
+              path="data.json"
+              onDropFile={setDataText}
+              onDropError={(message) => toast(message, "error")}
+              liveSchema={liveSchema}
+              actions={<OverflowMenu actions={[{ label: "Generate sample from schema", onClick: handleGenerateSample }]} />}
+            />
+          </div>
+        }
+      />
+      </Suspense>
+
+      {schemaView === "visual" && schemaParseResult.error && (
+        <p className="builder-empty">Schema has a JSON error — fix it in Code mode to keep editing it visually.</p>
+      )}
+      {schemaView === "visual" && !schemaParseResult.error && (
+        <Suspense fallback={<div className="editor-loading">Loading…</div>}>
+          <SchemaBuilder fields={schemaFields} onChange={handleSchemaFieldsChange} />
+        </Suspense>
+      )}
+
+      <div className="action-row">
+        <button className="validate-btn" onClick={() => handleValidate(true)}>
+          Validate <kbd>⌘⏎</kbd>
+        </button>
+        {!success && lastValidData !== null && lastValidData !== dataText && (
+          <button className="diff-toggle" onClick={() => setShowDiff((v) => !v)}>
+            {showDiff ? "Hide" : "Show"} diff from last valid
+          </button>
+        )}
+      </div>
+
+      {showDiff && lastValidData !== null && (
+        <Suspense fallback={<div className="editor-loading">Loading…</div>}>
+          <DiffView before={lastValidData} after={dataText} />
+        </Suspense>
+      )}
+
+      {batchMode ? (
+        batchRows && <BatchTable rows={batchRows} />
+      ) : (
+        <ErrorList errors={errors} success={success} onJump={setJumpLine} onExport={handleExportReport} onAutoFix={canAutoFix ? handleAutoFix : undefined} />
+      )}
+
+      <AdSlot id="footer" />
+    </div>
+  );
+}
+
+export default App;

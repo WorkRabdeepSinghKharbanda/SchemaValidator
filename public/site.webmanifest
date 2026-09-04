@@ -1,0 +1,16 @@
+{
+  "name": "Schema Validator",
+  "short_name": "SchemaValidator",
+  "description": "Free online JSON Schema validator for JSON, YAML, TOML, XML, and CSV data.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0e0f13",
+  "theme_color": "#0e0f13",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

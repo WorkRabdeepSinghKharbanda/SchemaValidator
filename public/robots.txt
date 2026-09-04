@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://schema-validator-livid.vercel.app/sitemap.xml

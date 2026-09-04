@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Schema Validator — Free Online JSON Schema Validator</title>
+    <meta
+      name="description"
+      content="Validate JSON, YAML, TOML, XML, and CSV data against a JSON Schema for free, right in your browser. No sign-up, no data ever leaves your device. Supports draft-07, 2019-09, and 2020-12, OpenAPI import, and $ref resolution."
+    />
+    <meta
+      name="keywords"
+      content="json schema validator, json validator, yaml validator, schema validation online, validate json against schema, openapi validator, jsonschema, free json validator"
+    />
+    <meta name="author" content="Schema Validator" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/" />
+
+    <!-- Open Graph / social sharing -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Schema Validator — Free Online JSON Schema Validator" />
+    <meta
+      property="og:description"
+      content="Validate JSON, YAML, TOML, XML, and CSV data against a JSON Schema for free, right in your browser. No sign-up, no data ever leaves your device."
+    />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/" />
+    <meta property="og:site_name" content="Schema Validator" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Schema Validator — Free Online JSON Schema Validator" />
+    <meta
+      name="twitter:description"
+      content="Validate JSON, YAML, TOML, XML, and CSV data against a JSON Schema for free, right in your browser."
+    />
+
+    <meta name="theme-color" content="#0e0f13" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Schema Validator",
+        "url": "https://schema-validator-livid.vercel.app/",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any (runs in browser)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Validate JSON, YAML, TOML, XML, and CSV data against a JSON Schema for free, right in your browser. No sign-up, no data ever leaves your device.",
+        "featureList": [
+          "JSON Schema validation for draft-07, 2019-09, and 2020-12",
+          "YAML, TOML, XML, and CSV data support",
+          "OpenAPI and Swagger schema import",
+          "$ref resolution across uploaded reference schemas",
+          "Real-time validation with inline error markers",
+          "Visual schema builder"
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <h1>Schema Validator</h1>
+      <p>
+        A free online tool to validate JSON, YAML, TOML, XML, and CSV data against a JSON Schema (draft-07, 2019-09,
+        2020-12). Enable JavaScript to use it — everything runs in your browser, nothing is uploaded to a server.
+      </p>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

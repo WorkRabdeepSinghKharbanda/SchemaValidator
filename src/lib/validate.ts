@@ -69,6 +69,7 @@ export interface ValidationError {
   message: string;
   keyword: string;
   line?: number;
+  missingProperty?: string;
 }
 
 export interface ValidationOutcome {
@@ -111,7 +112,14 @@ export function validate(data: unknown, schema: unknown, options: ValidateOption
         line = sourceText.slice(0, node.offset).split("\n").length;
       }
     }
-    return { path, message: err.message ?? "invalid", keyword: err.keyword, ...(line ? { line } : {}) };
+    const missingProperty = err.keyword === "required" ? (err.params as { missingProperty?: string }).missingProperty : undefined;
+    return {
+      path,
+      message: err.message ?? "invalid",
+      keyword: err.keyword,
+      ...(line ? { line } : {}),
+      ...(missingProperty ? { missingProperty } : {}),
+    };
   });
   return { valid: false, errors };
 }

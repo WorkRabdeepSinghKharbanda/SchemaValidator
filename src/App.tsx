@@ -26,6 +26,9 @@ import { exportValidationReportPdf, exportBatchReportPdf, exportSchemaDocsPdf } 
 import { refsCacheKey, type ReferenceSchema } from "./lib/refs";
 import { generateNodeSnippet, generatePythonSnippet } from "./lib/snippet";
 import { generateIssueMarkdown } from "./lib/issueMarkdown";
+import { makeFieldOptional } from "./lib/requiredFix";
+import { summarizeSchema } from "./lib/summarizeSchema";
+import { ShortcutsModal } from "./components/ShortcutsModal";
 import { useDebounce } from "./hooks/useDebounce";
 import "./App.css";
 
@@ -87,6 +90,7 @@ function App() {
   const [openApiOpen, setOpenApiOpen] = useState(false);
 
   const [savedOpen, setSavedOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [history, setHistory] = useState<HistoryEntry[]>(() => loadHistory());
   const [workspaces, setWorkspaces] = useState<Workspace[]>(() => loadWorkspaces());
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -234,6 +238,9 @@ function App() {
         e.preventDefault();
         handleValidateRef.current(true);
         if (!batchModeRef.current) toast("Saved to history", "success");
+      } else if (!meta && e.key === "?" && !(e.target instanceof HTMLElement && (e.target.closest(".monaco-editor") || e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA"))) {
+        e.preventDefault();
+        setShortcutsOpen(true);
       }
     }
     window.addEventListener("keydown", onKeydown);
@@ -364,6 +371,21 @@ function App() {
     );
   }
 
+  function handleMakeFieldOptional(path: string, propName: string) {
+    const schemaResult = parse(schemaText, "json");
+    if (schemaResult.error) {
+      toast(`Schema is invalid JSON: ${schemaResult.error.message}`, "error");
+      return;
+    }
+    const updated = makeFieldOptional(schemaResult.data, path, propName);
+    if (updated === schemaResult.data) {
+      toast(`Couldn't find "${propName}" in the schema's required list`, "error");
+      return;
+    }
+    setSchemaText(JSON.stringify(updated, null, 2));
+    toast(`Made "${propName}" optional`, "success");
+  }
+
   function handleCopyIssueMarkdown() {
     const markdown = generateIssueMarkdown(errors, format, draft);
     navigator.clipboard.writeText(markdown).then(
@@ -450,6 +472,10 @@ function App() {
   // schema" apart from "unparseable schema" — conflating them let handleSchemaFieldsChange
   // silently rebuild (discard) a broken schema from an empty `{}` base. See handleSchemaFieldsChange.
   const schemaParseResult = useMemo(() => parse(schemaText, "json"), [schemaText]);
+  const schemaSummary = useMemo(
+    () => (schemaParseResult.error ? undefined : summarizeSchema(schemaParseResult.data)),
+    [schemaParseResult],
+  );
   const schemaFields = useMemo(() => {
     if (schemaView !== "visual" || schemaParseResult.error) return [];
     return schemaToFields(schemaParseResult.data);
@@ -458,6 +484,7 @@ function App() {
   return (
     <div className="app">
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
+      <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <SavedPanel
         open={savedOpen}
         onClose={() => setSavedOpen(false)}
@@ -514,7 +541,10 @@ function App() {
         }}
         onOpenSaved={() => setSavedOpen(true)}
         onSaveAs={handleSaveAs}
+        onOpenShortcuts={() => setShortcutsOpen(true)}
       />
+
+      {schemaSummary && <p className="schema-summary">{schemaSummary}</p>}
 
       <Suspense fallback={<div className="editor-loading">Loading editor…</div>}>
       <ResizableSplit
@@ -651,6 +681,7 @@ function App() {
           onExportPdf={handleExportReportPdf}
           onAutoFix={canAutoFix ? handleAutoFix : undefined}
           onCopyIssue={handleCopyIssueMarkdown}
+          onAddRequired={handleMakeFieldOptional}
         />
       )}
 

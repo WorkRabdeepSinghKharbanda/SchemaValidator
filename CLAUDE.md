@@ -99,9 +99,18 @@ Each entry: what it does, where its logic lives, and the gotcha worth knowing be
 
 - **Copy error list as GitHub issue markdown** (`lib/issueMarkdown.ts`) — failure state's "Copy as issue" button in `ErrorList` copies a markdown checklist (one `- [ ]` per error, format+draft in the heading) to the clipboard, for pasting straight into a bug tracker.
 
+- **Schema summary** (`lib/summarizeSchema.ts`) — one-line plain-English summary ("Expects an object with N fields...") shown above the editors when the schema has top-level `properties`. Same "flat top-level shape" scope as `schemaFields.ts` — doesn't describe nested objects.
+
+- **"Make optional" quick-fix** (`lib/requiredFix.ts`) — a `required`-keyword ajv error gets a one-click button that removes that property from the schema's `required` array. `validate.ts` threads ajv's `err.params.missingProperty` through as `ValidationError.missingProperty` → `ErrorItem.missingProperty` — carry it through if you touch that mapping again. `makeFieldOptional()` walks the schema by the error's `instancePath` (via `properties`/`items`, same shape-walking idea as `validate.ts`'s `locateNode`, but over the schema tree instead of the data tree) to find the right nested node, since the missing property can be inside a nested object.
+
+- **Keyboard shortcuts modal** (`ShortcutsModal`) — opened by the Toolbar's "?" button or the `?` key itself. The `?` global listener in `App.tsx` guards against firing while typing inside Monaco or a text input (checks `e.target.closest(".monaco-editor")`) — don't remove that guard, or typing a literal "?" into schema/data text pops the modal.
+
 - **Perf** — `EditorPane`, `SchemaBuilder`, and `DiffView` are all `React.lazy` + `Suspense` from `App.tsx` (Monaco is the app's single biggest dependency by far). `generateSample()` and `tryAutoFix()` dynamic-`import()` their libraries rather than importing them at module top level, so those libraries only load when the corresponding action actually runs.
 
 UI organization: per-pane actions (infer, export docs, insert-preset, generate-sample, upload, manage references, OpenAPI import) live in that pane's own `OverflowMenu` (its header's "⋯"), not in the global `Toolbar` — keeps the top bar to cross-cutting controls only (draft version, realtime/batch settings, saved, share, theme). Follow this placement for new pane-specific actions; don't grow `Toolbar.tsx`.
+
+## Tests
+No test framework/dependency — `npm test` runs `node --experimental-strip-types --test src/lib/*.test.ts` (Node's built-in test runner + `assert`, both zero-dependency). Not every `lib/` file has a `.test.ts` yet; add one for new non-trivial pure logic (branching, recursion, edge cases), following `requiredFix.test.ts`/`summarizeSchema.test.ts` as examples. Import the module under test with an explicit `.ts` extension (`./foo.ts`, not `./foo`) — the strip-types loader doesn't do bundler-style extension resolution.
 
 ## Where logic lives — hard rule
 - `lib/` = pure functions, **zero React imports**, unit-testable standalone. One file per concern (parse, validate, serialize, infer, generate, share, history, workspaces, presets, schemaFields, docgen, autofix, refs, openapi).

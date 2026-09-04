@@ -378,7 +378,12 @@ header p {
   font-weight: 600;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
+}
+
+.result.success .result-actions {
+  color: var(--text);
 }
 
 .result-check {
@@ -472,6 +477,10 @@ header p {
   font-weight: 600;
   margin-bottom: 8px;
   font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .batch-table {
@@ -940,7 +949,7 @@ header p {
   background: var(--border);
   border-radius: 4px;
   overflow: hidden;
-  margin-top: 6px;
+  margin-bottom: 10px;
 }
 
 .batch-progress-fill {

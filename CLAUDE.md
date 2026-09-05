@@ -121,6 +121,14 @@ Each entry: what it does, where its logic lives, and the gotcha worth knowing be
 
 - **JSON path breadcrumb** (`lib/jsonPath.ts`'s `describeJsonPathAtOffset`, shown in `EditorPane`'s status bar for JSON panes only) — wraps `jsonc-parser`'s `getLocation()` rather than hand-rolling a second offset→path walk; same "one JSON parser as the source of truth" reasoning as `validate.ts`'s `locateNode` and `parse.ts`'s `parseJson()`. Computed from the cursor's character offset (`model.getOffsetAt(position)`, captured alongside line/column in `EditorPane`'s `onDidChangeCursorPosition` handler).
 
+- **Custom preset snippets** (`lib/customPresets.ts`, `CustomPresetsPanel`) — user-defined field snippets alongside the built-in Email/UUID/Date presets, stored in `localStorage` as raw JSON **text** (not a parsed object), specifically so a temporarily-broken in-progress edit in the manage panel doesn't lose the snippet. Presets show up as `Insert: {label}` entries in the schema pane's "⋯" menu and the command palette, both calling the same `handleInsertPreset()` used by the built-ins after `JSON.parse`-ing the stored text.
+
+- **Jump to first error** (`ErrorList`) — a button in the failure heading jumps to the first error that actually has a line number (`errors.find((e) => e.line)?.line`) — not necessarily `errors[0]`, since some errors (schema-level failures, non-JSON formats) have no line at all and the button doesn't render if none do.
+
+- **Minimap toggle** (`Toolbar` Settings menu) — `minimapEnabled`, persisted like `wordWrap`/`editorFontSize`, passed to `EditorPane`'s `minimap` prop → Monaco's `options.minimap.enabled` (previously hardcoded `false`).
+
+- **Copy JSON path** (`EditorPane`'s status bar) — the JSON-path breadcrumb (see below) is now a clickable button, not just a label: copies the path to the clipboard and flashes "Copied!" for 1.2s (`copyTimeoutRef`, cleared on unmount). JSON panes only, same as the breadcrumb itself.
+
 - **Perf** — `EditorPane`, `SchemaBuilder`, and `DiffView` are all `React.lazy` + `Suspense` from `App.tsx` (Monaco is the app's single biggest dependency by far). `generateSample()` and `tryAutoFix()` dynamic-`import()` their libraries rather than importing them at module top level, so those libraries only load when the corresponding action actually runs.
 
 UI organization: per-pane actions (infer, export docs, insert-preset, generate-sample, upload, manage references, OpenAPI import) live in that pane's own `OverflowMenu` (its header's "⋯"), not in the global `Toolbar` — keeps the top bar to cross-cutting controls only (draft version, realtime/batch settings, saved, share, theme). Follow this placement for new pane-specific actions; don't grow `Toolbar.tsx`.

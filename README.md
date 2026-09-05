@@ -39,6 +39,9 @@ For agent-facing architecture notes and control flow, see [CLAUDE.md](CLAUDE.md)
 - **Workspace backup** — export all saved workspaces as one JSON file, import (merges, doesn't overwrite) on another machine or as a manual backup.
 - **Editor font size / word wrap** — adjustable from the Settings menu.
 - **Focus mode** — hide the header/toolbar/ad slot for a distraction-free view, toggled from the toolbar or command palette.
+- **Custom preset snippets** — save your own field snippets (beyond the built-in Email/UUID/Date), insertable from the schema pane's "⋯" menu.
+- **Jump to first error** — one click from the failure heading to the first error with a known line.
+- **Minimap toggle** and **click-to-copy JSON path** in the editor status bar.
 - **Keyboard shortcuts** — Cmd/Ctrl+Enter to validate, Cmd/Ctrl+S to save to history.
 - Dark/light theme, persisted.
 - Premium dark-glass UI, full-height layout. Pane-specific actions live in each editor's own "⋯" menu rather than one crowded toolbar — the top bar only holds cross-cutting controls (draft, settings, saved, share, theme).

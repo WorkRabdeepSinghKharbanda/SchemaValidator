@@ -76,6 +76,7 @@ export function ErrorList({
   const q = filter.trim().toLowerCase();
   const visibleErrors = q ? errors.filter((e) => e.message.toLowerCase().includes(q) || e.path?.toLowerCase().includes(q)) : errors;
   const groups = groupErrors(visibleErrors);
+  const firstErrorLine = errors.find((e) => e.line)?.line;
 
   return (
     <div className="result failure">
@@ -84,6 +85,11 @@ export function ErrorList({
           ✗ {errors.length} error{errors.length !== 1 ? "s" : ""}
         </span>
         <span className="result-actions">
+          {firstErrorLine && (
+            <button className="export-btn" onClick={() => onJump(firstErrorLine)}>
+              Jump to first error
+            </button>
+          )}
           {onAutoFix && (
             <button className="export-btn" onClick={onAutoFix}>
               Try auto-fix

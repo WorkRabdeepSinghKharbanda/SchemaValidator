@@ -328,6 +328,16 @@ header p {
 
 .editor-status-bar .json-path {
   font-family: var(--font-mono, monospace);
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: inherit;
+  padding: 0;
+  cursor: pointer;
+}
+
+.editor-status-bar .json-path:hover {
+  color: var(--accent);
 }
 
 .editor-label {
@@ -1131,6 +1141,30 @@ header p {
 
 .builder-remove:hover {
   color: var(--error);
+}
+
+.preset-form-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.preset-form-label input,
+.preset-form-textarea {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  padding: 7px 9px;
+  font-size: 12.5px;
+}
+
+.preset-form-textarea {
+  font-family: var(--font-mono, monospace);
+  resize: vertical;
 }
 
 .builder-add {

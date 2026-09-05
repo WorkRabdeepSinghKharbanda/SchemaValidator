@@ -60,6 +60,7 @@ export function EditorPane({
   liveSchema,
   fontSize = 13,
   wordWrap = false,
+  minimap = false,
 }: {
   label: string;
   language: string;
@@ -76,11 +77,13 @@ export function EditorPane({
   liveSchema?: unknown;
   fontSize?: number;
   wordWrap?: boolean;
+  minimap?: boolean;
 }) {
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<typeof Monaco | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [cursor, setCursor] = useState({ line: 1, column: 1, offset: 0 });
+  const [pathCopied, setPathCopied] = useState(false);
 
   const handleMount: OnMount = (editor, monacoInstance) => {
     editorRef.current = editor;
@@ -96,6 +99,30 @@ export function EditorPane({
   };
 
   const jsonPath = language === "json" ? describeJsonPathAtOffset(value, cursor.offset) : undefined;
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => () => clearTimeout(copyTimeoutRef.current), []);
+
+  // Reset the "Copied!" flash the moment the cursor moves to a different path — without this,
+  // moving within the 1.2s window left the confirmation text attached to the wrong location
+  // (same "adjust state during render" pattern ErrorList's filter-reset uses, no extra effect).
+  const [prevJsonPath, setPrevJsonPath] = useState(jsonPath);
+  if (jsonPath !== prevJsonPath) {
+    setPrevJsonPath(jsonPath);
+    if (pathCopied) {
+      clearTimeout(copyTimeoutRef.current);
+      setPathCopied(false);
+    }
+  }
+
+  function handleCopyPath() {
+    if (!jsonPath) return;
+    navigator.clipboard.writeText(jsonPath).then(() => {
+      setPathCopied(true);
+      clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setPathCopied(false), 1200);
+    });
+  }
 
   function applyLiveSchema(monacoInstance: typeof Monaco) {
     if (language !== "json" || !path) return;
@@ -185,14 +212,18 @@ export function EditorPane({
           onChange={(v) => onChange(v ?? "")}
           onMount={handleMount}
           theme={theme === "dark" ? "vs-dark" : "vs"}
-          options={{ minimap: { enabled: false }, fontSize, wordWrap: wordWrap ? "on" : "off", scrollBeyondLastLine: false }}
+          options={{ minimap: { enabled: minimap }, fontSize, wordWrap: wordWrap ? "on" : "off", scrollBeyondLastLine: false }}
         />
         {dragOver && <div className="drop-overlay">Drop file to load</div>}
       </div>
       <div className="editor-status-bar">
         <span>
           Ln {cursor.line}, Col {cursor.column}
-          {jsonPath && <span className="json-path"> · {jsonPath}</span>}
+          {jsonPath && (
+            <button className="json-path" onClick={handleCopyPath} title="Copy JSON path">
+              · {pathCopied ? "Copied!" : jsonPath}
+            </button>
+          )}
         </span>
         <span>{value.length.toLocaleString()} chars</span>
       </div>

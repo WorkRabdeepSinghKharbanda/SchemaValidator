@@ -7,6 +7,7 @@ import { Toolbar } from "./components/Toolbar";
 import { SavedPanel } from "./components/SavedPanel";
 import { ReferencesPanel } from "./components/ReferencesPanel";
 import { OpenApiImportPanel } from "./components/OpenApiImportPanel";
+import { CustomPresetsPanel } from "./components/CustomPresetsPanel";
 import { BatchTable, type BatchRow } from "./components/BatchTable";
 import { ToastStack, type ToastMessage } from "./components/Toast";
 import { OverflowMenu } from "./components/OverflowMenu";
@@ -31,6 +32,7 @@ import { generateSchemaDocs } from "./lib/docgen";
 import { tryAutoFix } from "./lib/autofix";
 import { exportValidationReportPdf, exportBatchReportPdf, exportSchemaDocsPdf } from "./lib/pdf";
 import { refsCacheKey, type ReferenceSchema } from "./lib/refs";
+import { loadCustomPresets, saveCustomPreset, removeCustomPreset, type CustomPreset } from "./lib/customPresets";
 import { generateNodeSnippet, generatePythonSnippet } from "./lib/snippet";
 import { generateIssueMarkdown } from "./lib/issueMarkdown";
 import { makeFieldOptional } from "./lib/requiredFix";
@@ -105,6 +107,9 @@ function App() {
   const [refSchemas, setRefSchemas] = useState<ReferenceSchema[]>(shared?.refSchemas ?? []);
   const [refsOpen, setRefsOpen] = useState(false);
   const [openApiOpen, setOpenApiOpen] = useState(false);
+  const [customPresetsOpen, setCustomPresetsOpen] = useState(false);
+  const [customPresets, setCustomPresets] = useState<CustomPreset[]>(() => loadCustomPresets());
+  const [minimapEnabled, setMinimapEnabled] = useState(() => localStorage.getItem("minimapEnabled") === "true");
 
   const [savedOpen, setSavedOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -128,6 +133,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem("wordWrap", String(wordWrap));
   }, [wordWrap]);
+
+  useEffect(() => {
+    localStorage.setItem("minimapEnabled", String(minimapEnabled));
+  }, [minimapEnabled]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
@@ -327,6 +336,10 @@ function App() {
   }
 
   function handleInsertPreset(snippet: unknown) {
+    if (typeof snippet !== "object" || snippet === null || Array.isArray(snippet)) {
+      toast("Preset must be a JSON object (a field schema)", "error");
+      return;
+    }
     const schemaResult = parse(schemaText, "json");
     if (schemaResult.error || typeof schemaResult.data !== "object" || schemaResult.data === null) {
       toast("Fix the schema JSON before inserting a preset", "error");
@@ -341,6 +354,20 @@ function App() {
     schema.properties = properties;
     schema.type = schema.type ?? "object";
     setSchemaText(JSON.stringify(schema, null, 2));
+  }
+
+  function handleSaveCustomPreset(label: string, snippetJson: string) {
+    setCustomPresets(saveCustomPreset(label, snippetJson));
+    toast(`Saved preset "${label}"`, "success");
+  }
+
+  function handleInsertCustomPreset(snippetJson: string) {
+    try {
+      handleInsertPreset(JSON.parse(snippetJson));
+      setCustomPresetsOpen(false);
+    } catch (e) {
+      toast(`Preset isn't valid JSON: ${(e as Error).message}`, "error");
+    }
   }
 
   function handleShare() {
@@ -556,6 +583,7 @@ function App() {
     { label: "Generate sample data from schema", run: handleGenerateSample },
     { label: "Manage reference schemas…", run: () => setRefsOpen(true) },
     { label: "Import from OpenAPI…", run: () => setOpenApiOpen(true) },
+    { label: `Manage custom presets (${customPresets.length})`, run: () => setCustomPresetsOpen(true) },
     { label: "Cycle theme (dark / light / auto)", run: () => setThemePref(nextThemePref) },
     { label: `Toggle focus mode (currently ${focusMode ? "on" : "off"})`, run: () => setFocusMode((v) => !v) },
     { label: "Export saved workspaces as backup", run: handleExportWorkspaces },
@@ -600,6 +628,15 @@ function App() {
         onError={(message) => toast(message, "error")}
         onWarning={(message) => toast(message, "info")}
       />
+      <CustomPresetsPanel
+        open={customPresetsOpen}
+        onClose={() => setCustomPresetsOpen(false)}
+        presets={customPresets}
+        onSave={handleSaveCustomPreset}
+        onRemove={(id) => setCustomPresets(removeCustomPreset(id))}
+        onInsert={handleInsertCustomPreset}
+        onError={(message) => toast(message, "error")}
+      />
 
       <header>
         <div className="brand">
@@ -638,6 +675,8 @@ function App() {
         onToggleWordWrap={() => setWordWrap((v) => !v)}
         focusMode={focusMode}
         onToggleFocusMode={() => setFocusMode((v) => !v)}
+        minimapEnabled={minimapEnabled}
+        onToggleMinimap={() => setMinimapEnabled((v) => !v)}
       />
 
       {schemaSummary && <p className="schema-summary">{schemaSummary}</p>}
@@ -653,6 +692,7 @@ function App() {
             theme={theme}
             fontSize={editorFontSize}
             wordWrap={wordWrap}
+            minimap={minimapEnabled}
             path="schema.json"
             onDropFile={setSchemaText}
             onDropError={(message) => toast(message, "error")}
@@ -674,6 +714,11 @@ function App() {
                     { label: "Insert: Email field", onClick: () => handleInsertPreset({ type: "string", format: "email" }) },
                     { label: "Insert: UUID field", onClick: () => handleInsertPreset({ type: "string", format: "uuid" }) },
                     { label: "Insert: Date field", onClick: () => handleInsertPreset({ type: "string", format: "date" }) },
+                    ...customPresets.map((p) => ({
+                      label: `Insert: ${p.label}`,
+                      onClick: () => handleInsertCustomPreset(p.snippetJson),
+                    })),
+                    { label: `Manage custom presets (${customPresets.length})`, onClick: () => setCustomPresetsOpen(true) },
                     { label: `Manage references (${refSchemas.length})`, onClick: () => setRefsOpen(true) },
                     { label: "Import from OpenAPI…", onClick: () => setOpenApiOpen(true) },
                     { label: "Copy as Node.js snippet", onClick: () => handleCopySnippet("node") },
@@ -715,6 +760,7 @@ function App() {
               theme={theme}
               fontSize={editorFontSize}
               wordWrap={wordWrap}
+              minimap={minimapEnabled}
               path="data.json"
               onDropFile={setDataText}
               onDropError={(message) => toast(message, "error")}

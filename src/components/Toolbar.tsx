@@ -25,6 +25,8 @@ export function Toolbar({
   onToggleWordWrap,
   focusMode,
   onToggleFocusMode,
+  minimapEnabled,
+  onToggleMinimap,
 }: {
   themePref: ThemePref;
   onToggleTheme: () => void;
@@ -45,6 +47,8 @@ export function Toolbar({
   onToggleWordWrap: () => void;
   focusMode: boolean;
   onToggleFocusMode: () => void;
+  minimapEnabled: boolean;
+  onToggleMinimap: () => void;
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -76,6 +80,10 @@ export function Toolbar({
               <label className="toggle">
                 <input type="checkbox" checked={wordWrap} onChange={onToggleWordWrap} />
                 Wrap long lines
+              </label>
+              <label className="toggle">
+                <input type="checkbox" checked={minimapEnabled} onChange={onToggleMinimap} />
+                Show minimap
               </label>
               <label className="toggle settings-font-size">
                 Editor font size

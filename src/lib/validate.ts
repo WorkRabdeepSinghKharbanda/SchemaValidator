@@ -1,10 +1,10 @@
 import Ajv, { type ValidateFunction } from "ajv";
-import Ajv2019 from "ajv/dist/2019";
-import Ajv2020 from "ajv/dist/2020";
+import Ajv2019 from "ajv/dist/2019.js";
+import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { parseTree, type Node } from "jsonc-parser";
-import type { Format } from "./parse";
-import type { ReferenceSchema } from "./refs";
+import type { Format } from "./parse.ts";
+import type { ReferenceSchema } from "./refs.ts";
 
 export type Draft = "draft-07" | "2019-09" | "2020-12";
 
@@ -15,6 +15,10 @@ const AJV_CLASS: Record<Draft, typeof Ajv> = {
 };
 
 export const DRAFTS = Object.keys(AJV_CLASS) as Draft[];
+
+export function isDraft(value: unknown): value is Draft {
+  return typeof value === "string" && (DRAFTS as string[]).includes(value);
+}
 
 // Caches the compiled ajv validator per (draft, schema text) so realtime/debounced
 // re-validation doesn't recompile an unchanged schema on every keystroke of the data pane.
@@ -43,6 +47,15 @@ function compile(schema: unknown, draft: Draft, schemaCacheKey?: string, refSche
     compileCache.set(cacheKey, validateFn);
   }
   return validateFn;
+}
+
+// ajv instancePath segments are JSON-Pointer-escaped (RFC 6901: "~" -> "~0", "/" -> "~1") — a
+// property literally named e.g. "a/b" appears in the path as "a~1b". Unescape before comparing
+// against the parse tree's real (unescaped) property names, or such a property's error would
+// never resolve to a line number. Order matters: undo "~1" before "~0" (the reverse of how they
+// were escaped), so "~01" (an escaped "~" followed by a literal "1") doesn't get double-unescaped.
+function unescapeJsonPointerSegment(segment: string): string {
+  return segment.replace(/~1/g, "/").replace(/~0/g, "~");
 }
 
 // Walks the JSON parse tree by hand instead of jsonc-parser's findNodeAtLocation: that helper
@@ -106,7 +119,7 @@ export function validate(data: unknown, schema: unknown, options: ValidateOption
     const path = err.instancePath || "/";
     let line: number | undefined;
     if (tree && sourceText) {
-      const segments = path.split("/").filter(Boolean);
+      const segments = path.split("/").filter(Boolean).map(unescapeJsonPointerSegment);
       const node = locateNode(tree, segments);
       if (node) {
         line = sourceText.slice(0, node.offset).split("\n").length;

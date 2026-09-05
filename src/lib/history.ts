@@ -1,6 +1,6 @@
-import type { Format } from "./parse";
-import type { Draft } from "./validate";
-import type { ReferenceSchema } from "./refs";
+import { isFormat, type Format } from "./parse.ts";
+import { isDraft, type Draft } from "./validate.ts";
+import type { ReferenceSchema } from "./refs.ts";
 
 export interface HistoryEntry {
   id: string;
@@ -21,9 +21,17 @@ export function loadHistory(): HistoryEntry[] {
     const raw = localStorage.getItem(KEY);
     if (!raw) return [];
     // Entries saved before draft/refSchemas existed won't have those fields — default them
-    // rather than let a restore silently validate under the wrong draft or missing refs.
+    // rather than let a restore silently validate under the wrong draft or missing refs. Also
+    // guards against a corrupted format/draft value, not just a missing one (localStorage can be
+    // hand-edited or shared across app versions with different valid values).
     const parsed = JSON.parse(raw) as Partial<HistoryEntry>[];
-    return parsed.map((e) => ({ ...e, draft: e.draft ?? "2020-12", refSchemas: e.refSchemas ?? [] })) as HistoryEntry[];
+    return parsed
+      .filter((e) => isFormat(e.format))
+      .map((e) => ({
+        ...e,
+        draft: isDraft(e.draft) ? e.draft : "2020-12",
+        refSchemas: Array.isArray(e.refSchemas) ? e.refSchemas : [],
+      })) as HistoryEntry[];
   } catch {
     return [];
   }

@@ -370,6 +370,14 @@ function App() {
     }
   }
 
+  function handleToggleBatchMode() {
+    setBatchMode((v) => !v);
+    setDataMarkers([]);
+    setErrors([]);
+    setSuccess(null);
+    setBatchRows(null);
+  }
+
   function handleShare() {
     const url = buildShareUrl({ schema: schemaText, data: dataText, format, draft, refSchemas });
     navigator.clipboard.writeText(url).then(
@@ -531,12 +539,31 @@ function App() {
     toast(`Saved "${name}"`, "success");
   }
 
+  // Restoring history/a workspace swaps out schemaText/dataText wholesale — any validation
+  // output computed against the *previous* text (error markers, the pass/fail state, the diff
+  // baseline) is now describing a document that no longer exists. Without this, a stale Monaco
+  // squiggle or "Show diff from last valid" button can survive a restore and attach itself to
+  // an unrelated line/version of the freshly-loaded data (same class of bug batch-mode toggling
+  // already guards against, via handleToggleBatchMode).
+  function clearValidationState() {
+    setSuccess(null);
+    setErrors([]);
+    setDataMarkers([]);
+    setBatchRows(null);
+    setJumpLine(undefined);
+    setCanAutoFix(false);
+    setLastValidData(null);
+    setShowDiff(false);
+    setSchemaDiffTarget("");
+  }
+
   function handleRestoreHistory(entry: HistoryEntry) {
     setSchemaText(entry.schema);
     setDataText(entry.data);
     setFormat(entry.format);
     setDraft(entry.draft);
     setRefSchemas(entry.refSchemas);
+    clearValidationState();
     setSavedOpen(false);
     toast("Restored from history", "success");
   }
@@ -547,6 +574,7 @@ function App() {
     setFormat(w.format);
     setDraft(w.draft);
     setRefSchemas(w.refSchemas);
+    clearValidationState();
     setSavedOpen(false);
     toast(`Loaded "${w.name}"`, "success");
   }
@@ -571,7 +599,7 @@ function App() {
     { label: "Save as workspace…", run: handleSaveAs },
     { label: "Open saved / history", run: () => setSavedOpen(true) },
     { label: "Copy shareable link", run: handleShare },
-    { label: `Toggle batch mode (currently ${batchMode ? "on" : "off"})`, run: () => setBatchMode((v) => !v) },
+    { label: `Toggle batch mode (currently ${batchMode ? "on" : "off"})`, run: handleToggleBatchMode },
     { label: `Toggle realtime validation (currently ${realtime ? "on" : "off"})`, run: () => setRealtime((v) => !v) },
     { label: "Export report as JSON", run: handleExportReportJson },
     { label: "Export report as PDF", run: handleExportReportPdf },
@@ -658,13 +686,7 @@ function App() {
         onDraftChange={setDraft}
         onShare={handleShare}
         batchMode={batchMode}
-        onToggleBatchMode={() => {
-          setBatchMode((v) => !v);
-          setDataMarkers([]);
-          setErrors([]);
-          setSuccess(null);
-          setBatchRows(null);
-        }}
+        onToggleBatchMode={handleToggleBatchMode}
         onOpenSaved={() => setSavedOpen(true)}
         onSaveAs={handleSaveAs}
         onOpenShortcuts={() => setShortcutsOpen(true)}

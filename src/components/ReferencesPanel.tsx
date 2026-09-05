@@ -64,7 +64,7 @@ export function ReferencesPanel({
               <span className="history-entry ref-entry">
                 <span className="history-format">{r.id}</span>
               </span>
-              <button className="history-remove" onClick={() => onRemove(r.id)} title="Remove" aria-label={`Remove ${r.id}`}>
+              <button className="history-icon-btn" onClick={() => onRemove(r.id)} title="Remove" aria-label={`Remove ${r.id}`}>
                 ✕
               </button>
             </li>

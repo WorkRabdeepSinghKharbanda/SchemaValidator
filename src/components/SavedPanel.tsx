@@ -96,14 +96,14 @@ export function SavedPanel({
                     </span>
                   </button>
                   <button
-                    className="history-remove"
+                    className="history-icon-btn"
                     onClick={() => onTogglePinned(w.id)}
                     title={w.pinned ? "Unpin (stop auto-loading on start)" : "Pin (auto-load this on start)"}
                     aria-label={w.pinned ? `Unpin ${w.name}` : `Pin ${w.name}`}
                   >
                     {w.pinned ? "📌" : "📍"}
                   </button>
-                  <button className="history-remove" onClick={() => onRemoveWorkspace(w.id)} title="Remove" aria-label={`Remove ${w.name}`}>
+                  <button className="history-icon-btn" onClick={() => onRemoveWorkspace(w.id)} title="Remove" aria-label={`Remove ${w.name}`}>
                     ✕
                   </button>
                 </li>
@@ -125,7 +125,7 @@ export function SavedPanel({
                       <span className="history-time">{new Date(e.timestamp).toLocaleString()}</span>
                     </span>
                   </button>
-                  <button className="history-remove" onClick={() => onRemoveHistory(e.id)} title="Remove" aria-label="Remove this entry">
+                  <button className="history-icon-btn" onClick={() => onRemoveHistory(e.id)} title="Remove" aria-label="Remove this entry">
                     ✕
                   </button>
                 </li>

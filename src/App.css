@@ -845,7 +845,7 @@ header p {
   font-size: 11px;
 }
 
-.history-remove {
+.history-icon-btn {
   background: none;
   border: none;
   color: var(--text-dim);

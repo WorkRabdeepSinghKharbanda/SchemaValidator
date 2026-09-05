@@ -277,6 +277,10 @@ function App() {
   formatRef.current = format;
   const dataTextRef = useRef(dataText);
   dataTextRef.current = dataText;
+  // Set right before a restore/import sets its own explicit `draft`, so the auto-detect effect
+  // below (which would otherwise immediately re-fire off the new schemaText and silently flip
+  // that just-restored draft again) skips exactly one cycle instead of fighting the restore.
+  const skipNextDraftDetectRef = useRef(false);
 
   useEffect(() => {
     function onKeydown(e: KeyboardEvent) {
@@ -401,6 +405,7 @@ function App() {
     reader.onload = () => {
       try {
         const state = importSessionFile(String(reader.result ?? ""));
+        skipNextDraftDetectRef.current = true;
         setSchemaText(state.schema);
         setDataText(state.data);
         setFormat(state.format);
@@ -593,6 +598,7 @@ function App() {
   }
 
   function handleRestoreHistory(entry: HistoryEntry) {
+    skipNextDraftDetectRef.current = true;
     setSchemaText(entry.schema);
     setDataText(entry.data);
     setFormat(entry.format);
@@ -604,6 +610,7 @@ function App() {
   }
 
   function handleRestoreWorkspace(w: Workspace) {
+    skipNextDraftDetectRef.current = true;
     setSchemaText(w.schema);
     setDataText(w.data);
     setFormat(w.format);
@@ -627,8 +634,14 @@ function App() {
   // Auto-switches the draft dropdown to match the schema's own "$schema" URI. Keyed on
   // `detectedDraft` (not `schemaText`) so this only re-fires when the *detected draft itself*
   // changes — if the user manually overrides the dropdown afterward without touching the schema
-  // text again, this won't fight them back to the detected value on the next render.
+  // text again, this won't fight them back to the detected value on the next render. Restoring
+  // history/a workspace/a session file sets `skipNextDraftDetectRef` first specifically so this
+  // doesn't immediately re-derive (and silently override) that restore's own explicit `draft`.
   useEffect(() => {
+    if (skipNextDraftDetectRef.current) {
+      skipNextDraftDetectRef.current = false;
+      return;
+    }
     if (detectedDraft && detectedDraft !== draft) {
       setDraft(detectedDraft);
       toast(`Detected "$schema" — switched draft to ${detectedDraft}`, "info");

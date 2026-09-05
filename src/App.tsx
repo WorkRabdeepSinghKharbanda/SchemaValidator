@@ -161,8 +161,14 @@ function App() {
   // toast `action` that restores exactly that snapshot — a single-level "Undo" for auto-fix,
   // sample generation, make-optional, preset insertion, and OpenAPI import, all of which
   // overwrite schemaText/dataText/refSchemas wholesale with no confirmation step of their own.
+  // Reads from refs, not closure variables — the async handlers that call this (auto-fix, sample
+  // generation, batch sample generation) only guard their OWN result against a stale `dataText`
+  // (via dataTextRef) before applying it; they don't re-check schemaText/refSchemas. If this read
+  // the closure values instead, an Undo after the user edited the schema pane while one of those
+  // was in flight would silently restore the stale, pre-edit schema — refs are always current
+  // regardless of how long the async work took.
   function snapshotForUndo() {
-    const prev = { schemaText, dataText, refSchemas };
+    const prev = { schemaText: schemaTextRef.current, dataText: dataTextRef.current, refSchemas: refSchemasRef.current };
     return {
       label: "Undo",
       onClick: () => {
@@ -303,6 +309,10 @@ function App() {
   formatRef.current = format;
   const dataTextRef = useRef(dataText);
   dataTextRef.current = dataText;
+  const schemaTextRef = useRef(schemaText);
+  schemaTextRef.current = schemaText;
+  const refSchemasRef = useRef(refSchemas);
+  refSchemasRef.current = refSchemas;
   // Set right before a restore/import sets its own explicit `draft`, so the auto-detect effect
   // below (which would otherwise immediately re-fire off the new schemaText and silently flip
   // that just-restored draft again) skips exactly one cycle instead of fighting the restore.

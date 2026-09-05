@@ -2,8 +2,9 @@ import { unescapeJsonPointerSegment } from "./validate.ts";
 
 // One-click fix for a "type" ajv error: converts the offending value in-place to the schema's
 // expected type, when the conversion is unambiguous (a numeric-looking string -> number, etc.).
-// JSON data only — YAML/TOML/XML/CSV don't share one in-memory JS-value tree to mutate the same
-// way, and only JSON gets exact instancePath -> value resolution elsewhere in this app too.
+// Works for any data format, not just JSON — it operates on the already-parsed in-memory value
+// tree (which every format produces the same shape of), and the caller re-serializes back to
+// whatever format was active via serialize().
 function coercePrimitive(value: unknown, expectedType: string): { ok: true; value: unknown } | { ok: false } {
   switch (expectedType) {
     case "number":

@@ -54,7 +54,7 @@ function compile(schema: unknown, draft: Draft, schemaCacheKey?: string, refSche
 // against the parse tree's real (unescaped) property names, or such a property's error would
 // never resolve to a line number. Order matters: undo "~1" before "~0" (the reverse of how they
 // were escaped), so "~01" (an escaped "~" followed by a literal "1") doesn't get double-unescaped.
-function unescapeJsonPointerSegment(segment: string): string {
+export function unescapeJsonPointerSegment(segment: string): string {
   return segment.replace(/~1/g, "/").replace(/~0/g, "~");
 }
 
@@ -83,6 +83,7 @@ export interface ValidationError {
   keyword: string;
   line?: number;
   missingProperty?: string;
+  expectedType?: string;
 }
 
 export interface ValidationOutcome {
@@ -126,12 +127,18 @@ export function validate(data: unknown, schema: unknown, options: ValidateOption
       }
     }
     const missingProperty = err.keyword === "required" ? (err.params as { missingProperty?: string }).missingProperty : undefined;
+    // ajv's "type" params.type can be an array (e.g. schema allows ["string", "null"]) when
+    // multiple types are permitted — only offer a single unambiguous coercion target for a
+    // single expected type, not a pick-one-of-several list.
+    const rawExpectedType = err.keyword === "type" ? (err.params as { type?: string | string[] }).type : undefined;
+    const expectedType = typeof rawExpectedType === "string" ? rawExpectedType : undefined;
     return {
       path,
       message: err.message ?? "invalid",
       keyword: err.keyword,
       ...(line ? { line } : {}),
       ...(missingProperty ? { missingProperty } : {}),
+      ...(expectedType ? { expectedType } : {}),
     };
   });
   return { valid: false, errors };

@@ -602,6 +602,26 @@ header p {
   box-shadow: var(--shadow);
   animation: toast-in 0.2s ease;
   max-width: 320px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.toast-action {
+  background: color-mix(in srgb, currentColor 16%, transparent);
+  border: none;
+  border-radius: 6px;
+  color: inherit;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toast-action:hover {
+  background: color-mix(in srgb, currentColor 28%, transparent);
 }
 
 @keyframes toast-in {

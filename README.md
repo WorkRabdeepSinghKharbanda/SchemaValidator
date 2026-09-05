@@ -46,6 +46,10 @@ For agent-facing architecture notes and control flow, see [CLAUDE.md](CLAUDE.md)
 - **Session file export/import** — download/upload the full session as a JSON file, for schemas too large for a URL share link.
 - **Pinned default workspace** — mark one saved workspace to auto-load on app start (unless a share link takes precedence).
 - **Batch table: export failing rows only** — pull just the broken records out of a large batch run.
+- **Undo** — a one-click "Undo" on the success toast after auto-fix, sample generation, "Make optional", preset insertion, or OpenAPI import.
+- **Export as TypeScript interface** — a best-effort `.d.ts` generated from the schema.
+- **Type-coercion quick-fix** — a wrong-type data error gets a "Convert to {type}" button alongside the fix-the-schema options.
+- **Batch mode: generate N samples** — fill the data pane with N valid sample records at once for batch testing.
 - **Keyboard shortcuts** — Cmd/Ctrl+Enter to validate, Cmd/Ctrl+S to save to history.
 - Dark/light theme, persisted.
 - Premium dark-glass UI, full-height layout. Pane-specific actions live in each editor's own "⋯" menu rather than one crowded toolbar — the top bar only holds cross-cutting controls (draft, settings, saved, share, theme).

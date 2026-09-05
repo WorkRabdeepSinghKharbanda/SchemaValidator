@@ -16,7 +16,7 @@ import { parse, type Format } from "./lib/parse";
 import { serialize } from "./lib/serialize";
 import { validate, type Draft } from "./lib/validate";
 import { inferSchema } from "./lib/infer";
-import { generateSample } from "./lib/generate";
+import { generateSample, generateSampleArray } from "./lib/generate";
 import { buildShareUrl, readShareStateFromUrl, exportSessionFile, importSessionFile } from "./lib/share";
 import { loadHistory, saveToHistory, clearHistory, removeHistoryEntry, type HistoryEntry } from "./lib/history";
 import {
@@ -30,6 +30,7 @@ import {
 } from "./lib/workspaces";
 import { schemaToFields, fieldsToSchema, type SchemaField } from "./lib/schemaFields";
 import { generateSchemaDocs } from "./lib/docgen";
+import { generateTypeScriptInterface } from "./lib/schemaToTs";
 import { tryAutoFix } from "./lib/autofix";
 import { exportValidationReportPdf, exportBatchReportPdf, exportSchemaDocsPdf } from "./lib/pdf";
 import { refsCacheKey, type ReferenceSchema } from "./lib/refs";
@@ -38,6 +39,7 @@ import { detectDraftFromSchema } from "./lib/detectDraft";
 import { generateNodeSnippet, generatePythonSnippet } from "./lib/snippet";
 import { generateIssueMarkdown } from "./lib/issueMarkdown";
 import { makeFieldOptional } from "./lib/requiredFix";
+import { coerceValueAtPath } from "./lib/typeCoerce";
 import { summarizeSchema } from "./lib/summarizeSchema";
 import { ShortcutsModal } from "./components/ShortcutsModal";
 import { CommandPalette, type Command } from "./components/CommandPalette";
@@ -150,9 +152,26 @@ function App() {
     return () => media.removeEventListener("change", onChange);
   }, []);
 
-  function toast(text: string, tone: ToastMessage["tone"] = "info") {
+  function toast(text: string, tone: ToastMessage["tone"] = "info", action?: ToastMessage["action"]) {
     const id = ++toastId;
-    setToasts((prev) => [...prev, { id, text, tone }]);
+    setToasts((prev) => [...prev, { id, text, tone, action }]);
+  }
+
+  // Snapshots the fields a one-click destructive action is about to overwrite, and returns a
+  // toast `action` that restores exactly that snapshot — a single-level "Undo" for auto-fix,
+  // sample generation, make-optional, preset insertion, and OpenAPI import, all of which
+  // overwrite schemaText/dataText/refSchemas wholesale with no confirmation step of their own.
+  function snapshotForUndo() {
+    const prev = { schemaText, dataText, refSchemas };
+    return {
+      label: "Undo",
+      onClick: () => {
+        setSchemaText(prev.schemaText);
+        setDataText(prev.dataText);
+        setRefSchemas(prev.refSchemas);
+        clearValidationState();
+      },
+    };
   }
   function dismissToast(id: number) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -193,7 +212,14 @@ function App() {
     });
     return {
       ok: outcome.valid,
-      items: outcome.errors.map((e) => ({ message: e.message, path: e.path, line: e.line, keyword: e.keyword })),
+      items: outcome.errors.map((e) => ({
+        message: e.message,
+        path: e.path,
+        line: e.line,
+        keyword: e.keyword,
+        missingProperty: e.missingProperty,
+        expectedType: e.expectedType,
+      })),
       markers: outcome.errors.filter((e) => e.line).map((e) => ({ line: e.line as number, message: e.message })),
       autoFixable: false,
     };
@@ -327,10 +353,39 @@ function App() {
         toast("Data changed while generating a sample — click again to apply it.", "info");
         return;
       }
+      const undo = snapshotForUndo();
       setDataText(serialize(sample, formatRef.current));
-      toast("Sample data generated", "success");
+      toast("Sample data generated", "success", undo);
     } catch (e) {
       toast(`Couldn't generate sample: ${(e as Error).message}`, "error");
+    }
+  }
+
+  async function handleGenerateBatchSamples() {
+    const schemaResult = parse(schemaText, "json");
+    if (schemaResult.error) {
+      toast(`Schema is invalid JSON: ${schemaResult.error.message}`, "error");
+      return;
+    }
+    const countInput = window.prompt("How many sample records?", "10");
+    if (!countInput) return;
+    const count = Math.min(500, Math.max(1, Math.floor(Number(countInput))));
+    if (!Number.isFinite(count) || count < 1) {
+      toast("Enter a positive number of records", "error");
+      return;
+    }
+    const dataSnapshot = dataTextRef.current;
+    try {
+      const samples = await generateSampleArray(schemaResult.data, count);
+      if (dataTextRef.current !== dataSnapshot) {
+        toast("Data changed while generating samples — click again to apply it.", "info");
+        return;
+      }
+      const undo = snapshotForUndo();
+      setDataText(serialize(samples, formatRef.current));
+      toast(`Generated ${count} sample records`, "success", undo);
+    } catch (e) {
+      toast(`Couldn't generate samples: ${(e as Error).message}`, "error");
     }
   }
 
@@ -362,7 +417,9 @@ function App() {
     properties[key] = snippet;
     schema.properties = properties;
     schema.type = schema.type ?? "object";
+    const undo = snapshotForUndo();
     setSchemaText(JSON.stringify(schema, null, 2));
+    toast(`Inserted "${key}" field`, "success", undo);
   }
 
   function handleSaveCustomPreset(label: string, snippetJson: string) {
@@ -458,8 +515,9 @@ function App() {
       toast("Data changed before the fix finished — try again.", "info");
       return;
     }
+    const undo = snapshotForUndo();
     setDataText(fixed);
-    toast("Applied a best-effort fix — re-check the result", "success");
+    toast("Applied a best-effort fix — re-check the result", "success", undo);
   }
 
   function handleExportDocs() {
@@ -469,6 +527,15 @@ function App() {
       return;
     }
     download("schema-docs.md", generateSchemaDocs(schemaResult.data), "text/markdown");
+  }
+
+  function handleExportTypeScript() {
+    const schemaResult = parse(schemaText, "json");
+    if (schemaResult.error) {
+      toast(`Schema is invalid JSON: ${schemaResult.error.message}`, "error");
+      return;
+    }
+    download("schema.d.ts", generateTypeScriptInterface(schemaResult.data), "text/typescript");
   }
 
   function handleCopySnippet(lang: "node" | "python") {
@@ -496,8 +563,22 @@ function App() {
       toast(`Couldn't find "${propName}" in the schema's required list`, "error");
       return;
     }
+    const undo = snapshotForUndo();
     setSchemaText(JSON.stringify(updated, null, 2));
-    toast(`Made "${propName}" optional`, "success");
+    toast(`Made "${propName}" optional`, "success", undo);
+  }
+
+  function handleCoerceType(path: string, expectedType: string) {
+    const dataResult = parse(dataText, format);
+    if (dataResult.error) return;
+    const result = coerceValueAtPath(dataResult.data, path, expectedType);
+    if (!result.ok) {
+      toast(`Couldn't automatically convert that value to ${expectedType}`, "error");
+      return;
+    }
+    const undo = snapshotForUndo();
+    setDataText(serialize(result.data, format));
+    toast(`Converted value to ${expectedType}`, "success", undo);
   }
 
   function handleCopyIssueMarkdown() {
@@ -542,6 +623,7 @@ function App() {
   }
 
   function handleImportOpenApi(name: string, schemas: Record<string, unknown>) {
+    const undo = snapshotForUndo();
     setSchemaText(JSON.stringify(schemas[name], null, 2));
     const others = Object.entries(schemas)
       .filter(([n]) => n !== name)
@@ -549,7 +631,7 @@ function App() {
     setRefSchemas((prev) => [...prev.filter((r) => !Object.hasOwn(schemas, r.id)), ...others]);
     setSchemaView("code");
     setOpenApiOpen(false);
-    toast(`Imported "${name}" (${others.length} sibling schema${others.length !== 1 ? "s" : ""} added as references)`, "success");
+    toast(`Imported "${name}" (${others.length} sibling schema${others.length !== 1 ? "s" : ""} added as references)`, "success", undo);
   }
 
   function handleExportWorkspaces() {
@@ -668,10 +750,12 @@ function App() {
     { label: "Export report as PDF", run: handleExportReportPdf },
     { label: "Export field docs (Markdown)", run: handleExportDocs },
     { label: "Export field docs (PDF)", run: handleExportDocsPdf },
+    { label: "Export as TypeScript interface", run: handleExportTypeScript },
     { label: "Copy schema as Node.js snippet", run: () => handleCopySnippet("node") },
     { label: "Copy schema as Python snippet", run: () => handleCopySnippet("python") },
     { label: "Infer schema from data", run: handleInferSchema },
     { label: "Generate sample data from schema", run: handleGenerateSample },
+    ...(batchMode ? [{ label: "Generate N samples (batch)…", run: handleGenerateBatchSamples }] : []),
     { label: "Manage reference schemas…", run: () => setRefsOpen(true) },
     { label: "Import from OpenAPI…", run: () => setOpenApiOpen(true) },
     { label: `Manage custom presets (${customPresets.length})`, run: () => setCustomPresetsOpen(true) },
@@ -798,6 +882,7 @@ function App() {
                     { label: "Infer from data", onClick: handleInferSchema },
                     { label: "Export field docs (Markdown)", onClick: handleExportDocs },
                     { label: "Export field docs (PDF)", onClick: handleExportDocsPdf },
+                    { label: "Export as TypeScript interface", onClick: handleExportTypeScript },
                     { label: "Insert: Email field", onClick: () => handleInsertPreset({ type: "string", format: "email" }) },
                     { label: "Insert: UUID field", onClick: () => handleInsertPreset({ type: "string", format: "uuid" }) },
                     { label: "Insert: Date field", onClick: () => handleInsertPreset({ type: "string", format: "date" }) },
@@ -867,7 +952,14 @@ function App() {
               onDropFile={setDataText}
               onDropError={(message) => toast(message, "error")}
               liveSchema={liveSchema}
-              actions={<OverflowMenu actions={[{ label: "Generate sample from schema", onClick: handleGenerateSample }]} />}
+              actions={
+                <OverflowMenu
+                  actions={[
+                    { label: "Generate sample from schema", onClick: handleGenerateSample },
+                    ...(batchMode ? [{ label: "Generate N samples…", onClick: handleGenerateBatchSamples }] : []),
+                  ]}
+                />
+              }
             />
           </div>
         }
@@ -937,6 +1029,7 @@ function App() {
           onAutoFix={canAutoFix ? handleAutoFix : undefined}
           onCopyIssue={handleCopyIssueMarkdown}
           onAddRequired={handleMakeFieldOptional}
+          onCoerceType={handleCoerceType}
         />
       )}
 

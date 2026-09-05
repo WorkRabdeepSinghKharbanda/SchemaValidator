@@ -63,3 +63,23 @@ test("falls back to an empty array for a non-array refSchemas", () => {
   const result = importWorkspacesBackup(JSON.stringify([{ ...VALID_ENTRY, refSchemas: { bad: true } }]));
   assert.deepEqual(result[0].refSchemas, []);
 });
+
+test("falls back to 2020-12 for an invalid draft on import, instead of passing it through", () => {
+  const result = importWorkspacesBackup(JSON.stringify([{ ...VALID_ENTRY, draft: "banana" }]));
+  assert.equal(result[0].draft, "2020-12");
+});
+
+test("loadWorkspaces falls back to 2020-12 for a corrupted draft value already in storage", () => {
+  localStorage.setItem("schema-validator:workspaces", JSON.stringify([{ ...VALID_ENTRY, id: "x", savedAt: 1, draft: "banana" }]));
+  const result = loadWorkspaces();
+  assert.equal(result[0].draft, "2020-12");
+});
+
+test("loadWorkspaces drops an entry with an invalid format already in storage", () => {
+  const good = { ...VALID_ENTRY, id: "a", savedAt: 1 };
+  const bad = { ...VALID_ENTRY, id: "b", savedAt: 2, format: "protobuf" };
+  localStorage.setItem("schema-validator:workspaces", JSON.stringify([good, bad]));
+  const result = loadWorkspaces();
+  assert.equal(result.length, 1);
+  assert.equal(result[0].id, "a");
+});

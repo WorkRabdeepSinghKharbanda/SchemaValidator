@@ -1,6 +1,6 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
 import { isFormat, type Format } from "./parse";
-import { DRAFTS, type Draft } from "./validate";
+import { isDraft, type Draft } from "./validate";
 import type { ReferenceSchema } from "./refs";
 
 export interface SharedState {
@@ -29,7 +29,7 @@ export function decodeShareState(encoded: string): SharedState | null {
       schema: parsed.schema,
       data: parsed.data,
       format: parsed.format,
-      draft: (DRAFTS as string[]).includes(parsed.draft) ? parsed.draft : "2020-12",
+      draft: isDraft(parsed.draft) ? parsed.draft : "2020-12",
       refSchemas: Array.isArray(parsed.refSchemas) ? parsed.refSchemas : [],
     };
   } catch {

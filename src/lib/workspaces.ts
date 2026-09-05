@@ -1,5 +1,5 @@
 import { isFormat, type Format } from "./parse.ts";
-import type { Draft } from "./validate.ts";
+import { isDraft, type Draft } from "./validate.ts";
 import type { ReferenceSchema } from "./refs.ts";
 
 export interface Workspace {
@@ -20,9 +20,18 @@ export function loadWorkspaces(): Workspace[] {
     const raw = localStorage.getItem(KEY);
     if (!raw) return [];
     // Workspaces saved before draft/refSchemas existed won't have those fields — default them
-    // rather than let a restore silently validate under the wrong draft or missing refs.
+    // rather than let a restore silently validate under the wrong draft or missing refs. Also
+    // guards against a corrupted/hand-edited draft/format value, not just a missing one — same
+    // isFormat/isDraft guards as history.ts's loadHistory and importWorkspacesBackup below, so
+    // all three persistence surfaces (history/workspaces/share) stay in sync (see CLAUDE.md).
     const parsed = JSON.parse(raw) as Partial<Workspace>[];
-    return parsed.map((w) => ({ ...w, draft: w.draft ?? "2020-12", refSchemas: w.refSchemas ?? [] })) as Workspace[];
+    return parsed
+      .filter((w) => isFormat(w.format))
+      .map((w) => ({
+        ...w,
+        draft: isDraft(w.draft) ? w.draft : "2020-12",
+        refSchemas: Array.isArray(w.refSchemas) ? w.refSchemas : [],
+      })) as Workspace[];
   } catch {
     return [];
   }
@@ -65,7 +74,7 @@ export function importWorkspacesBackup(json: string): Workspace[] {
       ...raw,
       id: crypto.randomUUID(),
       format: raw.format,
-      draft: raw.draft ?? "2020-12",
+      draft: isDraft(raw.draft) ? raw.draft : "2020-12",
       refSchemas: Array.isArray(raw.refSchemas) ? raw.refSchemas : [],
       savedAt: raw.savedAt ?? Date.now(),
     } as Workspace;

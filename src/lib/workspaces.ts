@@ -1,6 +1,6 @@
-import type { Format } from "./parse";
-import type { Draft } from "./validate";
-import type { ReferenceSchema } from "./refs";
+import { isFormat, type Format } from "./parse.ts";
+import type { Draft } from "./validate.ts";
+import type { ReferenceSchema } from "./refs.ts";
 
 export interface Workspace {
   id: string;
@@ -54,15 +54,19 @@ export function importWorkspacesBackup(json: string): Workspace[] {
   const incoming = JSON.parse(json) as unknown;
   if (!Array.isArray(incoming)) throw new Error("Backup file must contain a list of workspaces");
   const imported = incoming.map((w) => {
-    const raw = w as Partial<Workspace>;
+    const raw = (w ?? {}) as Partial<Workspace>;
     if (typeof raw.name !== "string" || typeof raw.schema !== "string" || typeof raw.data !== "string") {
       throw new Error("Backup file has an entry missing name/schema/data");
+    }
+    if (!isFormat(raw.format)) {
+      throw new Error(`Backup file has an entry with an invalid format: ${String(raw.format)}`);
     }
     return {
       ...raw,
       id: crypto.randomUUID(),
+      format: raw.format,
       draft: raw.draft ?? "2020-12",
-      refSchemas: raw.refSchemas ?? [],
+      refSchemas: Array.isArray(raw.refSchemas) ? raw.refSchemas : [],
       savedAt: raw.savedAt ?? Date.now(),
     } as Workspace;
   });

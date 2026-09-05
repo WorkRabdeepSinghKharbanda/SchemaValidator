@@ -7,6 +7,7 @@ export interface ErrorItem {
   path?: string;
   keyword?: string;
   missingProperty?: string;
+  expectedType?: string;
 }
 
 interface ErrorGroup {
@@ -33,6 +34,7 @@ export function ErrorList({
   onAutoFix,
   onCopyIssue,
   onAddRequired,
+  onCoerceType,
 }: {
   errors: ErrorItem[];
   success: boolean | null;
@@ -42,6 +44,7 @@ export function ErrorList({
   onAutoFix?: () => void;
   onCopyIssue?: () => void;
   onAddRequired?: (path: string, propName: string) => void;
+  onCoerceType?: (path: string, expectedType: string) => void;
 }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState("");
@@ -143,6 +146,17 @@ export function ErrorList({
                           }}
                         >
                           Make optional
+                        </button>
+                      )}
+                      {onCoerceType && err.expectedType && (
+                        <button
+                          className="quick-fix-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onCoerceType(err.path ?? "", err.expectedType as string);
+                          }}
+                        >
+                          Convert to {err.expectedType}
                         </button>
                       )}
                     </div>

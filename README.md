@@ -1,53 +1,63 @@
 # Schema Validator
 
-Client-only React app that validates JSON / YAML / TOML data against a JSON Schema. No backend — everything runs in the browser.
+Client-only React app that validates JSON / YAML / TOML / XML / CSV data against a JSON Schema. No backend — everything runs in the browser.
 
 **Live:** https://schema-validator-livid.vercel.app
 
 For agent-facing architecture notes and control flow, see [CLAUDE.md](CLAUDE.md).
 
 ## Features
+
+### Core validation
 - JSON Schema validation (draft-07, 2019-09, 2020-12 — switchable) via [ajv](https://ajv.js.org/), with multi-file `$ref` resolution against uploaded reference schemas.
-- **Import from OpenAPI/Swagger** — upload a spec (JSON or YAML), pick one of its `components.schemas`/`definitions` entries to load into the schema pane; its sibling schemas are auto-added as reference schemas so `$ref`s between them resolve.
+- **Auto-detect draft** — pasting a schema with a recognized `$schema` URI switches the draft dropdown to match.
 - Syntax-only checking (no schema needed) for JSON, YAML, TOML, XML, CSV. JSON/schema text tolerates comments and trailing commas (JSONC-style).
+- **Import from OpenAPI/Swagger** — upload a spec (JSON or YAML), pick one of its `components.schemas`/`definitions` entries to load into the schema pane; its sibling schemas are auto-added as reference schemas so `$ref`s between them resolve.
+- **Batch validation mode** — validate an array of records, per-row pass/fail table with a progress bar; generate N sample records at once for batch testing; export failing rows only.
+- Real-time (debounced) validation toggle.
+
+### Editor experience
 - Monaco editor panes, resizable split, inline red-squiggle error markers at the exact line.
 - **Live autocomplete + hover docs** in the data editor — the current schema is wired into Monaco's JSON language service, so typing data gets real IntelliSense.
-- Click an error to jump the cursor to it. Repeated errors (e.g. across array items) collapse into one expandable group instead of flooding the list.
-- **Auto-fix** — one click repairs common JSON slips (trailing commas, single quotes, unquoted keys) via `jsonrepair`.
-- Real-time (debounced) validation toggle.
+- **Editor status bar** — line/column, a clickable JSON path breadcrumb (copies to clipboard), and character count.
+- Adjustable **font size**, **word wrap**, and **minimap** toggle.
+- **Focus mode** — hide the header/toolbar/ad slot for a distraction-free view.
+- File upload and drag-and-drop for schema and data.
+
+### Errors and fixes
+- Click an error to jump the cursor to it, or use "Jump to first error." Repeated errors (e.g. across array items) collapse into one expandable group instead of flooding the list.
+- **Error search** — once there are more than a handful of errors, a filter box narrows the list by path or message.
+- **Plain-English error explanations** — common ajv errors (missing required field, wrong type, pattern mismatch, etc.) get a one-line explanation, not just the raw ajv message.
+- **Quick-fixes**: "Make optional" (loosens the schema for a missing-required-field error) and "Convert to {type}" (fixes a wrong-type data value in place) — plus a one-click **auto-fix** for common JSON slips (trailing commas, single quotes, unquoted keys) via `jsonrepair`.
+- **Undo** — a one-click "Undo" on the success toast after any of the above, sample generation, preset insertion, or OpenAPI import.
+
+### Schema tools
 - **Visual schema builder** — a Code/Visual toggle above the schema editor lets you add/edit top-level fields (name, type, required, format) with no JSON typing; nested shapes are preserved when editing unrelated fields.
 - **Schema inference** — generate a draft schema from pasted data.
-- **Sample data generator** — generate example data from a schema (json-schema-faker).
-- **Format converter** — convert data between JSON/YAML/TOML in place.
-- **Shareable links** — encode schema+data+format into the URL, no backend needed.
-- **File upload and drag-and-drop** for schema and data.
-- **Saved workspaces** — name and pin a schema/data pair for reuse, separate from the last-20 auto-saved recent history. Both live in one "Saved" drawer.
-- **Batch validation mode** — validate an array of records, per-row pass/fail table with a progress bar.
-- **Diff from last valid** — after an invalid edit, compare the current data against the last version that passed.
-- **Export report** (JSON or a branded PDF) for both single and batch validation results, and **export field docs** (Markdown or PDF table generated from the schema, for sharing with non-engineers). PDFs share the app's dark theme and brand mark rather than a plain report.
-- **Schema diff** — compare the current schema against any saved workspace, line diff shown inline.
-- **Copy as code snippet** — one click copies a ready-to-run Node.js (ajv) or Python (jsonschema) script that re-runs the same check outside the browser.
-- **Plain-English error explanations** — common ajv errors (missing required field, wrong type, pattern mismatch, etc.) get a one-line explanation, not just the raw ajv message.
-- **Copy error list as a GitHub issue** — one click copies a markdown checklist of the current errors, ready to paste into a bug tracker.
 - **Plain-English schema summary** — a one-line description of what the schema expects, shown above the editors.
-- **"Make optional" quick-fix** — a missing-required-field error gets a one-click button to loosen the schema instead of hand-editing it.
-- **Keyboard shortcuts modal** — press `?` (or the toolbar button) for a cheat-sheet of every shortcut.
-- **Command palette** — press `⌘/Ctrl+K` (or the toolbar button) to search and run any action without hunting through menus.
-- **Auto theme** — theme now cycles dark → light → auto (follows your OS setting live), not just a two-way toggle.
-- **Error search** — once there are more than a handful of errors, a filter box narrows the list by path or message.
-- **Editor status bar** — line/column, JSON path breadcrumb, and character count shown under each editor pane.
-- **Workspace backup** — export all saved workspaces as one JSON file, import (merges, doesn't overwrite) on another machine or as a manual backup.
-- **Editor font size / word wrap** — adjustable from the Settings menu.
-- **Focus mode** — hide the header/toolbar/ad slot for a distraction-free view, toggled from the toolbar or command palette.
+- **Schema diff** — compare the current schema against any saved workspace, line diff shown inline.
 - **Custom preset snippets** — save your own field snippets (beyond the built-in Email/UUID/Date), insertable from the schema pane's "⋯" menu.
-- **Jump to first error** — one click from the failure heading to the first error with a known line.
-- **Minimap toggle** and **click-to-copy JSON path** in the editor status bar.
-- **Auto-detect draft** — pasting a schema with a recognized `$schema` URI switches the draft dropdown to match.
+- **Sample data generator** — generate example data from a schema (json-schema-faker).
+- **Format converter** — convert data between JSON/YAML/TOML/XML/CSV in place.
+
+### Export and sharing
+- **Export report** (JSON or a branded PDF) for both single and batch validation results, and **export field docs** (Markdown or PDF table generated from the schema, for sharing with non-engineers). PDFs share the app's dark theme and brand mark rather than a plain report.
+- **Export as TypeScript interface** — a best-effort `.d.ts` generated from the schema.
+- **Copy as code snippet** — one click copies a ready-to-run Node.js (ajv) or Python (jsonschema) script that re-runs the same check outside the browser.
+- **Copy error list as a GitHub issue** — one click copies a markdown checklist of the current errors, ready to paste into a bug tracker.
+- **Shareable links** — encode schema+data+format into the URL, no backend needed.
 - **Session file export/import** — download/upload the full session as a JSON file, for schemas too large for a URL share link.
+
+### Saving and history
+- **Saved workspaces** — name and pin a schema/data pair for reuse, separate from the last-20 auto-saved recent history. Both live in one "Saved" drawer.
 - **Pinned default workspace** — mark one saved workspace to auto-load on app start (unless a share link takes precedence).
-- **Batch table: export failing rows only** — pull just the broken records out of a large batch run.
-- **Keyboard shortcuts** — Cmd/Ctrl+Enter to validate, Cmd/Ctrl+S to save to history.
-- Dark/light theme, persisted.
+- **Workspace backup** — export all saved workspaces as one JSON file, import (merges, doesn't overwrite) on another machine or as a manual backup.
+- **Diff from last valid** — after an invalid edit, compare the current data against the last version that passed.
+
+### Productivity
+- **Command palette** — press `⌘/Ctrl+K` (or the toolbar button) to search and run any action without hunting through menus.
+- **Keyboard shortcuts** — `⌘/Ctrl+Enter` to validate, `⌘/Ctrl+S` to save to history, `⌘/Ctrl+K` for the command palette, `?` for a shortcuts cheat-sheet.
+- **Auto theme** — cycles dark → light → auto (follows your OS setting live), persisted.
 - Premium dark-glass UI, full-height layout. Pane-specific actions live in each editor's own "⋯" menu rather than one crowded toolbar — the top bar only holds cross-cutting controls (draft, settings, saved, share, theme).
 
 ## Local dev
@@ -55,6 +65,12 @@ For agent-facing architecture notes and control flow, see [CLAUDE.md](CLAUDE.md)
 npm install
 npm run dev
 ```
+
+## Tests
+```
+npm test
+```
+Runs `node --experimental-strip-types --test src/lib/*.test.ts` — Node's built-in test runner, no framework dependency. See [CLAUDE.md](CLAUDE.md)'s "Tests" section for conventions (explicit `.ts`/`.js` import extensions, a `localStorage` shim for files that touch it).
 
 ## Deploy
 ```

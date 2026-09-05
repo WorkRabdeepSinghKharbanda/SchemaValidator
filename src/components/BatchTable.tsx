@@ -8,13 +8,16 @@ export function BatchTable({
   rows,
   onExportJson,
   onExportPdf,
+  onExportFailingJson,
 }: {
   rows: BatchRow[];
   onExportJson: () => void;
   onExportPdf: () => void;
+  onExportFailingJson: () => void;
 }) {
   const passCount = rows.filter((r) => r.valid).length;
   const passPercent = rows.length ? Math.round((passCount / rows.length) * 100) : 0;
+  const failCount = rows.length - passCount;
 
   return (
     <div className="batch-table-wrap">
@@ -23,6 +26,11 @@ export function BatchTable({
           {passCount} / {rows.length} records valid ({passPercent}%)
         </span>
         <span className="result-actions">
+          {failCount > 0 && (
+            <button className="export-btn" onClick={onExportFailingJson}>
+              Export failing only ({failCount})
+            </button>
+          )}
           <button className="export-btn" onClick={onExportJson}>
             Export JSON
           </button>

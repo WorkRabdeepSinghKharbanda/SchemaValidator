@@ -985,6 +985,24 @@ header p {
   background: var(--bg-panel);
 }
 
+.overflow-menu-file-label {
+  display: block;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text);
+  padding: 8px 12px;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.overflow-menu-file-label:hover {
+  background: var(--bg-panel);
+}
+
+.overflow-menu-file-label input {
+  display: none;
+}
+
 .overflow-select-row {
   display: flex;
   flex-direction: column;

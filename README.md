@@ -42,6 +42,10 @@ For agent-facing architecture notes and control flow, see [CLAUDE.md](CLAUDE.md)
 - **Custom preset snippets** — save your own field snippets (beyond the built-in Email/UUID/Date), insertable from the schema pane's "⋯" menu.
 - **Jump to first error** — one click from the failure heading to the first error with a known line.
 - **Minimap toggle** and **click-to-copy JSON path** in the editor status bar.
+- **Auto-detect draft** — pasting a schema with a recognized `$schema` URI switches the draft dropdown to match.
+- **Session file export/import** — download/upload the full session as a JSON file, for schemas too large for a URL share link.
+- **Pinned default workspace** — mark one saved workspace to auto-load on app start (unless a share link takes precedence).
+- **Batch table: export failing rows only** — pull just the broken records out of a large batch run.
 - **Keyboard shortcuts** — Cmd/Ctrl+Enter to validate, Cmd/Ctrl+S to save to history.
 - Dark/light theme, persisted.
 - Premium dark-glass UI, full-height layout. Pane-specific actions live in each editor's own "⋯" menu rather than one crowded toolbar — the top bar only holds cross-cutting controls (draft, settings, saved, share, theme).

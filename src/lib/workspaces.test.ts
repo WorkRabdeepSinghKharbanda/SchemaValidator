@@ -1,6 +1,6 @@
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { importWorkspacesBackup, loadWorkspaces } from "./workspaces.ts";
+import { importWorkspacesBackup, loadWorkspaces, saveWorkspace, togglePinnedWorkspace } from "./workspaces.ts";
 
 // This file runs under plain Node (node:test), which has no localStorage global — a minimal
 // in-memory shim is enough to exercise workspaces.ts's real read/write path without a browser.
@@ -20,7 +20,7 @@ class MemoryStorage {
 
 beforeEach(() => (globalThis as unknown as { localStorage: MemoryStorage }).localStorage.clear());
 
-const VALID_ENTRY = { name: "test", schema: "{}", data: "{}", format: "json" };
+const VALID_ENTRY = { name: "test", schema: "{}", data: "{}", format: "json" as const };
 
 test("imports a well-formed backup", () => {
   const result = importWorkspacesBackup(JSON.stringify([VALID_ENTRY]));
@@ -82,4 +82,26 @@ test("loadWorkspaces drops an entry with an invalid format already in storage", 
   const result = loadWorkspaces();
   assert.equal(result.length, 1);
   assert.equal(result[0].id, "a");
+});
+
+test("togglePinnedWorkspace pins exactly one workspace, un-pinning any previous one", () => {
+  saveWorkspace({ ...VALID_ENTRY, name: "first", draft: "2020-12", refSchemas: [] });
+  saveWorkspace({ ...VALID_ENTRY, name: "second", draft: "2020-12", refSchemas: [] });
+  const [second, first] = loadWorkspaces();
+
+  const afterFirstPin = togglePinnedWorkspace(first.id);
+  assert.equal(afterFirstPin.find((w) => w.id === first.id)?.pinned, true);
+  assert.equal(afterFirstPin.find((w) => w.id === second.id)?.pinned, false);
+
+  const afterSwitchingPin = togglePinnedWorkspace(second.id);
+  assert.equal(afterSwitchingPin.find((w) => w.id === first.id)?.pinned, false);
+  assert.equal(afterSwitchingPin.find((w) => w.id === second.id)?.pinned, true);
+});
+
+test("togglePinnedWorkspace un-pins when called again on the same workspace", () => {
+  saveWorkspace({ ...VALID_ENTRY, draft: "2020-12", refSchemas: [] });
+  const [{ id }] = loadWorkspaces();
+  togglePinnedWorkspace(id);
+  const result = togglePinnedWorkspace(id);
+  assert.equal(result.find((w) => w.id === id)?.pinned, false);
 });

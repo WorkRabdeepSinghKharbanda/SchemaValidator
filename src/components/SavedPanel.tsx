@@ -12,6 +12,7 @@ export function SavedPanel({
   workspaces,
   onRestoreWorkspace,
   onRemoveWorkspace,
+  onTogglePinned,
   onExportWorkspaces,
   onImportWorkspaces,
 }: {
@@ -24,6 +25,7 @@ export function SavedPanel({
   workspaces: Workspace[];
   onRestoreWorkspace: (w: Workspace) => void;
   onRemoveWorkspace: (id: string) => void;
+  onTogglePinned: (id: string) => void;
   onExportWorkspaces: () => void;
   onImportWorkspaces: (file: File) => void;
 }) {
@@ -84,11 +86,22 @@ export function SavedPanel({
                 <li key={w.id}>
                   <button className="history-entry" onClick={() => onRestoreWorkspace(w)}>
                     <span className="history-meta">
-                      <span className="history-format">{w.name}</span>
+                      <span className="history-format">
+                        {w.pinned && <span title="Loads automatically on start">📌 </span>}
+                        {w.name}
+                      </span>
                       <span className="history-time">
                         {w.format.toUpperCase()} · {new Date(w.savedAt).toLocaleDateString()}
                       </span>
                     </span>
+                  </button>
+                  <button
+                    className="history-remove"
+                    onClick={() => onTogglePinned(w.id)}
+                    title={w.pinned ? "Unpin (stop auto-loading on start)" : "Pin (auto-load this on start)"}
+                    aria-label={w.pinned ? `Unpin ${w.name}` : `Pin ${w.name}`}
+                  >
+                    {w.pinned ? "📌" : "📍"}
                   </button>
                   <button className="history-remove" onClick={() => onRemoveWorkspace(w.id)} title="Remove" aria-label={`Remove ${w.name}`}>
                     ✕

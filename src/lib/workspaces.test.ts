@@ -74,3 +74,12 @@ test("loadWorkspaces falls back to 2020-12 for a corrupted draft value already i
   const result = loadWorkspaces();
   assert.equal(result[0].draft, "2020-12");
 });
+
+test("loadWorkspaces drops an entry with an invalid format already in storage", () => {
+  const good = { ...VALID_ENTRY, id: "a", savedAt: 1 };
+  const bad = { ...VALID_ENTRY, id: "b", savedAt: 2, format: "protobuf" };
+  localStorage.setItem("schema-validator:workspaces", JSON.stringify([good, bad]));
+  const result = loadWorkspaces();
+  assert.equal(result.length, 1);
+  assert.equal(result[0].id, "a");
+});

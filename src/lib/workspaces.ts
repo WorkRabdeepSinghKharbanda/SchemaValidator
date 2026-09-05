@@ -21,13 +21,17 @@ export function loadWorkspaces(): Workspace[] {
     if (!raw) return [];
     // Workspaces saved before draft/refSchemas existed won't have those fields — default them
     // rather than let a restore silently validate under the wrong draft or missing refs. Also
-    // guards against a corrupted/hand-edited draft value, not just a missing one.
+    // guards against a corrupted/hand-edited draft/format value, not just a missing one — same
+    // isFormat/isDraft guards as history.ts's loadHistory and importWorkspacesBackup below, so
+    // all three persistence surfaces (history/workspaces/share) stay in sync (see CLAUDE.md).
     const parsed = JSON.parse(raw) as Partial<Workspace>[];
-    return parsed.map((w) => ({
-      ...w,
-      draft: isDraft(w.draft) ? w.draft : "2020-12",
-      refSchemas: Array.isArray(w.refSchemas) ? w.refSchemas : [],
-    })) as Workspace[];
+    return parsed
+      .filter((w) => isFormat(w.format))
+      .map((w) => ({
+        ...w,
+        draft: isDraft(w.draft) ? w.draft : "2020-12",
+        refSchemas: Array.isArray(w.refSchemas) ? w.refSchemas : [],
+      })) as Workspace[];
   } catch {
     return [];
   }

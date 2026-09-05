@@ -17,12 +17,13 @@ import { serialize } from "./lib/serialize";
 import { validate, type Draft } from "./lib/validate";
 import { inferSchema } from "./lib/infer";
 import { generateSample } from "./lib/generate";
-import { buildShareUrl, readShareStateFromUrl } from "./lib/share";
+import { buildShareUrl, readShareStateFromUrl, exportSessionFile, importSessionFile } from "./lib/share";
 import { loadHistory, saveToHistory, clearHistory, removeHistoryEntry, type HistoryEntry } from "./lib/history";
 import {
   loadWorkspaces,
   saveWorkspace,
   removeWorkspace,
+  togglePinnedWorkspace,
   exportWorkspacesBackup,
   importWorkspacesBackup,
   type Workspace,
@@ -33,6 +34,7 @@ import { tryAutoFix } from "./lib/autofix";
 import { exportValidationReportPdf, exportBatchReportPdf, exportSchemaDocsPdf } from "./lib/pdf";
 import { refsCacheKey, type ReferenceSchema } from "./lib/refs";
 import { loadCustomPresets, saveCustomPreset, removeCustomPreset, type CustomPreset } from "./lib/customPresets";
+import { detectDraftFromSchema } from "./lib/detectDraft";
 import { generateNodeSnippet, generatePythonSnippet } from "./lib/snippet";
 import { generateIssueMarkdown } from "./lib/issueMarkdown";
 import { makeFieldOptional } from "./lib/requiredFix";
@@ -76,6 +78,9 @@ function download(filename: string, content: string, mime: string) {
 
 function App() {
   const shared = useMemo(() => readShareStateFromUrl(), []);
+  // A share link always wins (it's an explicit, just-clicked intent) — only fall back to the
+  // pinned workspace, if any, when there isn't one.
+  const pinnedWorkspace = useMemo(() => (shared ? undefined : loadWorkspaces().find((w) => w.pinned)), [shared]);
 
   const [themePref, setThemePref] = useState<ThemePref>(() => {
     const stored = localStorage.getItem("theme");
@@ -87,11 +92,11 @@ function App() {
   const [wordWrap, setWordWrap] = useState(() => localStorage.getItem("wordWrap") === "true");
   const [focusMode, setFocusMode] = useState(false);
   const [realtime, setRealtime] = useState(false);
-  const [draft, setDraft] = useState<Draft>(shared?.draft ?? "2020-12");
+  const [draft, setDraft] = useState<Draft>(shared?.draft ?? pinnedWorkspace?.draft ?? "2020-12");
   const [batchMode, setBatchMode] = useState(false);
-  const [format, setFormat] = useState<Format>(shared?.format ?? "json");
-  const [schemaText, setSchemaText] = useState(shared?.schema ?? SAMPLE_SCHEMA);
-  const [dataText, setDataText] = useState(shared?.data ?? SAMPLE_DATA);
+  const [format, setFormat] = useState<Format>(shared?.format ?? pinnedWorkspace?.format ?? "json");
+  const [schemaText, setSchemaText] = useState(shared?.schema ?? pinnedWorkspace?.schema ?? SAMPLE_SCHEMA);
+  const [dataText, setDataText] = useState(shared?.data ?? pinnedWorkspace?.data ?? SAMPLE_DATA);
   const [schemaView, setSchemaView] = useState<"code" | "visual">("code");
 
   const [success, setSuccess] = useState<boolean | null>(null);
@@ -104,7 +109,7 @@ function App() {
   const [showDiff, setShowDiff] = useState(false);
   const [schemaDiffTarget, setSchemaDiffTarget] = useState("");
 
-  const [refSchemas, setRefSchemas] = useState<ReferenceSchema[]>(shared?.refSchemas ?? []);
+  const [refSchemas, setRefSchemas] = useState<ReferenceSchema[]>(shared?.refSchemas ?? pinnedWorkspace?.refSchemas ?? []);
   const [refsOpen, setRefsOpen] = useState(false);
   const [openApiOpen, setOpenApiOpen] = useState(false);
   const [customPresetsOpen, setCustomPresetsOpen] = useState(false);
@@ -272,6 +277,10 @@ function App() {
   formatRef.current = format;
   const dataTextRef = useRef(dataText);
   dataTextRef.current = dataText;
+  // Set right before a restore/import sets its own explicit `draft`, so the auto-detect effect
+  // below (which would otherwise immediately re-fire off the new schemaText and silently flip
+  // that just-restored draft again) skips exactly one cycle instead of fighting the restore.
+  const skipNextDraftDetectRef = useRef(false);
 
   useEffect(() => {
     function onKeydown(e: KeyboardEvent) {
@@ -386,6 +395,32 @@ function App() {
     );
   }
 
+  function handleExportSessionFile() {
+    const json = exportSessionFile({ schema: schemaText, data: dataText, format, draft, refSchemas });
+    download("schema-validator-session.json", json, "application/json");
+  }
+
+  function handleImportSessionFile(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const state = importSessionFile(String(reader.result ?? ""));
+        skipNextDraftDetectRef.current = true;
+        setSchemaText(state.schema);
+        setDataText(state.data);
+        setFormat(state.format);
+        setDraft(state.draft);
+        setRefSchemas(state.refSchemas);
+        clearValidationState();
+        toast("Imported session file", "success");
+      } catch (e) {
+        toast(`Couldn't import session file: ${(e as Error).message}`, "error");
+      }
+    };
+    reader.onerror = () => toast(`Couldn't read "${file.name}": ${reader.error?.message ?? "unknown error"}`, "error");
+    reader.readAsText(file);
+  }
+
   function handleExportReportJson() {
     const report = { valid: success, format, draft, errors, timestamp: new Date().toISOString() };
     download("validation-report.json", JSON.stringify(report, null, 2), "application/json");
@@ -400,6 +435,11 @@ function App() {
   function handleExportBatchJson() {
     if (!batchRows) return;
     download("batch-validation-report.json", JSON.stringify(batchRows, null, 2), "application/json");
+  }
+
+  function handleExportFailingBatchJson() {
+    if (!batchRows) return;
+    download("batch-validation-failing.json", JSON.stringify(batchRows.filter((r) => !r.valid), null, 2), "application/json");
   }
 
   function handleExportBatchPdf() {
@@ -558,6 +598,7 @@ function App() {
   }
 
   function handleRestoreHistory(entry: HistoryEntry) {
+    skipNextDraftDetectRef.current = true;
     setSchemaText(entry.schema);
     setDataText(entry.data);
     setFormat(entry.format);
@@ -569,6 +610,7 @@ function App() {
   }
 
   function handleRestoreWorkspace(w: Workspace) {
+    skipNextDraftDetectRef.current = true;
     setSchemaText(w.schema);
     setDataText(w.data);
     setFormat(w.format);
@@ -585,6 +627,27 @@ function App() {
   // schema" apart from "unparseable schema" — conflating them let handleSchemaFieldsChange
   // silently rebuild (discard) a broken schema from an empty `{}` base. See handleSchemaFieldsChange.
   const schemaParseResult = useMemo(() => parse(schemaText, "json"), [schemaText]);
+  const detectedDraft = useMemo(
+    () => (schemaParseResult.error ? undefined : detectDraftFromSchema(schemaParseResult.data)),
+    [schemaParseResult],
+  );
+  // Auto-switches the draft dropdown to match the schema's own "$schema" URI. Keyed on
+  // `detectedDraft` (not `schemaText`) so this only re-fires when the *detected draft itself*
+  // changes — if the user manually overrides the dropdown afterward without touching the schema
+  // text again, this won't fight them back to the detected value on the next render. Restoring
+  // history/a workspace/a session file sets `skipNextDraftDetectRef` first specifically so this
+  // doesn't immediately re-derive (and silently override) that restore's own explicit `draft`.
+  useEffect(() => {
+    if (skipNextDraftDetectRef.current) {
+      skipNextDraftDetectRef.current = false;
+      return;
+    }
+    if (detectedDraft && detectedDraft !== draft) {
+      setDraft(detectedDraft);
+      toast(`Detected "$schema" — switched draft to ${detectedDraft}`, "info");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detectedDraft]);
   const schemaSummary = useMemo(
     () => (schemaParseResult.error ? undefined : summarizeSchema(schemaParseResult.data)),
     [schemaParseResult],
@@ -615,6 +678,7 @@ function App() {
     { label: "Cycle theme (dark / light / auto)", run: () => setThemePref(nextThemePref) },
     { label: `Toggle focus mode (currently ${focusMode ? "on" : "off"})`, run: () => setFocusMode((v) => !v) },
     { label: "Export saved workspaces as backup", run: handleExportWorkspaces },
+    { label: "Export session as file", run: handleExportSessionFile },
     { label: "Show keyboard shortcuts", hint: "?", run: () => setShortcutsOpen(true) },
   ];
 
@@ -638,6 +702,7 @@ function App() {
         workspaces={workspaces}
         onRestoreWorkspace={handleRestoreWorkspace}
         onRemoveWorkspace={(id) => setWorkspaces(removeWorkspace(id))}
+        onTogglePinned={(id) => setWorkspaces(togglePinnedWorkspace(id))}
         onExportWorkspaces={handleExportWorkspaces}
         onImportWorkspaces={handleImportWorkspaces}
       />
@@ -745,24 +810,39 @@ function App() {
                     { label: "Import from OpenAPI…", onClick: () => setOpenApiOpen(true) },
                     { label: "Copy as Node.js snippet", onClick: () => handleCopySnippet("node") },
                     { label: "Copy as Python snippet", onClick: () => handleCopySnippet("python") },
+                    { label: "Export session file", onClick: handleExportSessionFile },
                   ]}
                   extra={
-                    workspaces.length > 0 && (
-                      <label className="overflow-select-row">
-                        Compare with
-                        <select
-                          value={schemaDiffTarget}
-                          onChange={(e) => setSchemaDiffTarget(e.target.value)}
-                        >
-                          <option value="">Choose saved schema…</option>
-                          {workspaces.map((w) => (
-                            <option key={w.id} value={w.id}>
-                              {w.name}
-                            </option>
-                          ))}
-                        </select>
+                    <>
+                      <label className="overflow-menu-file-label">
+                        Import session file…
+                        <input
+                          type="file"
+                          accept="application/json"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleImportSessionFile(file);
+                            e.target.value = "";
+                          }}
+                        />
                       </label>
-                    )
+                      {workspaces.length > 0 && (
+                        <label className="overflow-select-row">
+                          Compare with
+                          <select
+                            value={schemaDiffTarget}
+                            onChange={(e) => setSchemaDiffTarget(e.target.value)}
+                          >
+                            <option value="">Choose saved schema…</option>
+                            {workspaces.map((w) => (
+                              <option key={w.id} value={w.id}>
+                                {w.name}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
+                    </>
                   }
                 />
               </>
@@ -839,7 +919,14 @@ function App() {
       )}
 
       {batchMode ? (
-        batchRows && <BatchTable rows={batchRows} onExportJson={handleExportBatchJson} onExportPdf={handleExportBatchPdf} />
+        batchRows && (
+          <BatchTable
+            rows={batchRows}
+            onExportJson={handleExportBatchJson}
+            onExportPdf={handleExportBatchPdf}
+            onExportFailingJson={handleExportFailingBatchJson}
+          />
+        )
       ) : (
         <ErrorList
           errors={errors}

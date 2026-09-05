@@ -11,6 +11,7 @@ export interface Workspace {
   draft: Draft;
   refSchemas: ReferenceSchema[];
   savedAt: number;
+  pinned?: boolean;
 }
 
 const KEY = "schema-validator:workspaces";
@@ -47,6 +48,17 @@ export function saveWorkspace(entry: Omit<Workspace, "id" | "savedAt">): Workspa
 
 export function removeWorkspace(id: string): Workspace[] {
   const updated = loadWorkspaces().filter((w) => w.id !== id);
+  localStorage.setItem(KEY, JSON.stringify(updated));
+  return updated;
+}
+
+// At most one workspace is pinned at a time — pinning a new one un-pins whatever was pinned
+// before, so "the pinned workspace" is always unambiguous for auto-load-on-start.
+export function togglePinnedWorkspace(id: string): Workspace[] {
+  const workspaces = loadWorkspaces();
+  const target = workspaces.find((w) => w.id === id);
+  const pinning = !target?.pinned;
+  const updated = workspaces.map((w) => ({ ...w, pinned: w.id === id && pinning }));
   localStorage.setItem(KEY, JSON.stringify(updated));
   return updated;
 }

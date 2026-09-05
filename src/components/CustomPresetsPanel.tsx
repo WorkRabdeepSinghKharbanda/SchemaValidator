@@ -72,7 +72,7 @@ export function CustomPresetsPanel({
                   <span className="history-format">{p.label}</span>
                 </span>
               </button>
-              <button className="history-remove" onClick={() => onRemove(p.id)} title="Remove" aria-label={`Remove ${p.label}`}>
+              <button className="history-icon-btn" onClick={() => onRemove(p.id)} title="Remove" aria-label={`Remove ${p.label}`}>
                 ✕
               </button>
             </li>

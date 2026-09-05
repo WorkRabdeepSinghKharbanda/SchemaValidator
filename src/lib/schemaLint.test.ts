@@ -12,6 +12,11 @@ test("stays quiet when additionalProperties is explicitly set", () => {
   assert.ok(!hints.some((h) => h.message.includes("additionalProperties")));
 });
 
+test("stays quiet when patternProperties is used instead of additionalProperties", () => {
+  const hints = lintSchema({ type: "object", properties: { name: { type: "string" } }, patternProperties: { "^x-": {} } });
+  assert.ok(!hints.some((h) => h.message.includes("additionalProperties")));
+});
+
 test("flags a required property that isn't declared", () => {
   const hints = lintSchema({ type: "object", properties: { name: { type: "string" } }, required: ["name", "age"], additionalProperties: true });
   assert.ok(hints.some((h) => h.message.includes('"age"') && h.severity === "warn"));

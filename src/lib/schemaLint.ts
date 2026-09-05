@@ -12,6 +12,7 @@ interface SchemaLike {
   properties?: Record<string, SchemaLike>;
   required?: string[];
   additionalProperties?: unknown;
+  patternProperties?: unknown;
   enum?: unknown[];
   items?: SchemaLike;
   $ref?: string;
@@ -27,7 +28,9 @@ function lintNode(schema: SchemaLike, path: string, depth: number, hints: LintHi
   const isObjectish = type === "object" || (!type && schema.properties);
 
   if (isObjectish && schema.properties) {
-    if (!("additionalProperties" in schema)) {
+    // patternProperties is itself a way of constraining extra properties (by regex) — don't
+    // flag "additionalProperties unset" on a schema that's already using that instead.
+    if (!("additionalProperties" in schema) && !("patternProperties" in schema)) {
       hints.push({
         path,
         severity: "info",

@@ -82,6 +82,7 @@ export function ErrorList({
     setPrevErrors(errors);
     setFilter("");
     setActiveIndex(0);
+    setRegexTesterOpen(new Set());
   }
 
   if (success === null) return null;
@@ -177,6 +178,7 @@ export function ErrorList({
           onChange={(e) => {
             setFilter(e.target.value);
             setActiveIndex(0);
+            setRegexTesterOpen(new Set());
           }}
         />
       )}
@@ -253,14 +255,19 @@ export function ErrorList({
               {isGroup && (
                 <button
                   className="group-toggle"
-                  onClick={() =>
+                  onClick={() => {
+                    // Expanding/collapsing a group shifts every later row's flat index — reset
+                    // the index-keyed state rather than risk a stale index pointing at a
+                    // different row after reindexing (same reasoning as the filter/errors reset).
+                    setActiveIndex(0);
+                    setRegexTesterOpen(new Set());
                     setExpanded((prev) => {
                       const next = new Set(prev);
                       if (next.has(group.message)) next.delete(group.message);
                       else next.add(group.message);
                       return next;
-                    })
-                  }
+                    });
+                  }}
                 >
                   {isOpen ? "Show less" : `+ ${group.items.length - 1} more with this error`}
                 </button>

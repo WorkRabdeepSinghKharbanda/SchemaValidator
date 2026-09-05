@@ -37,10 +37,15 @@ export function CustomPresetsPanel({
       onError("Give the preset a name first");
       return;
     }
+    let parsed: unknown;
     try {
-      JSON.parse(snippet);
+      parsed = JSON.parse(snippet);
     } catch (e) {
       onError(`Snippet isn't valid JSON: ${(e as Error).message}`);
+      return;
+    }
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+      onError("Snippet must be a JSON object (a field schema), not a plain value or array");
       return;
     }
     onSave(label.trim(), snippet);

@@ -103,6 +103,18 @@ export function EditorPane({
 
   useEffect(() => () => clearTimeout(copyTimeoutRef.current), []);
 
+  // Reset the "Copied!" flash the moment the cursor moves to a different path — without this,
+  // moving within the 1.2s window left the confirmation text attached to the wrong location
+  // (same "adjust state during render" pattern ErrorList's filter-reset uses, no extra effect).
+  const [prevJsonPath, setPrevJsonPath] = useState(jsonPath);
+  if (jsonPath !== prevJsonPath) {
+    setPrevJsonPath(jsonPath);
+    if (pathCopied) {
+      clearTimeout(copyTimeoutRef.current);
+      setPathCopied(false);
+    }
+  }
+
   function handleCopyPath() {
     if (!jsonPath) return;
     navigator.clipboard.writeText(jsonPath).then(() => {

@@ -336,6 +336,10 @@ function App() {
   }
 
   function handleInsertPreset(snippet: unknown) {
+    if (typeof snippet !== "object" || snippet === null || Array.isArray(snippet)) {
+      toast("Preset must be a JSON object (a field schema)", "error");
+      return;
+    }
     const schemaResult = parse(schemaText, "json");
     if (schemaResult.error || typeof schemaResult.data !== "object" || schemaResult.data === null) {
       toast("Fix the schema JSON before inserting a preset", "error");

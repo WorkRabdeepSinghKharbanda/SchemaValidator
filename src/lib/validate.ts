@@ -84,6 +84,7 @@ export interface ValidationError {
   line?: number;
   missingProperty?: string;
   expectedType?: string;
+  pattern?: string;
 }
 
 export interface ValidationOutcome {
@@ -132,6 +133,7 @@ export function validate(data: unknown, schema: unknown, options: ValidateOption
     // single expected type, not a pick-one-of-several list.
     const rawExpectedType = err.keyword === "type" ? (err.params as { type?: string | string[] }).type : undefined;
     const expectedType = typeof rawExpectedType === "string" ? rawExpectedType : undefined;
+    const pattern = err.keyword === "pattern" ? (err.params as { pattern?: string }).pattern : undefined;
     return {
       path,
       message: err.message ?? "invalid",
@@ -139,6 +141,7 @@ export function validate(data: unknown, schema: unknown, options: ValidateOption
       ...(line ? { line } : {}),
       ...(missingProperty ? { missingProperty } : {}),
       ...(expectedType ? { expectedType } : {}),
+      ...(pattern ? { pattern } : {}),
     };
   });
   return { valid: false, errors };

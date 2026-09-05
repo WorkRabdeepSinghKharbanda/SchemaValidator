@@ -9,11 +9,13 @@ export function BatchTable({
   onExportJson,
   onExportPdf,
   onExportFailingJson,
+  onExportCsv,
 }: {
   rows: BatchRow[];
   onExportJson: () => void;
   onExportPdf: () => void;
   onExportFailingJson: () => void;
+  onExportCsv: () => void;
 }) {
   const passCount = rows.filter((r) => r.valid).length;
   const passPercent = rows.length ? Math.round((passCount / rows.length) * 100) : 0;
@@ -33,6 +35,9 @@ export function BatchTable({
           )}
           <button className="export-btn" onClick={onExportJson}>
             Export JSON
+          </button>
+          <button className="export-btn" onClick={onExportCsv}>
+            Export CSV
           </button>
           <button className="export-btn" onClick={onExportPdf}>
             Export PDF

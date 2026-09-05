@@ -19,6 +19,12 @@ export function Toolbar({
   onSaveAs,
   onOpenShortcuts,
   onOpenPalette,
+  editorFontSize,
+  onEditorFontSizeChange,
+  wordWrap,
+  onToggleWordWrap,
+  focusMode,
+  onToggleFocusMode,
 }: {
   themePref: ThemePref;
   onToggleTheme: () => void;
@@ -33,6 +39,12 @@ export function Toolbar({
   onSaveAs: () => void;
   onOpenShortcuts: () => void;
   onOpenPalette: () => void;
+  editorFontSize: number;
+  onEditorFontSizeChange: (size: number) => void;
+  wordWrap: boolean;
+  onToggleWordWrap: () => void;
+  focusMode: boolean;
+  onToggleFocusMode: () => void;
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -61,6 +73,20 @@ export function Toolbar({
                 <input type="checkbox" checked={batchMode} onChange={onToggleBatchMode} />
                 Batch mode (validate an array)
               </label>
+              <label className="toggle">
+                <input type="checkbox" checked={wordWrap} onChange={onToggleWordWrap} />
+                Wrap long lines
+              </label>
+              <label className="toggle settings-font-size">
+                Editor font size
+                <select value={editorFontSize} onChange={(e) => onEditorFontSizeChange(Number(e.target.value))}>
+                  {[11, 12, 13, 14, 16, 18, 20].map((size) => (
+                    <option key={size} value={size}>
+                      {size}px
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
           )}
         </div>
@@ -78,6 +104,9 @@ export function Toolbar({
         </button>
         <button onClick={onOpenPalette} title="Command palette (⌘K)" aria-label="Command palette">
           ⌘K
+        </button>
+        <button onClick={onToggleFocusMode} title="Toggle focus mode" aria-label="Toggle focus mode" aria-pressed={focusMode}>
+          ⛶
         </button>
         <button onClick={onOpenShortcuts} title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">
           ?

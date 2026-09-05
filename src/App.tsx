@@ -18,7 +18,14 @@ import { inferSchema } from "./lib/infer";
 import { generateSample } from "./lib/generate";
 import { buildShareUrl, readShareStateFromUrl } from "./lib/share";
 import { loadHistory, saveToHistory, clearHistory, removeHistoryEntry, type HistoryEntry } from "./lib/history";
-import { loadWorkspaces, saveWorkspace, removeWorkspace, type Workspace } from "./lib/workspaces";
+import {
+  loadWorkspaces,
+  saveWorkspace,
+  removeWorkspace,
+  exportWorkspacesBackup,
+  importWorkspacesBackup,
+  type Workspace,
+} from "./lib/workspaces";
 import { schemaToFields, fieldsToSchema, type SchemaField } from "./lib/schemaFields";
 import { generateSchemaDocs } from "./lib/docgen";
 import { tryAutoFix } from "./lib/autofix";
@@ -74,6 +81,9 @@ function App() {
   });
   const [systemPrefersDark, setSystemPrefersDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
   const theme = resolveTheme(themePref, systemPrefersDark);
+  const [editorFontSize, setEditorFontSize] = useState(() => Number(localStorage.getItem("editorFontSize")) || 13);
+  const [wordWrap, setWordWrap] = useState(() => localStorage.getItem("wordWrap") === "true");
+  const [focusMode, setFocusMode] = useState(false);
   const [realtime, setRealtime] = useState(false);
   const [draft, setDraft] = useState<Draft>(shared?.draft ?? "2020-12");
   const [batchMode, setBatchMode] = useState(false);
@@ -110,6 +120,14 @@ function App() {
   useEffect(() => {
     localStorage.setItem("theme", themePref);
   }, [themePref]);
+
+  useEffect(() => {
+    localStorage.setItem("editorFontSize", String(editorFontSize));
+  }, [editorFontSize]);
+
+  useEffect(() => {
+    localStorage.setItem("wordWrap", String(wordWrap));
+  }, [wordWrap]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
@@ -459,6 +477,25 @@ function App() {
     toast(`Imported "${name}" (${others.length} sibling schema${others.length !== 1 ? "s" : ""} added as references)`, "success");
   }
 
+  function handleExportWorkspaces() {
+    download("schema-validator-workspaces.json", exportWorkspacesBackup(), "application/json");
+  }
+
+  function handleImportWorkspaces(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const updated = importWorkspacesBackup(String(reader.result ?? ""));
+        setWorkspaces(updated);
+        toast("Imported workspace backup", "success");
+      } catch (e) {
+        toast(`Couldn't import backup: ${(e as Error).message}`, "error");
+      }
+    };
+    reader.onerror = () => toast(`Couldn't read "${file.name}": ${reader.error?.message ?? "unknown error"}`, "error");
+    reader.readAsText(file);
+  }
+
   function handleSaveAs() {
     const name = window.prompt("Name this workspace:");
     if (!name) return;
@@ -520,12 +557,19 @@ function App() {
     { label: "Manage reference schemas…", run: () => setRefsOpen(true) },
     { label: "Import from OpenAPI…", run: () => setOpenApiOpen(true) },
     { label: "Cycle theme (dark / light / auto)", run: () => setThemePref(nextThemePref) },
+    { label: `Toggle focus mode (currently ${focusMode ? "on" : "off"})`, run: () => setFocusMode((v) => !v) },
+    { label: "Export saved workspaces as backup", run: handleExportWorkspaces },
     { label: "Show keyboard shortcuts", hint: "?", run: () => setShortcutsOpen(true) },
   ];
 
   return (
-    <div className="app">
+    <div className={`app ${focusMode ? "focus-mode" : ""}`}>
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
+      {focusMode && (
+        <button className="focus-exit-btn" onClick={() => setFocusMode(false)} title="Exit focus mode">
+          ⛶ Exit focus mode
+        </button>
+      )}
       <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       {paletteOpen && <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} commands={commands} />}
       <SavedPanel
@@ -538,6 +582,8 @@ function App() {
         workspaces={workspaces}
         onRestoreWorkspace={handleRestoreWorkspace}
         onRemoveWorkspace={(id) => setWorkspaces(removeWorkspace(id))}
+        onExportWorkspaces={handleExportWorkspaces}
+        onImportWorkspaces={handleImportWorkspaces}
       />
       <ReferencesPanel
         open={refsOpen}
@@ -586,6 +632,12 @@ function App() {
         onSaveAs={handleSaveAs}
         onOpenShortcuts={() => setShortcutsOpen(true)}
         onOpenPalette={() => setPaletteOpen(true)}
+        editorFontSize={editorFontSize}
+        onEditorFontSizeChange={setEditorFontSize}
+        wordWrap={wordWrap}
+        onToggleWordWrap={() => setWordWrap((v) => !v)}
+        focusMode={focusMode}
+        onToggleFocusMode={() => setFocusMode((v) => !v)}
       />
 
       {schemaSummary && <p className="schema-summary">{schemaSummary}</p>}
@@ -599,6 +651,8 @@ function App() {
             value={schemaText}
             onChange={setSchemaText}
             theme={theme}
+            fontSize={editorFontSize}
+            wordWrap={wordWrap}
             path="schema.json"
             onDropFile={setSchemaText}
             onDropError={(message) => toast(message, "error")}
@@ -659,6 +713,8 @@ function App() {
               jumpToLine={jumpLine}
               markers={dataMarkers}
               theme={theme}
+              fontSize={editorFontSize}
+              wordWrap={wordWrap}
               path="data.json"
               onDropFile={setDataText}
               onDropError={(message) => toast(message, "error")}

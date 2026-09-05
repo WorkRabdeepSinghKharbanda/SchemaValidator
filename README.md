@@ -35,7 +35,10 @@ For agent-facing architecture notes and control flow, see [CLAUDE.md](CLAUDE.md)
 - **Command palette** — press `⌘/Ctrl+K` (or the toolbar button) to search and run any action without hunting through menus.
 - **Auto theme** — theme now cycles dark → light → auto (follows your OS setting live), not just a two-way toggle.
 - **Error search** — once there are more than a handful of errors, a filter box narrows the list by path or message.
-- **Editor status bar** — line/column and character count shown under each editor pane.
+- **Editor status bar** — line/column, JSON path breadcrumb, and character count shown under each editor pane.
+- **Workspace backup** — export all saved workspaces as one JSON file, import (merges, doesn't overwrite) on another machine or as a manual backup.
+- **Editor font size / word wrap** — adjustable from the Settings menu.
+- **Focus mode** — hide the header/toolbar/ad slot for a distraction-free view, toggled from the toolbar or command palette.
 - **Keyboard shortcuts** — Cmd/Ctrl+Enter to validate, Cmd/Ctrl+S to save to history.
 - Dark/light theme, persisted.
 - Premium dark-glass UI, full-height layout. Pane-specific actions live in each editor's own "⋯" menu rather than one crowded toolbar — the top bar only holds cross-cutting controls (draft, settings, saved, share, theme).

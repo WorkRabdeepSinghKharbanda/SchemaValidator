@@ -13,7 +13,7 @@ For agent-facing architecture notes and control flow, see [CLAUDE.md](CLAUDE.md)
 - **Auto-detect draft** — pasting a schema with a recognized `$schema` URI switches the draft dropdown to match.
 - Syntax-only checking (no schema needed) for JSON, YAML, TOML, XML, CSV. JSON/schema text tolerates comments and trailing commas (JSONC-style).
 - **Import from OpenAPI/Swagger** — upload a spec (JSON or YAML), pick one of its `components.schemas`/`definitions` entries to load into the schema pane; its sibling schemas are auto-added as reference schemas so `$ref`s between them resolve.
-- **Batch validation mode** — validate an array of records, per-row pass/fail table with a progress bar; generate N sample records at once for batch testing; export failing rows only.
+- **Batch validation mode** — validate an array of records, per-row pass/fail table with a progress bar; generate N sample records at once for batch testing; export failing rows only or as CSV.
 - Real-time (debounced) validation toggle.
 
 ### Editor experience
@@ -25,16 +25,17 @@ For agent-facing architecture notes and control flow, see [CLAUDE.md](CLAUDE.md)
 - File upload and drag-and-drop for schema and data.
 
 ### Errors and fixes
-- Click an error to jump the cursor to it, or use "Jump to first error." Repeated errors (e.g. across array items) collapse into one expandable group instead of flooding the list.
+- Click an error to jump the cursor to it, or use "Jump to first error." The error list is keyboard-navigable (arrow keys + Enter). Repeated errors (e.g. across array items) collapse into one expandable group instead of flooding the list.
 - **Error search** — once there are more than a handful of errors, a filter box narrows the list by path or message.
 - **Plain-English error explanations** — common ajv errors (missing required field, wrong type, pattern mismatch, etc.) get a one-line explanation, not just the raw ajv message.
-- **Quick-fixes**: "Make optional" (loosens the schema for a missing-required-field error) and "Convert to {type}" (fixes a wrong-type data value in place) — plus a one-click **auto-fix** for common JSON slips (trailing commas, single quotes, unquoted keys) via `jsonrepair`.
+- **Quick-fixes**: "Make optional" (loosens the schema for a missing-required-field error), "Convert to {type}" (fixes a wrong-type data value in place), and a live regex tester for `pattern` mismatches — plus a one-click **auto-fix** for common JSON slips (trailing commas, single quotes, unquoted keys) via `jsonrepair`.
 - **Undo** — a one-click "Undo" on the success toast after any of the above, sample generation, preset insertion, or OpenAPI import.
 
 ### Schema tools
 - **Visual schema builder** — a Code/Visual toggle above the schema editor lets you add/edit top-level fields (name, type, required, format) with no JSON typing; nested shapes are preserved when editing unrelated fields.
 - **Schema inference** — generate a draft schema from pasted data.
 - **Plain-English schema summary** — a one-line description of what the schema expects, shown above the editors.
+- **Schema lint hints** — a collapsible list of best-practice suggestions (unset `additionalProperties`, a `required` field that's never declared, a single-value `enum`), separate from validation errors.
 - **Schema diff** — compare the current schema against any saved workspace, line diff shown inline.
 - **Custom preset snippets** — save your own field snippets (beyond the built-in Email/UUID/Date), insertable from the schema pane's "⋯" menu.
 - **Sample data generator** — generate example data from a schema (json-schema-faker).

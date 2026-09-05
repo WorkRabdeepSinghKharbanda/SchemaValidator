@@ -41,6 +41,7 @@ import { generateIssueMarkdown } from "./lib/issueMarkdown";
 import { makeFieldOptional } from "./lib/requiredFix";
 import { coerceValueAtPath } from "./lib/typeCoerce";
 import { summarizeSchema } from "./lib/summarizeSchema";
+import { lintSchema } from "./lib/schemaLint";
 import { ShortcutsModal } from "./components/ShortcutsModal";
 import { CommandPalette, type Command } from "./components/CommandPalette";
 import { nextThemePref, resolveTheme, isThemePref, type ThemePref } from "./lib/theme";
@@ -225,6 +226,7 @@ function App() {
         keyword: e.keyword,
         missingProperty: e.missingProperty,
         expectedType: e.expectedType,
+        pattern: e.pattern,
       })),
       markers: outcome.errors.filter((e) => e.line).map((e) => ({ line: e.line as number, message: e.message })),
       autoFixable: false,
@@ -509,6 +511,11 @@ function App() {
     download("batch-validation-failing.json", JSON.stringify(batchRows.filter((r) => !r.valid), null, 2), "application/json");
   }
 
+  function handleExportBatchCsv() {
+    if (!batchRows) return;
+    download("batch-validation-report.csv", serialize(batchRows, "csv"), "text/csv");
+  }
+
   function handleExportBatchPdf() {
     if (!batchRows) return;
     exportBatchReportPdf(batchRows).catch((e) => toast(`Couldn't generate PDF: ${(e as Error).message}`, "error"));
@@ -744,6 +751,7 @@ function App() {
     () => (schemaParseResult.error ? undefined : summarizeSchema(schemaParseResult.data)),
     [schemaParseResult],
   );
+  const lintHints = useMemo(() => (schemaParseResult.error ? [] : lintSchema(schemaParseResult.data)), [schemaParseResult]);
   const schemaFields = useMemo(() => {
     if (schemaView !== "visual" || schemaParseResult.error) return [];
     return schemaToFields(schemaParseResult.data);
@@ -861,6 +869,21 @@ function App() {
       />
 
       {schemaSummary && <p className="schema-summary">{schemaSummary}</p>}
+
+      {lintHints.length > 0 && (
+        <details className="lint-hints">
+          <summary>
+            {lintHints.length} schema hint{lintHints.length !== 1 ? "s" : ""}
+          </summary>
+          <ul>
+            {lintHints.map((hint, i) => (
+              <li key={i} className={`lint-hint-${hint.severity}`}>
+                {hint.message}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
 
       <Suspense fallback={<div className="editor-loading">Loading editor…</div>}>
       <ResizableSplit
@@ -1027,6 +1050,7 @@ function App() {
             onExportJson={handleExportBatchJson}
             onExportPdf={handleExportBatchPdf}
             onExportFailingJson={handleExportFailingBatchJson}
+            onExportCsv={handleExportBatchCsv}
           />
         )
       ) : (

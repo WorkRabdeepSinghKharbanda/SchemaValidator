@@ -12,6 +12,8 @@ export function SavedPanel({
   workspaces,
   onRestoreWorkspace,
   onRemoveWorkspace,
+  onExportWorkspaces,
+  onImportWorkspaces,
 }: {
   open: boolean;
   onClose: () => void;
@@ -22,6 +24,8 @@ export function SavedPanel({
   workspaces: Workspace[];
   onRestoreWorkspace: (w: Workspace) => void;
   onRemoveWorkspace: (id: string) => void;
+  onExportWorkspaces: () => void;
+  onImportWorkspaces: (file: File) => void;
 }) {
   const [tab, setTab] = useState<"recent" | "saved">("saved");
 
@@ -58,6 +62,23 @@ export function SavedPanel({
         {tab === "saved" && (
           <>
             {workspaces.length === 0 && <p className="drawer-empty">No named workspaces yet. Use "Save as" to keep a schema/data pair.</p>}
+            <div className="drawer-backup-row">
+              <button className="drawer-backup-btn" onClick={onExportWorkspaces} disabled={workspaces.length === 0}>
+                Export all
+              </button>
+              <label className="drawer-backup-btn drawer-import-label">
+                Import backup…
+                <input
+                  type="file"
+                  accept="application/json"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) onImportWorkspaces(file);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            </div>
             <ul className="history-list">
               {workspaces.map((w) => (
                 <li key={w.id}>

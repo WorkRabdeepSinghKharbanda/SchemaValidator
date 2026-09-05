@@ -1,6 +1,7 @@
 import Editor, { type OnMount } from "@monaco-editor/react";
 import { useRef, useEffect, useState, type DragEvent } from "react";
 import type * as Monaco from "monaco-editor";
+import { describeJsonPathAtOffset } from "../lib/jsonPath";
 
 // @monaco-editor/react loads Monaco itself (and its worker scripts) from a CDN
 // (cdn.jsdelivr.net) on first mount rather than bundling it — this is the library's documented
@@ -57,6 +58,8 @@ export function EditorPane({
   onDropFile,
   onDropError,
   liveSchema,
+  fontSize = 13,
+  wordWrap = false,
 }: {
   label: string;
   language: string;
@@ -71,11 +74,13 @@ export function EditorPane({
   onDropError?: (message: string) => void;
   /** When set, wires this JSON model up to live schema validation + autocomplete (JSON only). */
   liveSchema?: unknown;
+  fontSize?: number;
+  wordWrap?: boolean;
 }) {
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<typeof Monaco | null>(null);
   const [dragOver, setDragOver] = useState(false);
-  const [cursor, setCursor] = useState({ line: 1, column: 1 });
+  const [cursor, setCursor] = useState({ line: 1, column: 1, offset: 0 });
 
   const handleMount: OnMount = (editor, monacoInstance) => {
     editorRef.current = editor;
@@ -84,8 +89,13 @@ export function EditorPane({
     // liveSchema-diagnostics effect below already ran and no-opped on a null monacoRef —
     // apply the current liveSchema now that we actually have an instance to apply it to.
     applyLiveSchema(monacoInstance);
-    editor.onDidChangeCursorPosition((e) => setCursor({ line: e.position.lineNumber, column: e.position.column }));
+    editor.onDidChangeCursorPosition((e) => {
+      const offset = editor.getModel()?.getOffsetAt(e.position) ?? 0;
+      setCursor({ line: e.position.lineNumber, column: e.position.column, offset });
+    });
   };
+
+  const jsonPath = language === "json" ? describeJsonPathAtOffset(value, cursor.offset) : undefined;
 
   function applyLiveSchema(monacoInstance: typeof Monaco) {
     if (language !== "json" || !path) return;
@@ -175,13 +185,14 @@ export function EditorPane({
           onChange={(v) => onChange(v ?? "")}
           onMount={handleMount}
           theme={theme === "dark" ? "vs-dark" : "vs"}
-          options={{ minimap: { enabled: false }, fontSize: 13, scrollBeyondLastLine: false }}
+          options={{ minimap: { enabled: false }, fontSize, wordWrap: wordWrap ? "on" : "off", scrollBeyondLastLine: false }}
         />
         {dragOver && <div className="drop-overlay">Drop file to load</div>}
       </div>
       <div className="editor-status-bar">
         <span>
           Ln {cursor.line}, Col {cursor.column}
+          {jsonPath && <span className="json-path"> · {jsonPath}</span>}
         </span>
         <span>{value.length.toLocaleString()} chars</span>
       </div>

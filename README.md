@@ -60,6 +60,7 @@ For agent-facing architecture notes and control flow, see [CLAUDE.md](CLAUDE.md)
 - **Keyboard shortcuts** — `⌘/Ctrl+Enter` to validate, `⌘/Ctrl+S` to save to history, `⌘/Ctrl+K` for the command palette, `?` for a shortcuts cheat-sheet.
 - **Auto theme** — cycles dark → light → auto (follows your OS setting live), persisted.
 - Premium dark-glass UI, full-height layout. Pane-specific actions live in each editor's own "⋯" menu rather than one crowded toolbar — the top bar only holds cross-cutting controls (draft, settings, saved, share, theme).
+- **Mobile-usable** — below ~760px wide, the schema/data editors stack vertically instead of side-by-side, drawers go full-width, and the page scrolls normally instead of clipping.
 
 ## Local dev
 ```

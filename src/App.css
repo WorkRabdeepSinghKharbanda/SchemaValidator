@@ -356,6 +356,7 @@ header p {
   display: flex;
   gap: 4px;
   align-items: center;
+  overflow-x: auto;
 }
 
 .format-tabs-spacer {
@@ -370,6 +371,7 @@ header p {
   padding: 5px 12px;
   font-size: 12px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .format-tabs button.active {
@@ -544,6 +546,7 @@ header p {
   padding: 12px;
   max-height: 240px;
   overflow-y: auto;
+  overflow-x: auto;
 }
 
 .batch-summary {
@@ -558,6 +561,7 @@ header p {
 
 .batch-table {
   width: 100%;
+  min-width: 360px;
   border-collapse: collapse;
   font-size: 12.5px;
 }
@@ -1474,4 +1478,109 @@ header p {
   color: var(--text-dim);
   font-size: 13px;
   min-height: 0;
+}
+
+/* ---- mobile ----
+   Below this width the schema/data editors stack vertically instead of side-by-side
+   (ResizableSplit's left/right drag-to-resize makes no sense on a touch screen anyway —
+   the split handle is hidden and its inline `width: N%` style overridden to 100%). Each
+   editor pane gets a fixed height (not flex:1) because Monaco measures its container's
+   real pixel height to lay out; once `.resizable-split` stops being a bounded-height flex
+   row and becomes an auto-height column, flex:1 alone has nothing concrete to resolve
+   against. `.app` switches from a hard `height: 100vh` (clips content) to `min-height`
+   with the page itself scrolling, since two stacked 45vh editors plus header/toolbar/
+   results routinely add up to more than one small-phone screen. */
+@media (max-width: 760px) {
+  .app {
+    height: auto;
+    min-height: 100dvh;
+    padding: 12px 14px 18px;
+    gap: 10px;
+  }
+
+  header {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  header h1 {
+    font-size: 19px;
+  }
+
+  header p {
+    font-size: 12px;
+  }
+
+  .toolbar {
+    padding: 6px 8px;
+  }
+
+  .toolbar-group {
+    gap: 5px;
+  }
+
+  .toolbar button,
+  .toolbar select {
+    padding: 6px 9px;
+    font-size: 12px;
+  }
+
+  .resizable-split {
+    flex: none;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .resizable-split > div:not(.split-handle) {
+    width: 100% !important;
+  }
+
+  .split-handle {
+    display: none;
+  }
+
+  .editor-pane {
+    flex: none;
+    height: 46vh;
+    min-height: 260px;
+  }
+
+  .data-pane-wrap {
+    height: auto;
+  }
+
+  .drawer {
+    width: 100vw;
+    max-width: 100vw;
+  }
+
+  .command-overlay {
+    padding-top: 8vh;
+  }
+
+  .command-palette {
+    width: calc(100vw - 24px);
+  }
+
+  .toast-stack {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    align-items: stretch;
+  }
+
+  .toast {
+    max-width: none;
+  }
+
+  .result-heading,
+  .batch-summary {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+
+  .validate-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }

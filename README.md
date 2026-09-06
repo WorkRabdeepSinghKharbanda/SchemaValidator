@@ -97,10 +97,11 @@ These need a backend, a separate packaging step, or run arbitrary user code — 
 - Multi-tab sessions (multiple independent schema/data pairs open at once) — skipped for now to keep the single-session state model simple; worth adding if the "Saved workspaces" workflow proves too slow for people who juggle several schemas at once
 
 ## SEO
-`index.html` carries a title/meta description/keywords, canonical URL, Open Graph + Twitter card tags, and a `WebApplication` JSON-LD block. `public/robots.txt` and `public/sitemap.xml` point at the live URL; `public/site.webmanifest` covers basic PWA/installability signals. All of it is hardcoded to `https://schema-validator-livid.vercel.app/` — **update that URL in `index.html`, `public/robots.txt`, and `public/sitemap.xml` together if the app ever moves to a real domain** (e.g. schema.validator.com).
+`index.html` carries a title/meta description/keywords, canonical URL, `robots`/`googlebot` directives, a full Open Graph + Twitter Card block (including a real 1200×630 `og:image`/`twitter:image` — see below), a `WebApplication` JSON-LD block, favicons at multiple sizes (SVG + 16/32px PNG + a 180px apple-touch-icon), and `preconnect`/`dns-prefetch` hints for the Monaco CDN. `public/robots.txt` and `public/sitemap.xml` (with a `lastmod`) point at the live URL; `public/site.webmanifest` covers PWA/installability (192px/512px PNG icons, including a maskable variant, alongside the SVG). All of it is hardcoded to `https://schema-validator-livid.vercel.app/` — **update that URL in `index.html`, `public/robots.txt`, and `public/sitemap.xml` together if the app ever moves to a real domain** (e.g. schema.validator.com).
 
-Two real gaps, not fixed here:
-- **No OG image.** The Open Graph/Twitter tags have no `og:image`/`twitter:image` — social link previews will show no thumbnail. Needs an actual 1200×630 PNG designed and dropped into `public/`, then referenced from `index.html`; not something to fake with a placeholder.
+`public/og-image.png` is a real branded image (dark background, the app's actual gradient mark and tagline), not a placeholder — rendered once from a small standalone HTML file at exact 1200×630 via a headless browser screenshot, the same way the `public/icon-512.png`/`apple-touch-icon.png`/`favicon-*.png` set was generated from the existing `favicon.svg` design. If the brand visuals ever change, regenerate these the same way rather than hand-editing the PNGs.
+
+One real gap, not fixed here:
 - **This is a client-only SPA with no server-side rendering.** `#root` is empty until JavaScript runs — the `<noscript>` block in `index.html` gives crawlers a fallback description, and modern Googlebot does execute JS, but there's no static HTML content for a crawler that doesn't. If organic search ranking matters more than it does today, revisit static generation (e.g. prerendering just this one page) — that would need a build-step change, not just meta tags.
 
 ## Monetization hook

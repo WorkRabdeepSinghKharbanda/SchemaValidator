@@ -104,8 +104,13 @@ These need a backend, a separate packaging step, or run arbitrary user code — 
 One real gap, not fixed here:
 - **This is a client-only SPA with no server-side rendering.** `#root` is empty until JavaScript runs — the `<noscript>` block in `index.html` gives crawlers a fallback description, and modern Googlebot does execute JS, but there's no static HTML content for a crawler that doesn't. If organic search ranking matters more than it does today, revisit static generation (e.g. prerendering just this one page) — that would need a build-step change, not just meta tags.
 
-## Monetization hook
-[src/components/AdSlot.tsx](src/components/AdSlot.tsx) is a placeholder ad unit rendered at the bottom of the page (`<AdSlot id="footer" />` in `App.tsx`). Swap its inner div for an ad network's script/tag when ready — isolated in its own component so ad code never touches the validator logic.
+## Monetization: Google AdSense
+[src/lib/adsense.ts](src/lib/adsense.ts) holds the publisher ID (`ADSENSE_PUBLISHER_ID`, currently the placeholder `ca-pub-0000000000000000`) and `loadAdsenseScript()`, which injects AdSense's loader script exactly once. [src/components/AdSlot.tsx](src/components/AdSlot.tsx) renders a real `<ins class="adsbygoogle">` unit once `isAdsConfigured()` is true (i.e. the placeholder ID has been replaced) **and** the visitor has consented — otherwise it falls back to a placeholder box, so the layout looks the same either way. A [ConsentBanner](src/components/ConsentBanner.tsx) (Accept/Decline, choice persisted via [src/lib/consent.ts](src/lib/consent.ts)) gates the AdSense script entirely: it only ever loads after Accept, never on page load. A [Privacy Policy modal](src/components/PrivacyPolicyModal.tsx), linked from the footer and the consent banner itself, documents what's actually stored locally and links to Google's ad-personalization opt-out.
+
+**To go live:** sign up at [adsense.google.com](https://adsense.google.com), then:
+1. Replace `ADSENSE_PUBLISHER_ID` in `src/lib/adsense.ts` with your real `ca-pub-...` ID.
+2. Replace the same ID in `index.html`'s `google-adsense-account` meta tag (kept in sync by hand, it's static HTML) and in `public/ads.txt` (the `pub-...` value, no `ca-` prefix).
+3. Once you've created ad units in the AdSense dashboard, pass their slot IDs to `<AdSlot id="...">`'s `id` prop at each call site (currently just the footer) instead of the placeholder label.
 
 ## Remaining backlog
 - Custom ajv keywords/formats, user-registrable (see "Intentionally not built" — the sandboxing question needs resolving first).

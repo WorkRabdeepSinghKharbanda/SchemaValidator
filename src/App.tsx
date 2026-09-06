@@ -12,6 +12,10 @@ import { BatchTable, type BatchRow } from "./components/BatchTable";
 import { ToastStack, type ToastMessage } from "./components/Toast";
 import { OverflowMenu } from "./components/OverflowMenu";
 import { AdSlot } from "./components/AdSlot";
+import { ConsentBanner } from "./components/ConsentBanner";
+import { PrivacyPolicyModal } from "./components/PrivacyPolicyModal";
+import { loadAdsenseScript } from "./lib/adsense";
+import { getConsentChoice, setConsentChoice, type ConsentChoice } from "./lib/consent";
 import { parse, type Format } from "./lib/parse";
 import { serialize } from "./lib/serialize";
 import { validate, type Draft } from "./lib/validate";
@@ -118,6 +122,8 @@ function App() {
   const [customPresetsOpen, setCustomPresetsOpen] = useState(false);
   const [customPresets, setCustomPresets] = useState<CustomPreset[]>(() => loadCustomPresets());
   const [minimapEnabled, setMinimapEnabled] = useState(() => localStorage.getItem("minimapEnabled") === "true");
+  const [adConsent, setAdConsent] = useState<ConsentChoice | null>(() => getConsentChoice());
+  const [privacyOpen, setPrivacyOpen] = useState(false);
 
   const [savedOpen, setSavedOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -145,6 +151,13 @@ function App() {
   useEffect(() => {
     localStorage.setItem("minimapEnabled", String(minimapEnabled));
   }, [minimapEnabled]);
+
+  // Covers both a returning visitor who already consented in a previous session (adConsent's
+  // initial state read from localStorage) and a fresh Accept click in this one — one place that
+  // decides "should the ad script be loaded", not duplicated in the Accept handler too.
+  useEffect(() => {
+    if (adConsent === "accepted") loadAdsenseScript();
+  }, [adConsent]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
@@ -670,6 +683,16 @@ function App() {
     reader.readAsText(file);
   }
 
+  function handleAcceptAds() {
+    setConsentChoice("accepted");
+    setAdConsent("accepted");
+  }
+
+  function handleDeclineAds() {
+    setConsentChoice("declined");
+    setAdConsent("declined");
+  }
+
   function handleSaveAs() {
     const name = window.prompt("Name this workspace:");
     if (!name) return;
@@ -1067,7 +1090,16 @@ function App() {
         />
       )}
 
-      <AdSlot id="footer" />
+      <AdSlot id="footer" consented={adConsent === "accepted"} />
+      <footer className="app-footer">
+        <button className="consent-link" onClick={() => setPrivacyOpen(true)}>
+          Privacy Policy
+        </button>
+      </footer>
+      <PrivacyPolicyModal open={privacyOpen} onClose={() => setPrivacyOpen(false)} />
+      {adConsent === null && (
+        <ConsentBanner onAccept={handleAcceptAds} onDecline={handleDeclineAds} onOpenPrivacyPolicy={() => setPrivacyOpen(true)} />
+      )}
     </div>
   );
 }

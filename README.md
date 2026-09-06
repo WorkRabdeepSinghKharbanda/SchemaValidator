@@ -107,10 +107,9 @@ One real gap, not fixed here:
 ## Monetization: Google AdSense
 [src/lib/adsense.ts](src/lib/adsense.ts) holds the publisher ID (`ADSENSE_PUBLISHER_ID`, currently the placeholder `ca-pub-0000000000000000`) and `loadAdsenseScript()`, which injects AdSense's loader script exactly once. [src/components/AdSlot.tsx](src/components/AdSlot.tsx) renders a real `<ins class="adsbygoogle">` unit once `isAdsConfigured()` is true (i.e. the placeholder ID has been replaced) **and** the visitor has consented — otherwise it falls back to a placeholder box, so the layout looks the same either way. A [ConsentBanner](src/components/ConsentBanner.tsx) (Accept/Decline, choice persisted via [src/lib/consent.ts](src/lib/consent.ts)) gates the AdSense script entirely: it only ever loads after Accept, never on page load. A [Privacy Policy modal](src/components/PrivacyPolicyModal.tsx), linked from the footer and the consent banner itself, documents what's actually stored locally and links to Google's ad-personalization opt-out.
 
-**To go live:** sign up at [adsense.google.com](https://adsense.google.com), then:
-1. Replace `ADSENSE_PUBLISHER_ID` in `src/lib/adsense.ts` with your real `ca-pub-...` ID.
-2. Replace the same ID in `index.html`'s `google-adsense-account` meta tag (kept in sync by hand, it's static HTML) and in `public/ads.txt` (the `pub-...` value, no `ca-` prefix).
-3. Once you've created ad units in the AdSense dashboard, pass their slot IDs to `<AdSlot id="...">`'s `id` prop at each call site (currently just the footer) instead of the placeholder label.
+**Status:** the real publisher ID (`ca-pub-5852027898822024`) is wired in — `ADSENSE_PUBLISHER_ID` in `src/lib/adsense.ts`, `index.html`'s `google-adsense-account` meta tag, and `public/ads.txt`'s pub ID all match. `isAdsConfigured()` is now `true`, so `AdSlot` renders a real `<ins class="adsbygoogle">` once a visitor accepts the cookie prompt.
+
+**Still open:** once you've created ad units in the AdSense dashboard, pass their real slot IDs to `<AdSlot id="...">`'s `id` prop at each call site (currently just `"footer"`, a placeholder label) — AdSense needs a real numeric ad-unit slot ID per placement, not an arbitrary string.
 
 ## Remaining backlog
 - Custom ajv keywords/formats, user-registrable (see "Intentionally not built" — the sandboxing question needs resolving first).

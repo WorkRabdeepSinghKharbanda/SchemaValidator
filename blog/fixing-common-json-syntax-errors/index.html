@@ -47,6 +47,9 @@
       <h2>Unquoted object keys</h2>
       <p><code>{ name: "value" }</code> is valid JavaScript, not valid JSON — keys need quotes too. Same root cause as the single-quote issue: JS and JSON look almost identical but aren't interchangeable.</p>
 
+      <h2>Missing commas and brackets</h2>
+      <p>Beyond the three JS-ism mistakes above, a good auto-fixer can also close an unterminated object or array, or insert a comma dropped between two properties — structural gaps, not just stylistic ones. What it can't do is fix a value that's syntactically fine but semantically wrong (a string where a number belongs) — that's what schema validation, not repair, is for.</p>
+
       <h2>Fixing these without hunting by hand</h2>
       <p>All three are mechanical, predictable transformations — which is exactly the kind of thing worth automating rather than scanning a large file character by character for the one comma that broke everything.</p>
 

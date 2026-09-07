@@ -27,7 +27,7 @@ five supported data formats.
 - [Regex Tester](https://schema-validator-livid.vercel.app/regex-tester/): testing a schema's pattern keyword live.
 - [Batch JSON Validator](https://schema-validator-livid.vercel.app/batch-json-validator/): validating every record in an array against one schema.
 - [JSON Schema Diff](https://schema-validator-livid.vercel.app/json-schema-diff/): comparing two versions of a schema.
-- [JSON Repair](https://schema-validator-livid.vercel.app/json-repair/): auto-fixing trailing commas, single quotes, unquoted keys.
+- [JSON Repair](https://schema-validator-livid.vercel.app/json-repair/): auto-fixing common JSON syntax slips (trailing commas, single quotes, unquoted keys) and some structural gaps (a missing comma or closing bracket).
 - [JSON Schema Docs Generator](https://schema-validator-livid.vercel.app/json-schema-docs-generator/): generating readable field documentation from a schema.
 - [Blog](https://schema-validator-livid.vercel.app/blog/): guides on JSON Schema drafts, schema generation, TypeScript export, linting, regex patterns, batch validation, $ref resolution, JSON repair, field docs, and format conversion.
 - [Privacy Policy](https://schema-validator-livid.vercel.app/#privacy): what's stored locally, AdSense cookie use, opt-out link.

@@ -29,7 +29,7 @@
             "name": "What kinds of errors does it fix?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Common JSON slips: trailing commas, single-quoted strings, and unquoted object keys \u2014 not deeper structural or logical errors."
+              "text": "It fixes the common syntax slips \u2014 trailing commas, single-quoted strings, unquoted object keys \u2014 plus some structural gaps like a missing comma or a missing closing bracket. It can't fix logical errors, like a value that's syntactically fine but semantically wrong."
             }
           },
           {
@@ -69,14 +69,14 @@
       <ol>
         <li>Open <a href="/">Schema Validator</a> and paste JSON with a syntax error into the data pane.</li>
         <li>If it's a plain parse error, an "Auto-fix" button appears.</li>
-        <li>Click it — trailing commas, single quotes, and unquoted keys are repaired automatically.</li>
+        <li>Click it — trailing commas, single quotes, unquoted keys, and some structural gaps (a missing comma or bracket) are repaired automatically.</li>
         <li>Didn't want the change? A one-click "Undo" on the success toast reverts it.</li>
       </ol>
 
       <h2>Frequently asked questions</h2>
       <details>
         <summary>What kinds of errors does it fix?</summary>
-        <p>Common JSON slips: trailing commas, single-quoted strings, and unquoted object keys — not deeper structural or logical errors.</p>
+        <p>The common syntax slips — trailing commas, single-quoted strings, unquoted object keys — plus some structural gaps like a missing comma or missing closing bracket. It can't fix logical errors (syntactically fine, semantically wrong).</p>
       </details>
       <details>
         <summary>Does it work on schema too, or just data?</summary>

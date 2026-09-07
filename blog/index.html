@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blog — Schema Validator</title>
+    <meta
+      name="description"
+      content="Guides on JSON Schema, validation, and API contracts from the team behind Schema Validator."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/blog/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Blog — Schema Validator" />
+    <meta property="og:description" content="Guides on JSON Schema, validation, and API contracts." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/blog/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        "name": "Schema Validator Blog",
+        "url": "https://schema-validator-livid.vercel.app/blog/"
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>Blog</h1>
+      <p class="lede">Guides on JSON Schema, validation, and API contracts.</p>
+
+      <h2><a href="/blog/json-schema-draft-differences/">JSON Schema draft-07 vs 2019-09 vs 2020-12: what actually changed</a></h2>
+      <p>A practical rundown of what's different between the three JSON Schema drafts this app supports, and which one to pick for a new project.</p>
+
+      <h2><a href="/blog/openapi-vs-json-schema/">OpenAPI schemas vs. plain JSON Schema: when to use which</a></h2>
+      <p>OpenAPI embeds JSON Schema inside itself — here's where they diverge, and how to validate real payloads against a schema pulled straight out of your spec.</p>
+
+      <h2><a href="/blog/validate-json-in-ci/">Validating JSON config files in CI without a server</a></h2>
+      <p>How to turn a schema you've already tested in the browser into a script your pipeline can run, no API or backend involved.</p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/yaml-validator/">YAML</a> · <a href="/openapi-validator/">OpenAPI</a> · <a href="/csv-validator/">CSV</a>
+    </footer>
+  </body>
+</html>

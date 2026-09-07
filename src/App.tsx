@@ -1101,6 +1101,9 @@ function App() {
         <a className="consent-link" href="/csv-validator/">
           CSV validator
         </a>
+        <a className="consent-link" href="/blog/">
+          Blog
+        </a>
         <button className="consent-link" onClick={() => setPrivacyOpen(true)}>
           Privacy Policy
         </button>

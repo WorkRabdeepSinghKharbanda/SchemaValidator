@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenAPI Schemas vs. Plain JSON Schema: When to Use Which</title>
+    <meta
+      name="description"
+      content="OpenAPI embeds JSON Schema inside itself — here's where they diverge, and how to validate real payloads against a schema pulled straight out of your spec."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/blog/openapi-vs-json-schema/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="OpenAPI Schemas vs. Plain JSON Schema: When to Use Which" />
+    <meta property="og:description" content="Where OpenAPI and JSON Schema diverge, and how to validate payloads against a schema pulled from your spec." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/blog/openapi-vs-json-schema/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "OpenAPI schemas vs. plain JSON Schema: when to use which",
+        "datePublished": "2026-09-08",
+        "dateModified": "2026-09-08",
+        "author": { "@type": "Organization", "name": "Schema Validator" },
+        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/openapi-vs-json-schema/"
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>OpenAPI schemas vs. plain JSON Schema: when to use which</h1>
+      <p class="lede">OpenAPI's <code>components.schemas</code> section is JSON Schema, dialect quirks aside — here's what that means in practice.</p>
+
+      <h2>They're the same language, mostly</h2>
+      <p>
+        OpenAPI 3.1 uses JSON Schema 2020-12 directly. OpenAPI 3.0 and Swagger 2.0 use a JSON-Schema-like dialect with
+        a few differences (<code>nullable: true</code> instead of a <code>"null"</code> type, no <code>examples</code> array,
+        a restricted subset of keywords) — close enough that a validator can treat them the same for most practical
+        checks, but not spec-identical.
+      </p>
+
+      <h2>When to reach for the full spec instead of a standalone schema</h2>
+      <ul>
+        <li>You want to validate a real request/response body against exactly what your API documents, not a hand-copied schema that can drift out of sync with the spec.</li>
+        <li>Your schemas reference each other via <code>$ref</code> — pulling one out standalone means resolving those refs, not just copy-pasting one <code>components.schemas</code> entry.</li>
+        <li>You're debugging "why did this payload fail validation in production" and want to check it against the exact contract, not a remembered version of it.</li>
+      </ul>
+
+      <h2>How to do this without standing up the API</h2>
+      <p>
+        <a href="/openapi-validator/">Schema Validator's OpenAPI import</a> uploads your spec file (JSON or YAML),
+        lets you pick any schema from <code>components.schemas</code>/<code>definitions</code>, and auto-registers
+        every sibling schema as a reference so internal <code>$ref</code>s resolve — then you validate sample data
+        against it the normal way, entirely in the browser.
+      </p>
+
+      <a class="cta" href="/openapi-validator/">Import your OpenAPI spec</a>
+    </main>
+    <footer>
+      <a href="/blog/">← Back to blog</a> · <a href="/">Schema Validator</a>
+    </footer>
+  </body>
+</html>

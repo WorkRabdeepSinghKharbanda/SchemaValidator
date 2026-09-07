@@ -13,9 +13,13 @@ five supported data formats.
 ## Pages
 
 - [Schema Validator](https://schema-validator-livid.vercel.app/): the main app — validate JSON, YAML, TOML, XML, or CSV against a JSON Schema.
+- [JSON Validator](https://schema-validator-livid.vercel.app/json-validator/): JSON syntax checking and schema validation.
 - [YAML Schema Validator](https://schema-validator-livid.vercel.app/yaml-validator/): validating YAML specifically.
 - [OpenAPI Schema Validator](https://schema-validator-livid.vercel.app/openapi-validator/): importing an OpenAPI/Swagger spec and validating against one of its component schemas.
 - [CSV Schema Validator](https://schema-validator-livid.vercel.app/csv-validator/): batch-validating every row of a CSV file.
+- [TOML Validator](https://schema-validator-livid.vercel.app/toml-validator/): validating TOML config files.
+- [XML Validator](https://schema-validator-livid.vercel.app/xml-validator/): validating XML against a JSON Schema instead of an XSD.
+- [Blog](https://schema-validator-livid.vercel.app/blog/): guides on JSON Schema drafts, OpenAPI vs. JSON Schema, and running schema checks in CI.
 - [Privacy Policy](https://schema-validator-livid.vercel.app/#privacy): what's stored locally, AdSense cookie use, opt-out link.
 
 ## Notes for automated agents

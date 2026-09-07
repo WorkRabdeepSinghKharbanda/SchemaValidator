@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON Schema draft-07 vs 2019-09 vs 2020-12: What Changed</title>
+    <meta
+      name="description"
+      content="A practical rundown of what actually changed between JSON Schema draft-07, 2019-09, and 2020-12, and which one to pick for a new project."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/blog/json-schema-draft-differences/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="JSON Schema draft-07 vs 2019-09 vs 2020-12: What Changed" />
+    <meta property="og:description" content="A practical rundown of what changed between the three JSON Schema drafts, and which one to pick." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/blog/json-schema-draft-differences/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "JSON Schema draft-07 vs 2019-09 vs 2020-12: what actually changed",
+        "datePublished": "2026-09-08",
+        "dateModified": "2026-09-08",
+        "author": { "@type": "Organization", "name": "Schema Validator" },
+        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/json-schema-draft-differences/"
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>JSON Schema draft-07 vs 2019-09 vs 2020-12: what actually changed</h1>
+      <p class="lede">A practical rundown, not a spec diff — what you'll actually run into picking a draft for a real project.</p>
+
+      <h2>draft-07 (2018)</h2>
+      <p>
+        The most widely deployed draft, still the default in a lot of tooling and libraries. Has <code>if</code>/<code>then</code>/<code>else</code>
+        conditionals and <code>const</code>. If a library or API you're integrating with only documents "JSON Schema" with no
+        version, it's very likely this one.
+      </p>
+
+      <h2>2019-09</h2>
+      <p>
+        Split validation vocabulary out of "hyper-schema" concerns, and reworked <code>$ref</code> to allow siblings
+        (in draft-07, any keyword next to a <code>$ref</code> was silently ignored — 2019-09 fixed that). Added
+        <code>unevaluatedProperties</code>/<code>unevaluatedItems</code> for validating what's left over after
+        <code>allOf</code>/conditionals run. Saw less real-world adoption than draft-07 or 2020-12 — it was a
+        relatively short-lived stepping stone.
+      </p>
+
+      <h2>2020-12 (current)</h2>
+      <p>
+        The current stable draft. Reworked how <code>items</code>/<code>prefixItems</code> express tuple-style arrays
+        (a breaking change from draft-07's array-form <code>items</code>), and refined <code>$dynamicRef</code>/<code>$dynamicAnchor</code>
+        for extensible vocabularies. This is the right default for a new schema with no compatibility constraint.
+      </p>
+
+      <h2>Which one should you pick?</h2>
+      <ul>
+        <li><strong>New project, no constraints:</strong> 2020-12.</li>
+        <li><strong>Integrating with an existing API/tool that documents a specific draft:</strong> match it exactly — the array-<code>items</code> change between draft-07 and 2020-12 in particular will silently validate the wrong thing if you guess wrong.</li>
+        <li><strong>Not sure which draft a schema was written for:</strong> check its <code>$schema</code> field — <a href="/">Schema Validator</a> reads it and auto-selects the matching draft for you.</li>
+      </ul>
+
+      <a class="cta" href="/">Try it on your own schema</a>
+    </main>
+    <footer>
+      <a href="/blog/">← Back to blog</a> · <a href="/">Schema Validator</a>
+    </footer>
+  </body>
+</html>

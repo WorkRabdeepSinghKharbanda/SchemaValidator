@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Validating JSON Config Files in CI Without a Server</title>
+    <meta
+      name="description"
+      content="How to turn a JSON Schema you've tested in the browser into a script your CI pipeline can run, no API or backend involved."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/blog/validate-json-in-ci/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Validating JSON Config Files in CI Without a Server" />
+    <meta property="og:description" content="Turn a schema you've tested in the browser into a script your CI pipeline can run." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/blog/validate-json-in-ci/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Validating JSON config files in CI without a server",
+        "datePublished": "2026-09-08",
+        "dateModified": "2026-09-08",
+        "author": { "@type": "Organization", "name": "Schema Validator" },
+        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/validate-json-in-ci/"
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>Validating JSON config files in CI without a server</h1>
+      <p class="lede">Design the schema interactively in a browser, then run the exact same check as a pipeline step.</p>
+
+      <h2>The problem with "it looked fine when I checked it manually"</h2>
+      <p>
+        A schema that's only ever run by hand in a browser tab doesn't catch the config file someone edits three
+        weeks later. You want the same check to run automatically on every pull request — but that usually means
+        writing an ajv/jsonschema script from scratch, or standing up an API endpoint just to run a validation call.
+        Neither should be necessary for something this small.
+      </p>
+
+      <h2>Design once, export a script</h2>
+      <p>
+        <a href="/">Schema Validator</a>'s schema pane has a "Copy as Node.js snippet" / "Copy as Python snippet"
+        action in its "⋯" menu. It generates a small, self-contained script — ajv for Node, <code>jsonschema</code>
+        for Python — with your exact schema and draft version already baked in. Drop it into your repo and point it
+        at a config file path as an argument.
+      </p>
+
+      <h2>Wiring it into CI</h2>
+      <pre><code># .github/workflows/validate-config.yml (Node example)
+- name: Validate config against schema
+  run: node scripts/validate-config.js config/production.json</code></pre>
+      <p>
+        No API call, no server round-trip — it's the same logic that already validated the file in your browser,
+        just running as a local script. Commit the generated script alongside the schema it was generated from, and
+        regenerate it (paste the updated schema, copy again) whenever the schema changes.
+      </p>
+
+      <a class="cta" href="/">Design your schema, then export the script</a>
+    </main>
+    <footer>
+      <a href="/blog/">← Back to blog</a> · <a href="/">Schema Validator</a>
+    </footer>
+  </body>
+</html>

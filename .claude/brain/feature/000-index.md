@@ -77,4 +77,5 @@ One file per feature/tool. Source of truth is `CLAUDE.md`'s "Features, one by on
 - [Privacy Policy](057-privacy-policy.md)
 - [SEO Landing Pages](058-seo-landing-pages.md)
 - [AI Crawler Access](059-ai-crawler-access.md)
+- [Blog](060-blog.md)
 

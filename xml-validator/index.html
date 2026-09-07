@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XML Validator — Validate XML Against a JSON Schema Free</title>
+    <meta
+      name="description"
+      content="Check XML syntax and validate XML data against a JSON Schema for free, in your browser. No sign-up, nothing uploaded."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/xml-validator/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="XML Validator — Validate XML Against a JSON Schema Free" />
+    <meta property="og:description" content="Check XML syntax and validate XML data against a JSON Schema for free, in your browser." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/xml-validator/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="XML Validator — Validate XML Against a JSON Schema Free" />
+    <meta name="twitter:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Can I validate XML against a JSON Schema, not just an XSD?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Schema Validator parses XML into a plain data structure and validates it with the same JSON Schema rules used for JSON/YAML — useful when you already have a JSON Schema and don't want to maintain a separate XSD."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it give exact line numbers for XML errors?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "XML validation errors are message-only, without a line number — JSON is the only format with exact line mapping."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my XML uploaded anywhere?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No — parsing and validation both run in your browser."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>XML Validator</h1>
+      <p class="lede">
+        Validate XML data against a JSON Schema — free, in your browser, no XSD required.
+      </p>
+      <a class="cta" href="/">Validate your XML now</a>
+
+      <h2>Why validate XML with a JSON Schema instead of XSD?</h2>
+      <p>
+        If your team already writes JSON Schemas for your JSON/YAML APIs, maintaining a separate XSD for an XML
+        variant of the same data is duplicate work. Schema Validator parses XML into the same kind of data structure
+        JSON produces, then runs it through the identical schema — one set of rules for every format you accept.
+      </p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and switch the data pane's format tab to <strong>XML</strong>.</li>
+        <li>Paste or upload your JSON Schema.</li>
+        <li>Paste or upload your XML file.</li>
+        <li>Errors appear as a message list (no line number for this format) with plain-English explanations.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>JSON Schema instead of XSD?</summary>
+        <p>Yes — XML is parsed to a plain structure and validated with the same JSON Schema rules as JSON/YAML.</p>
+      </details>
+      <details>
+        <summary>Exact line numbers?</summary>
+        <p>No, XML errors are message-only. JSON is the only format with exact line mapping.</p>
+      </details>
+      <details>
+        <summary>Is my XML uploaded anywhere?</summary>
+        <p>No, everything runs client-side.</p>
+      </details>
+
+      <p>
+        Need a different format? Schema Validator also supports
+        <a href="/">JSON, YAML, TOML, and CSV</a> against the same schema.
+      </p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/json-validator/">JSON</a> · <a href="/yaml-validator/">YAML</a> · <a href="/toml-validator/">TOML</a> · <a href="/blog/">Blog</a>
+    </footer>
+  </body>
+</html>

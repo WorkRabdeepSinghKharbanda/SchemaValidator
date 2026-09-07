@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON Validator — Validate JSON Syntax and JSON Schema Free</title>
+    <meta
+      name="description"
+      content="Check JSON syntax and validate JSON data against a JSON Schema for free, in your browser. Inline error markers with exact line numbers, no sign-up, nothing uploaded."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/json-validator/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="JSON Validator — Validate JSON Syntax and JSON Schema Free" />
+    <meta property="og:description" content="Check JSON syntax and validate JSON data against a JSON Schema for free, in your browser." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/json-validator/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="JSON Validator — Validate JSON Syntax and JSON Schema Free" />
+    <meta name="twitter:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Does this JSON validator check syntax only, or also a schema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Both. Leave the schema pane empty for a plain syntax check, or paste a JSON Schema to also validate the data's structure, types, and required fields."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it tell me the exact line of a JSON syntax error?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — JSON gets exact line/column error markers inline in the editor, unlike the other supported formats which get approximate or message-only errors."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can my JSON have comments or trailing commas?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Both the schema and data JSON panes tolerate comments and trailing commas (JSONC-style) rather than rejecting strictly-standard JSON only."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>JSON Validator</h1>
+      <p class="lede">
+        Check JSON syntax, or validate JSON data against a JSON Schema — free, in your browser, with exact
+        line-number error markers.
+      </p>
+      <a class="cta" href="/">Validate your JSON now</a>
+
+      <h2>Syntax check or schema validation — your choice</h2>
+      <p>
+        Paste JSON with an empty schema pane and get a plain syntax check: is this valid JSON, and if not, exactly
+        which line broke it. Add a JSON Schema and the same data gets checked against required fields, types,
+        patterns, and every other constraint the schema declares.
+      </p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> — the JSON tab is selected by default.</li>
+        <li>Paste or upload your JSON data.</li>
+        <li>Optionally paste a JSON Schema (draft-07, 2019-09, or 2020-12) to validate structure, not just syntax.</li>
+        <li>Errors show inline at the exact line, each with a plain-English explanation and, for common mistakes, a one-click fix.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Syntax only, or schema too?</summary>
+        <p>Both — an empty schema pane means syntax-only; add a schema to also validate structure.</p>
+      </details>
+      <details>
+        <summary>Do I get exact line numbers?</summary>
+        <p>Yes, JSON is the one format with exact line/column error markers.</p>
+      </details>
+      <details>
+        <summary>Comments and trailing commas allowed?</summary>
+        <p>Yes, both panes tolerate JSONC-style comments and trailing commas.</p>
+      </details>
+
+      <p>
+        Working with a different format? Schema Validator also supports
+        <a href="/yaml-validator/">YAML</a>, <a href="/csv-validator/">CSV</a>, TOML, and XML against the same schema.
+      </p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/yaml-validator/">YAML</a> · <a href="/openapi-validator/">OpenAPI</a> · <a href="/csv-validator/">CSV</a> · <a href="/blog/">Blog</a>
+    </footer>
+  </body>
+</html>

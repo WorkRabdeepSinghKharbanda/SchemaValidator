@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TOML Validator — Validate TOML Against a JSON Schema Free</title>
+    <meta
+      name="description"
+      content="Check TOML syntax and validate TOML config files against a JSON Schema for free, in your browser. No sign-up, nothing uploaded."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/toml-validator/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="TOML Validator — Validate TOML Against a JSON Schema Free" />
+    <meta property="og:description" content="Check TOML syntax and validate TOML config files against a JSON Schema for free, in your browser." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/toml-validator/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="TOML Validator — Validate TOML Against a JSON Schema Free" />
+    <meta name="twitter:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Can I validate a TOML config file against a JSON Schema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Switch the data pane's format tab to TOML, paste your JSON Schema, and paste or upload your .toml file — the same ajv engine used for JSON validates the parsed structure."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it give exact line numbers for TOML errors?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "TOML gets an approximate line number from the parser's own error, not the exact line-number mapping JSON gets."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my TOML file uploaded anywhere?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No — parsing and validation both happen in your browser."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>TOML Validator</h1>
+      <p class="lede">
+        Validate Cargo.toml-style config files against a JSON Schema — free, in your browser, no data leaves your
+        device.
+      </p>
+      <a class="cta" href="/">Validate your TOML now</a>
+
+      <h2>Why validate TOML against a JSON Schema?</h2>
+      <p>
+        TOML is the config format behind Cargo, Poetry, and plenty of app settings files. TOML's own parser catches
+        malformed syntax, but not a missing required key, a wrong type, or a value outside an allowed set — a JSON
+        Schema does, using the exact same rules you'd apply to a JSON or YAML version of the same config.
+      </p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and switch the data pane's format tab to <strong>TOML</strong>.</li>
+        <li>Paste or upload your JSON Schema.</li>
+        <li>Paste or upload your <code>.toml</code> file.</li>
+        <li>Errors appear with an approximate line and a plain-English explanation.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Can I validate a TOML config against a JSON Schema?</summary>
+        <p>Yes — switch to the TOML tab, paste your schema, and paste or upload the file.</p>
+      </details>
+      <details>
+        <summary>Exact line numbers?</summary>
+        <p>Approximate, from the TOML parser's own error — JSON is the only format with exact line mapping.</p>
+      </details>
+      <details>
+        <summary>Is my file uploaded anywhere?</summary>
+        <p>No, everything runs client-side.</p>
+      </details>
+
+      <p>
+        Need a different format? Schema Validator also supports
+        <a href="/">JSON, YAML, XML, and CSV</a> against the same schema.
+      </p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/json-validator/">JSON</a> · <a href="/yaml-validator/">YAML</a> · <a href="/csv-validator/">CSV</a> · <a href="/blog/">Blog</a>
+    </footer>
+  </body>
+</html>

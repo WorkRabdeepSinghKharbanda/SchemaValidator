@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Batch-Validating an Array of Records Against One Schema</title>
+    <meta name="description" content="How to validate every record in an imported array or CSV export against a single JSON Schema, and find exactly which ones fail." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/blog/batch-validate-array-of-records/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Batch-Validating an Array of Records Against One Schema" />
+    <meta property="og:description" content="How to validate every record in an imported array or CSV export against a single JSON Schema, and find exactly which ones fail." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/blog/batch-validate-array-of-records/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Batch-validating an array of records against one schema",
+        "datePublished": "2026-09-08",
+        "dateModified": "2026-09-08",
+        "author": { "@type": "Organization", "name": "Schema Validator" },
+        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/batch-validate-array-of-records/"
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>Batch-validating an array of records against one schema</h1>
+      <p class="lede">Validating one record proves your schema works. Validating a thousand imported records proves your data does.</p>
+
+      <h2>Why single-record validation isn't enough</h2>
+      <p>A schema that correctly validates one hand-picked example doesn't tell you anything about the other 999 records in a real import. Bad data tends to cluster in edge cases — a null where a string was expected, a stray currency symbol, a date in the wrong format — that a single manually-checked example won't surface.</p>
+
+      <h2>What a per-record result actually needs to show</h2>
+      <p>An aggregate "12 of 1,000 failed" is a start, but not actionable on its own — you need to know exactly which 12, and why each one failed, without re-running validation on each one individually.</p>
+
+      <h2>Export just what's broken</h2>
+      <p>Once you can see which records failed, the next useful step is pulling just those out — for a fix pass, a bug report, or re-import after correction — rather than exporting the whole batch again and filtering by hand.</p>
+
+      <h2>Try it</h2>
+      <p><a href="/batch-json-validator/">Schema Validator's batch mode</a> does exactly this — a per-record pass/fail table, a progress bar for large batches, and an "export failing only" button — for JSON, YAML, or CSV arrays alike.</p>
+
+      <a class="cta" href="/batch-json-validator/">Batch-validate your records</a>
+    </main>
+    <footer>
+      <a href="/blog/">← Back to blog</a> · <a href="/">Schema Validator</a>
+    </footer>
+  </body>
+</html>

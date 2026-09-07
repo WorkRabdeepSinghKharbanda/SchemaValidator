@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Convert JSON to YAML (and Back) Without Losing Data</title>
+    <meta name="description" content="How to convert between JSON and YAML safely, what actually breaks in a naive conversion, and how to check the result against a schema." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/blog/convert-json-to-yaml-without-losing-data/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Convert JSON to YAML (and Back) Without Losing Data" />
+    <meta property="og:description" content="How to convert between JSON and YAML safely, what actually breaks in a naive conversion, and how to check the result against a schema." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/blog/convert-json-to-yaml-without-losing-data/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Convert JSON to YAML (and back) without losing data",
+        "datePublished": "2026-09-08",
+        "dateModified": "2026-09-08",
+        "author": { "@type": "Organization", "name": "Schema Validator" },
+        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/convert-json-to-yaml-without-losing-data/"
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>Convert JSON to YAML (and back) without losing data</h1>
+      <p class="lede">A naive JSON↔YAML conversion usually works — until a type, an anchor, or a multiline string doesn't round-trip the way you expected.</p>
+
+      <h2>What usually goes wrong</h2>
+      <p>YAML supports things JSON doesn't natively express the same way: unquoted strings that look like numbers or booleans (a version string like <code>1.0</code> can silently become a float), multiline block scalars, and anchors/aliases for repeated structures. Converting YAML → JSON → YAML again can flatten anchors into repeated literal blocks — usually fine, but worth knowing before you assume the round-trip is lossless.</p>
+
+      <h2>The safest check: validate after converting</h2>
+      <p>Converting is easy to get subtly wrong by hand. The safer workflow is to convert programmatically, then run the result through the same JSON Schema you'd use for the original format — if a type changed shape in conversion, validation catches it immediately instead of surfacing as a confusing bug three steps downstream.</p>
+
+      <h2>Try it</h2>
+      <p><a href="/json-yaml-converter/">Schema Validator's format converter</a> switches between JSON, YAML, TOML, XML, and CSV in place, in the same pane you validate in — so you can convert and immediately check the result against your schema, entirely in the browser.</p>
+
+      <a class="cta" href="/json-yaml-converter/">Convert JSON to YAML now</a>
+    </main>
+    <footer>
+      <a href="/blog/">← Back to blog</a> · <a href="/">Schema Validator</a>
+    </footer>
+  </body>
+</html>

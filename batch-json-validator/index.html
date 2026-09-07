@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Batch JSON Validator — Validate an Array of Records Against a Schema Free</title>
+    <meta name="description" content="Validate every record in a JSON array against a JSON Schema for free, in your browser. Per-record pass/fail table, export failing records only." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/batch-json-validator/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Batch JSON Validator — Validate an Array of Records Against a Schema Free" />
+    <meta property="og:description" content="Validate every record in a JSON array against a JSON Schema for free, in your browser. Per-record pass/fail table, export failing records only." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/batch-json-validator/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Batch JSON Validator — Validate an Array of Records Against a Schema Free" />
+    <meta name="twitter:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What if the schema pane is empty?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Batch mode treats an empty schema as trivially valid, same as single-record mode \u2014 every record passes a syntax-only check."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I export just the failing records?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, an \"Export failing only\" button downloads just the invalid ones."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this work for YAML/CSV arrays too?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes \u2014 batch mode works with any of the five supported data formats, not just JSON."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>Batch JSON Validator</h1>
+      <p class="lede">Validate every record in an array independently against one schema — free, in your browser, with a per-record pass/fail table.</p>
+      <a class="cta" href="/">Validate your batch now</a>
+
+      <h2>Why validate a whole array at once?</h2>
+      <p>A single validation run tells you whether one JSON object matches a schema. A batch of imported records, API responses, or seed data needs the same check applied to every item — and a way to see which specific records failed, not just an aggregate pass/fail for the whole file.</p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and turn on <strong>batch mode</strong>.</li>
+        <li>Paste or upload a top-level JSON array of records.</li>
+        <li>Paste the JSON Schema each record should match.</li>
+        <li>Get a per-record pass/fail table with a progress bar — export all results, failing records only, or as CSV.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>What if the schema pane is empty?</summary>
+        <p>Batch mode treats an empty schema as trivially valid, same as single-record mode — every record passes a syntax-only check.</p>
+      </details>
+      <details>
+        <summary>Can I export just the failing records?</summary>
+        <p>Yes, an "Export failing only" button downloads just the invalid ones.</p>
+      </details>
+      <details>
+        <summary>Does this work for YAML/CSV arrays too?</summary>
+        <p>Yes — batch mode works with any of the five supported data formats, not just JSON.</p>
+      </details>
+
+      <p>
+        Validating CSV rows specifically? See the dedicated <a href="/csv-validator/">CSV validator</a> · <a href="/sample-json-generator/">sample data generator</a> · <a href="/json-yaml-converter/">format converter</a>
+      </p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/csv-validator/">CSV validator</a> · <a href="/sample-json-generator/">sample data generator</a> · <a href="/json-yaml-converter/">format converter</a> · <a href="/blog/">Blog</a>
+    </footer>
+  </body>
+</html>

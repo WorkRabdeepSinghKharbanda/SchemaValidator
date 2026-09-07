@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How the JSON Schema `pattern` Keyword Actually Works</title>
+    <meta name="description" content="A practical guide to JSON Schema's pattern keyword, common regex mistakes, and how to test one live against real values." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/blog/how-json-schema-pattern-regex-works/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="How the JSON Schema `pattern` Keyword Actually Works" />
+    <meta property="og:description" content="A practical guide to JSON Schema's pattern keyword, common regex mistakes, and how to test one live against real values." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/blog/how-json-schema-pattern-regex-works/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "How the JSON Schema `pattern` keyword actually works",
+        "datePublished": "2026-09-08",
+        "dateModified": "2026-09-08",
+        "author": { "@type": "Organization", "name": "Schema Validator" },
+        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/how-json-schema-pattern-regex-works/"
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>How the JSON Schema `pattern` keyword actually works</h1>
+      <p class="lede">`pattern` is just a regular expression tested against a string value — but a few gotchas trip people up regularly.</p>
+
+      <h2>It's unanchored by default</h2>
+      <p>Unlike some regex contexts, JSON Schema's <code>pattern</code> matches if the regex matches <em>anywhere</em> in the string, not the whole string, unless you anchor it yourself with <code>^</code> and <code>$</code>. A pattern like <code>[0-9]+</code> without anchors will happily match <code>"abc123def"</code>, which is rarely what anyone intended.</p>
+
+      <h2>It uses ECMA-262 regex syntax</h2>
+      <p>JSON Schema's <code>pattern</code> is defined against the ECMA 262 regular expression dialect — the same one JavaScript uses — not PCRE or POSIX. Named capture groups, lookbehind, and other dialect-specific features may behave differently (or not be supported) depending on the validator's regex engine.</p>
+
+      <h2>Debugging a pattern mismatch</h2>
+      <p>The frustrating part of a <code>pattern</code> validation failure is that the error tells you the value didn't match, not why. Testing the exact pattern string against candidate values, live, next to the actual validation error, closes that gap immediately instead of round-tripping through a separate regex tool.</p>
+
+      <h2>Try it</h2>
+      <p><a href="/regex-tester/">Schema Validator's regex tester</a> appears directly on a <code>pattern</code>-keyword error and tests against the schema's real pattern string.</p>
+
+      <a class="cta" href="/regex-tester/">Test a pattern now</a>
+    </main>
+    <footer>
+      <a href="/blog/">← Back to blog</a> · <a href="/">Schema Validator</a>
+    </footer>
+  </body>
+</html>

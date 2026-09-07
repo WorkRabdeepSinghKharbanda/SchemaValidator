@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Regex Tester for JSON Schema Pattern — Test Live, Free</title>
+    <meta name="description" content="Test a JSON Schema pattern regex live against real values, free, in your browser. See exactly why a pattern-mismatch error fired." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/regex-tester/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Regex Tester for JSON Schema Pattern — Test Live, Free" />
+    <meta property="og:description" content="Test a JSON Schema pattern regex live against real values, free, in your browser. See exactly why a pattern-mismatch error fired." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/regex-tester/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Regex Tester for JSON Schema Pattern — Test Live, Free" />
+    <meta name="twitter:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Does it use the exact pattern from my schema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes \u2014 the same pattern string ajv compiled, re-compiled independently with <code>new RegExp</code> for the live test."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What if the pattern isn't valid JS regex syntax?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The tester returns no match rather than throwing, so an edge-case pattern doesn't break the page."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is this only for pattern errors?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, it's offered specifically alongside a <code>pattern</code>-keyword validation error in the error list."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>Regex Tester for JSON Schema Patterns</h1>
+      <p class="lede">See exactly why a <code>pattern</code> validation error fired, and test a fix live — free, in your browser.</p>
+      <a class="cta" href="/">Test a pattern now</a>
+
+      <h2>Why test a regex inside the validator instead of a separate regex tool?</h2>
+      <p>A <code>pattern</code>-keyword validation error tells you a value didn't match, but not why — testing the actual schema pattern against candidate values in a separate regex tool means re-copying the pattern by hand and hoping you copied it exactly. Testing it inline, against the same pattern string ajv just used, removes that step.</p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a>, validate data with a <code>pattern</code> constraint in the schema.</li>
+        <li>On a pattern-mismatch error, click "Test pattern" to expand an inline input.</li>
+        <li>Type candidate values and see a live match/no-match against the schema's actual pattern.</li>
+        <li>Adjust your data (or the schema's pattern) based on what you see.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Does it use the exact pattern from my schema?</summary>
+        <p>Yes — the same pattern string ajv compiled, re-compiled independently with <code>new RegExp</code> for the live test.</p>
+      </details>
+      <details>
+        <summary>What if the pattern isn't valid JS regex syntax?</summary>
+        <p>The tester returns no match rather than throwing, so an edge-case pattern doesn't break the page.</p>
+      </details>
+      <details>
+        <summary>Is this only for pattern errors?</summary>
+        <p>Yes, it's offered specifically alongside a <code>pattern</code>-keyword validation error in the error list.</p>
+      </details>
+
+      <p>
+        Fixing a different kind of error? See the <a href="/json-schema-linter/">schema linter</a> · <a href="/json-repair/">JSON auto-fix</a> · <a href="/json-validator/">JSON validator</a>
+      </p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/json-schema-linter/">schema linter</a> · <a href="/json-repair/">JSON auto-fix</a> · <a href="/json-validator/">JSON validator</a> · <a href="/blog/">Blog</a>
+    </footer>
+  </body>
+</html>

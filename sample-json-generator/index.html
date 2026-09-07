@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sample JSON Generator — Generate Test Data From a JSON Schema Free</title>
+    <meta name="description" content="Generate example JSON data from a JSON Schema for free, in your browser. Great for tests and fixtures. No sign-up, nothing uploaded." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/sample-json-generator/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Sample JSON Generator — Generate Test Data From a JSON Schema Free" />
+    <meta property="og:description" content="Generate example JSON data from a JSON Schema for free, in your browser. Great for tests and fixtures. No sign-up, nothing uploaded." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/sample-json-generator/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Sample JSON Generator — Generate Test Data From a JSON Schema Free" />
+    <meta name="twitter:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Does the generated data always pass validation?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes \u2014 it's generated to satisfy the schema's own constraints (types, required fields, enums, formats)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I generate more than one record at once?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, turn on batch mode and use \"Generate N samples\" (capped at 500 per generation, a sane UX limit)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is this uploaded anywhere?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No, generation runs entirely client-side."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>Sample JSON Generator</h1>
+      <p class="lede">Generate realistic example data straight from a JSON Schema — free, in your browser, for test fixtures or demos.</p>
+      <a class="cta" href="/">Generate sample data now</a>
+
+      <h2>Why generate sample data from a schema?</h2>
+      <p>Once a schema exists, hand-writing example data that actually satisfies it is tedious and error-prone — a missed <code>required</code> field or a value outside an <code>enum</code> makes your own test fixture invalid. Generating it directly from the schema guarantees the sample matches every constraint the schema declares.</p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and paste your JSON Schema into the schema pane.</li>
+        <li>Use the data pane's "⋯" menu → "Generate sample data".</li>
+        <li>A generated example satisfying the schema is written into the data pane.</li>
+        <li>In batch mode, generate up to 500 sample records at once for bulk test fixtures.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Does the generated data always pass validation?</summary>
+        <p>Yes — it's generated to satisfy the schema's own constraints (types, required fields, enums, formats).</p>
+      </details>
+      <details>
+        <summary>Can I generate more than one record at once?</summary>
+        <p>Yes, turn on batch mode and use "Generate N samples" (capped at 500 per generation, a sane UX limit).</p>
+      </details>
+      <details>
+        <summary>Is this uploaded anywhere?</summary>
+        <p>No, generation runs entirely client-side.</p>
+      </details>
+
+      <p>
+        Need the reverse direction, or a different format? Try the <a href="/json-schema-generator/">schema generator</a> · <a href="/batch-json-validator/">batch validator</a> · <a href="/json-yaml-converter/">format converter</a>
+      </p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/json-schema-generator/">schema generator</a> · <a href="/batch-json-validator/">batch validator</a> · <a href="/json-yaml-converter/">format converter</a> · <a href="/blog/">Blog</a>
+    </footer>
+  </body>
+</html>

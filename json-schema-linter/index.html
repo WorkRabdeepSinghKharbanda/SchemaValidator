@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON Schema Linter — Best-Practice Hints for Your Schema Free</title>
+    <meta name="description" content="Lint your JSON Schema for common best-practice issues (unset additionalProperties, unreachable required fields, single-value enums) for free, in your browser." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/json-schema-linter/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="JSON Schema Linter — Best-Practice Hints for Your Schema Free" />
+    <meta property="og:description" content="Lint your JSON Schema for common best-practice issues (unset additionalProperties, unreachable required fields, single-value enums) for free, in your browser." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/json-schema-linter/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="JSON Schema Linter — Best-Practice Hints for Your Schema Free" />
+    <meta name="twitter:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Does linting replace validation?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No \u2014 it's a separate, best-practice pass alongside normal ajv validation, not a substitute for it."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it check nested schemas?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, recursing into nested <code>properties</code> and array <code>items</code> (depth-capped), skipping <code>$ref</code> nodes rather than guessing at what they resolve to."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can a lint hint ever be wrong?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The checks are deliberately conservative \u2014 only flagging things that are unambiguously worth a second look, not guessing at intent."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>JSON Schema Linter</h1>
+      <p class="lede">Catch common JSON Schema smells — before they cause a confusing validation bug — free, in your browser.</p>
+      <a class="cta" href="/">Lint your schema now</a>
+
+      <h2>Why lint a schema, if it already validates fine?</h2>
+      <p>A schema can be syntactically valid and still have real problems: a <code>required</code> field that's never declared in <code>properties</code> (which can never pass), an unset <code>additionalProperties</code> that silently accepts typo'd field names, or a single-value <code>enum</code> that should just be a <code>const</code>. These aren't validation errors — they're the kind of mistake that only shows up later, as a confusing bug report.</p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and paste your JSON Schema.</li>
+        <li>Below the schema summary, expand the "Schema lint hints" section.</li>
+        <li>Review each hint — unset <code>additionalProperties</code>, undeclared <code>required</code> fields, single-value <code>enum</code>s.</li>
+        <li>Fix what applies; hints are suggestions, not hard errors.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Does linting replace validation?</summary>
+        <p>No — it's a separate, best-practice pass alongside normal ajv validation, not a substitute for it.</p>
+      </details>
+      <details>
+        <summary>Does it check nested schemas?</summary>
+        <p>Yes, recursing into nested <code>properties</code> and array <code>items</code> (depth-capped), skipping <code>$ref</code> nodes rather than guessing at what they resolve to.</p>
+      </details>
+      <details>
+        <summary>Can a lint hint ever be wrong?</summary>
+        <p>The checks are deliberately conservative — only flagging things that are unambiguously worth a second look, not guessing at intent.</p>
+      </details>
+
+      <p>
+        Want to compare two versions of a schema instead? See <a href="/json-schema-generator/">schema generator</a> · <a href="/json-schema-diff/">schema diff</a> · <a href="/json-schema-docs-generator/">field docs generator</a>
+      </p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/json-schema-generator/">schema generator</a> · <a href="/json-schema-diff/">schema diff</a> · <a href="/json-schema-docs-generator/">field docs generator</a> · <a href="/blog/">Blog</a>
+    </footer>
+  </body>
+</html>

@@ -1,5 +1,5 @@
 # Blog
 
 - **Category:** Platform
-- **Entry point:** `blog/index.html`, `blog/{slug}/index.html`
-- Static, no-React blog (same pattern as the SEO landing pages) with `Article` JSON-LD per post; `blog/index.html` is the only listing page, so a new post must be linked there to be discoverable by visitors.
+- **Entry point:** `blog/index.html`, 10 posts at `blog/{slug}/index.html`, auto-discovered by `vite.config.ts`
+- Static, no-React blog (same pattern as the SEO landing pages) with `Article` JSON-LD per post, each tied to a real shipped feature; `blog/index.html` is the only listing page, so a new post must be linked there to be discoverable by visitors.

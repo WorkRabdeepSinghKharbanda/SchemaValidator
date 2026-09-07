@@ -46,9 +46,39 @@
 
       <h2><a href="/blog/validate-json-in-ci/">Validating JSON config files in CI without a server</a></h2>
       <p>How to turn a schema you've already tested in the browser into a script your pipeline can run, no API or backend involved.</p>
+
+      <h2><a href="/blog/generate-json-schema-from-example-payload/">How to generate a JSON Schema from an example payload</a></h2>
+      <p>Writing a schema from scratch for data that already exists is backwards — infer a draft from the data, then refine it.</p>
+
+      <h2><a href="/blog/generate-sample-test-data-from-json-schema/">Auto-generate sample test data from a JSON Schema</a></h2>
+      <p>A hand-written test fixture can silently drift out of sync with the schema it's supposed to satisfy. Generated fixtures can't.</p>
+
+      <h2><a href="/blog/json-schema-to-typescript-interface/">Turn a JSON Schema into a TypeScript interface in seconds</a></h2>
+      <p>Keeping a hand-written TypeScript type in sync with a JSON Schema by hand is exactly the kind of thing that should be automated.</p>
+
+      <h2><a href="/blog/common-json-schema-mistakes-linting-catches/">Common JSON Schema mistakes a linter catches (that validation won't)</a></h2>
+      <p>A schema that compiles fine can still be quietly wrong in ways that only surface later, as a confusing bug report.</p>
+
+      <h2><a href="/blog/how-json-schema-pattern-regex-works/">How the JSON Schema pattern keyword actually works</a></h2>
+      <p>Pattern is just a regular expression tested against a string value — but a few gotchas trip people up regularly.</p>
+
+      <h2><a href="/blog/batch-validate-array-of-records/">Batch-validating an array of records against one schema</a></h2>
+      <p>Validating one record proves your schema works. Validating a thousand imported records proves your data does.</p>
+
+      <h2><a href="/blog/handling-multi-file-json-schema-refs/">Handling multi-file JSON Schemas with $ref</a></h2>
+      <p>A schema referencing another schema by $ref is only as validate-able as your tooling's ability to actually resolve it.</p>
+
+      <h2><a href="/blog/fixing-common-json-syntax-errors/">Fixing common JSON syntax errors: trailing commas, single quotes, unquoted keys</a></h2>
+      <p>JSON is strict on purpose, but the mistakes that break it are almost always the same handful, every time.</p>
+
+      <h2><a href="/blog/generate-field-documentation-from-json-schema/">Generating field documentation from a JSON Schema for non-engineers</a></h2>
+      <p>A JSON Schema is a great contract for a validator. It's a terrible thing to hand a product manager and ask them to read.</p>
+
+      <h2><a href="/blog/convert-json-to-yaml-without-losing-data/">Convert JSON to YAML (and back) without losing data</a></h2>
+      <p>A naive JSON↔YAML conversion usually works — until a type, an anchor, or a multiline string doesn't round-trip the way you expected.</p>
     </main>
     <footer>
-      <a href="/">Schema Validator</a> · <a href="/yaml-validator/">YAML</a> · <a href="/openapi-validator/">OpenAPI</a> · <a href="/csv-validator/">CSV</a>
+      <a href="/">Schema Validator</a> · <a href="/yaml-validator/">YAML</a> · <a href="/openapi-validator/">OpenAPI</a> · <a href="/csv-validator/">CSV</a> · <a href="/json-schema-generator/">Schema generator</a>
     </footer>
   </body>
 </html>

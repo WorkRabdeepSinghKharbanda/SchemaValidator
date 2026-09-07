@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON Schema Generator — Infer a Schema From Sample JSON Free</title>
+    <meta name="description" content="Paste sample JSON and generate a draft JSON Schema automatically, free, in your browser. No sign-up, nothing uploaded." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/json-schema-generator/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="JSON Schema Generator — Infer a Schema From Sample JSON Free" />
+    <meta property="og:description" content="Paste sample JSON and generate a draft JSON Schema automatically, free, in your browser. No sign-up, nothing uploaded." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/json-schema-generator/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="JSON Schema Generator — Infer a Schema From Sample JSON Free" />
+    <meta name="twitter:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Does it infer nested objects and arrays?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, for object nesting. Arrays infer their shape from the first element only \u2014 a documented limitation, not a bug \u2014 so review array item schemas if your array has mixed shapes."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my sample data uploaded anywhere?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No \u2014 inference runs entirely in your browser."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I edit the generated schema afterward?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, it's a normal editable schema in the schema pane \u2014 refine it in Code mode or the Visual builder like any other schema."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>JSON Schema Generator</h1>
+      <p class="lede">Paste an example JSON payload and get a draft JSON Schema back — free, in your browser, in one click.</p>
+      <a class="cta" href="/">Generate a schema now</a>
+
+      <h2>Why generate a schema instead of writing one by hand?</h2>
+      <p>Writing a JSON Schema from scratch for an existing API response or config file means re-typing every field, type, and nesting level you can already see in the data. Schema inference reads your actual sample data and produces a starting schema in seconds, that you refine rather than write from zero.</p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and paste sample JSON data into the data pane.</li>
+        <li>Use the schema pane's "⋯" menu → "Infer schema from data".</li>
+        <li>A draft schema is written into the schema pane, matching the data's types and nesting.</li>
+        <li>Refine it — add <code>required</code> fields, tighten an <code>enum</code>, or switch to the Visual builder.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Does it infer nested objects and arrays?</summary>
+        <p>Yes, for object nesting. Arrays infer their shape from the first element only — a documented limitation, not a bug — so review array item schemas if your array has mixed shapes.</p>
+      </details>
+      <details>
+        <summary>Is my sample data uploaded anywhere?</summary>
+        <p>No — inference runs entirely in your browser.</p>
+      </details>
+      <details>
+        <summary>Can I edit the generated schema afterward?</summary>
+        <p>Yes, it's a normal editable schema in the schema pane — refine it in Code mode or the Visual builder like any other schema.</p>
+      </details>
+
+      <p>
+        Once you have a schema, you can <a href="/json-to-typescript/">TypeScript export</a> · <a href="/sample-json-generator/">sample data generator</a> · <a href="/json-schema-linter/">schema linter</a>
+      </p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/json-to-typescript/">TypeScript export</a> · <a href="/sample-json-generator/">sample data generator</a> · <a href="/json-schema-linter/">schema linter</a> · <a href="/blog/">Blog</a>
+    </footer>
+  </body>
+</html>

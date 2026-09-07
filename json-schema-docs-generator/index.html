@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON Schema Documentation Generator — Field Docs Free</title>
+    <meta name="description" content="Generate readable field documentation (Markdown or PDF) from a JSON Schema for free, in your browser. Share with non-engineers without exposing raw JSON." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/json-schema-docs-generator/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="JSON Schema Documentation Generator — Field Docs Free" />
+    <meta property="og:description" content="Generate readable field documentation (Markdown or PDF) from a JSON Schema for free, in your browser. Share with non-engineers without exposing raw JSON." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/json-schema-docs-generator/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="JSON Schema Documentation Generator — Field Docs Free" />
+    <meta name="twitter:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Does the PDF look like a plain generic report?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No \u2014 it shares the app's own dark theme and brand mark, not a plain white default PDF layout."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this replace the Markdown export?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No, both exist side by side \u2014 pick whichever fits where you're sharing it."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it cover nested fields?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, the field table walks the schema's structure, not just its flat top level."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>JSON Schema Documentation Generator</h1>
+      <p class="lede">Turn a JSON Schema into a readable field-by-field doc — Markdown or a branded PDF table — free, in your browser.</p>
+      <a class="cta" href="/">Generate field docs now</a>
+
+      <h2>Why generate docs from a schema instead of writing them separately?</h2>
+      <p>A schema and a hand-written field-reference doc drift apart the same way a schema and a hand-written TypeScript type do. Generating the doc directly from the schema means it can never describe a field that no longer exists, or miss one that was just added — and it's readable by someone who's never seen raw JSON Schema.</p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and paste your JSON Schema.</li>
+        <li>Use the schema pane's "⋯" menu → "Export field docs".</li>
+        <li>Choose Markdown (for a repo/wiki) or PDF (a branded table, ready to share as-is).</li>
+        <li>Send it to whoever needs a plain-English reference, not the raw schema.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Does the PDF look like a plain generic report?</summary>
+        <p>No — it shares the app's own dark theme and brand mark, not a plain white default PDF layout.</p>
+      </details>
+      <details>
+        <summary>Does this replace the Markdown export?</summary>
+        <p>No, both exist side by side — pick whichever fits where you're sharing it.</p>
+      </details>
+      <details>
+        <summary>Does it cover nested fields?</summary>
+        <p>Yes, the field table walks the schema's structure, not just its flat top level.</p>
+      </details>
+
+      <p>
+        Documenting an OpenAPI-derived schema instead? See the <a href="/json-to-typescript/">TypeScript export</a> · <a href="/json-schema-generator/">schema generator</a> · <a href="/openapi-validator/">OpenAPI validator</a>
+      </p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/json-to-typescript/">TypeScript export</a> · <a href="/json-schema-generator/">schema generator</a> · <a href="/openapi-validator/">OpenAPI validator</a> · <a href="/blog/">Blog</a>
+    </footer>
+  </body>
+</html>

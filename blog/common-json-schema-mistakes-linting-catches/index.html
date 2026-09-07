@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Common JSON Schema Mistakes a Linter Catches (That Validation Won't)</title>
+    <meta name="description" content="A JSON Schema can be syntactically valid and still have real problems. Here's what a schema linter checks for and why it matters." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/blog/common-json-schema-mistakes-linting-catches/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Common JSON Schema Mistakes a Linter Catches (That Validation Won't)" />
+    <meta property="og:description" content="A JSON Schema can be syntactically valid and still have real problems. Here's what a schema linter checks for and why it matters." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/blog/common-json-schema-mistakes-linting-catches/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Common JSON Schema mistakes a linter catches (that validation won't)",
+        "datePublished": "2026-09-08",
+        "dateModified": "2026-09-08",
+        "author": { "@type": "Organization", "name": "Schema Validator" },
+        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/common-json-schema-mistakes-linting-catches/"
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>Common JSON Schema mistakes a linter catches (that validation won't)</h1>
+      <p class="lede">A schema that compiles fine can still be quietly wrong in ways that only surface later, as a confusing bug report.</p>
+
+      <h2>A required field that's never declared</h2>
+      <p>If <code>required</code> lists a property name that isn't in <code>properties</code>, the schema is syntactically fine — and every single record will fail, because that field can never be satisfied the way you intended. This is the single most useful thing a schema linter can flag, because it's invisible until you actually run validation against real data and wonder why nothing passes.</p>
+
+      <h2>Unset additionalProperties</h2>
+      <p>Leaving <code>additionalProperties</code> unset means any object schema silently accepts extra, unexpected fields — including a typo'd version of a real field name, which validation will never catch because as far as ajv is concerned, an extra field is just... extra.</p>
+
+      <h2>A single-value enum</h2>
+      <p>An <code>enum</code> with exactly one allowed value is usually a sign the field should be a <code>const</code> instead — functionally similar, but clearer about intent to the next person reading the schema.</p>
+
+      <h2>Try it</h2>
+      <p><a href="/json-schema-linter/">Schema Validator's schema linter</a> checks for all of these (and recurses into nested schemas) without needing a second tool.</p>
+
+      <a class="cta" href="/json-schema-linter/">Lint your schema now</a>
+    </main>
+    <footer>
+      <a href="/blog/">← Back to blog</a> · <a href="/">Schema Validator</a>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON Schema to TypeScript — Generate a .d.ts Interface Free</title>
+    <meta name="description" content="Convert a JSON Schema into a TypeScript interface for free, in your browser. Best-effort .d.ts generation, no sign-up, nothing uploaded." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/json-to-typescript/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="JSON Schema to TypeScript — Generate a .d.ts Interface Free" />
+    <meta property="og:description" content="Convert a JSON Schema into a TypeScript interface for free, in your browser. Best-effort .d.ts generation, no sign-up, nothing uploaded." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/json-to-typescript/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="JSON Schema to TypeScript — Generate a .d.ts Interface Free" />
+    <meta name="twitter:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Does it handle every JSON Schema keyword?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "It's best-effort: <code>type</code>, <code>properties</code>, <code>required</code>, <code>items</code>, <code>enum</code>, <code>$ref</code>, and <code>oneOf</code>/<code>anyOf</code> (as unions) are supported; more complex constructs like <code>allOf</code> or conditionals fall back to <code>unknown</code>."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens to nested objects?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Each becomes its own named interface, generated above the interface that references it."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does $ref get resolved against my reference schemas?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No \u2014 a <code>$ref</code> is rendered by its final path segment as a type name, not resolved/inlined."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>JSON Schema to TypeScript</h1>
+      <p class="lede">Turn a JSON Schema into a TypeScript interface — free, in your browser, no build step required.</p>
+      <a class="cta" href="/">Export a TypeScript interface</a>
+
+      <h2>Why generate types from a schema instead of hand-typing them?</h2>
+      <p>A JSON Schema and a hand-written TypeScript interface for the same data drift apart the moment either one changes. Generating the interface directly from the schema keeps them in lockstep — paste the schema once, get the type, and regenerate whenever the schema updates.</p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and paste your JSON Schema.</li>
+        <li>Use the schema pane's "⋯" menu → "Export as TypeScript interface".</li>
+        <li>A <code>.d.ts</code>-style interface is generated, with nested objects broken out into their own named interfaces.</li>
+        <li>Copy it into your codebase.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Does it handle every JSON Schema keyword?</summary>
+        <p>It's best-effort: <code>type</code>, <code>properties</code>, <code>required</code>, <code>items</code>, <code>enum</code>, <code>$ref</code>, and <code>oneOf</code>/<code>anyOf</code> (as unions) are supported; more complex constructs like <code>allOf</code> or conditionals fall back to <code>unknown</code>.</p>
+      </details>
+      <details>
+        <summary>What happens to nested objects?</summary>
+        <p>Each becomes its own named interface, generated above the interface that references it.</p>
+      </details>
+      <details>
+        <summary>Does $ref get resolved against my reference schemas?</summary>
+        <p>No — a <code>$ref</code> is rendered by its final path segment as a type name, not resolved/inlined.</p>
+      </details>
+
+      <p>
+        Working from an OpenAPI spec instead? See the <a href="/json-schema-generator/">schema generator</a> · <a href="/json-schema-docs-generator/">field docs generator</a> · <a href="/openapi-validator/">OpenAPI validator</a>
+      </p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/json-schema-generator/">schema generator</a> · <a href="/json-schema-docs-generator/">field docs generator</a> · <a href="/openapi-validator/">OpenAPI validator</a> · <a href="/blog/">Blog</a>
+    </footer>
+  </body>
+</html>

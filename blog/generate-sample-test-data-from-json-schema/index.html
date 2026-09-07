@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auto-Generate Sample Test Data From a JSON Schema</title>
+    <meta name="description" content="Why hand-writing test fixtures against a schema is risky, and how to generate ones that are guaranteed to pass." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/blog/generate-sample-test-data-from-json-schema/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Auto-Generate Sample Test Data From a JSON Schema" />
+    <meta property="og:description" content="Why hand-writing test fixtures against a schema is risky, and how to generate ones that are guaranteed to pass." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/blog/generate-sample-test-data-from-json-schema/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Auto-generate sample test data from a JSON Schema",
+        "datePublished": "2026-09-08",
+        "dateModified": "2026-09-08",
+        "author": { "@type": "Organization", "name": "Schema Validator" },
+        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/generate-sample-test-data-from-json-schema/"
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>Auto-generate sample test data from a JSON Schema</h1>
+      <p class="lede">A hand-written test fixture can silently drift out of sync with the schema it's supposed to satisfy. Generated fixtures can't.</p>
+
+      <h2>The problem with hand-written fixtures</h2>
+      <p>A test fixture is usually written once and rarely revisited — but the schema it's meant to satisfy keeps changing. A new <code>required</code> field, a narrowed <code>enum</code>, or a stricter <code>pattern</code> can leave an old fixture technically invalid without anyone noticing, because nothing re-checks it against the current schema unless a test actually runs validation.</p>
+
+      <h2>Generate instead of maintain</h2>
+      <p>Generating sample data directly from the current schema sidesteps the whole problem — the sample is guaranteed to satisfy whatever the schema says right now, because it's built from the schema itself, not remembered from whenever the fixture was first written.</p>
+
+      <h2>Bulk fixtures for batch tests</h2>
+      <p>Need more than one record — say, seeding a test database or stress-testing a batch import? Generate many at once (up to 500 in one run) rather than looping a single-record generator by hand.</p>
+
+      <h2>Try it</h2>
+      <p><a href="/sample-json-generator/">Schema Validator's sample data generator</a> does this from any JSON Schema, entirely in the browser.</p>
+
+      <a class="cta" href="/sample-json-generator/">Generate sample data now</a>
+    </main>
+    <footer>
+      <a href="/blog/">← Back to blog</a> · <a href="/">Schema Validator</a>
+    </footer>
+  </body>
+</html>

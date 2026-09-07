@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON Repair — Fix Trailing Commas, Single Quotes, Unquoted Keys Free</title>
+    <meta name="description" content="Automatically fix common JSON syntax mistakes — trailing commas, single quotes, unquoted keys — for free, in your browser." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/json-repair/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="JSON Repair — Fix Trailing Commas, Single Quotes, Unquoted Keys Free" />
+    <meta property="og:description" content="Automatically fix common JSON syntax mistakes — trailing commas, single quotes, unquoted keys — for free, in your browser." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/json-repair/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="JSON Repair — Fix Trailing Commas, Single Quotes, Unquoted Keys Free" />
+    <meta name="twitter:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What kinds of errors does it fix?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Common JSON slips: trailing commas, single-quoted strings, and unquoted object keys \u2014 not deeper structural or logical errors."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it work on schema too, or just data?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "It's offered for JSON data with a plain parse error; the same JSONC-tolerant parser also accepts comments and trailing commas in both panes without needing a fix at all."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I undo an auto-fix?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, a one-click Undo appears on the success toast right after."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>JSON Repair</h1>
+      <p class="lede">Auto-fix the JSON slips that break strict parsers — trailing commas, single quotes, unquoted keys — free, in your browser, one click.</p>
+      <a class="cta" href="/">Repair your JSON now</a>
+
+      <h2>Why auto-fix instead of hunting for the broken character by hand?</h2>
+      <p>Hand-written or copy-pasted JSON (from a log line, a chat message, a loosely-typed config) often has small syntax slips that a strict parser rejects outright: a trailing comma, single quotes instead of double, an unquoted key. Auto-fix repairs the common cases in one click instead of you scanning character by character.</p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and paste JSON with a syntax error into the data pane.</li>
+        <li>If it's a plain parse error, an "Auto-fix" button appears.</li>
+        <li>Click it — trailing commas, single quotes, and unquoted keys are repaired automatically.</li>
+        <li>Didn't want the change? A one-click "Undo" on the success toast reverts it.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>What kinds of errors does it fix?</summary>
+        <p>Common JSON slips: trailing commas, single-quoted strings, and unquoted object keys — not deeper structural or logical errors.</p>
+      </details>
+      <details>
+        <summary>Does it work on schema too, or just data?</summary>
+        <p>It's offered for JSON data with a plain parse error; the same JSONC-tolerant parser also accepts comments and trailing commas in both panes without needing a fix at all.</p>
+      </details>
+      <details>
+        <summary>Can I undo an auto-fix?</summary>
+        <p>Yes, a one-click Undo appears on the success toast right after.</p>
+      </details>
+
+      <p>
+        Fixed the syntax? Now check it against a schema with the <a href="/json-validator/">JSON validator</a> · <a href="/regex-tester/">regex tester</a> · <a href="/json-schema-linter/">schema linter</a>
+      </p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/json-validator/">JSON validator</a> · <a href="/regex-tester/">regex tester</a> · <a href="/json-schema-linter/">schema linter</a> · <a href="/blog/">Blog</a>
+    </footer>
+  </body>
+</html>

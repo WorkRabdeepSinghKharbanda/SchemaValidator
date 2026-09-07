@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Turn a JSON Schema Into a TypeScript Interface in Seconds</title>
+    <meta name="description" content="How to generate a TypeScript interface from a JSON Schema, what gets handled well, and what still needs manual review." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/blog/json-schema-to-typescript-interface/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Turn a JSON Schema Into a TypeScript Interface in Seconds" />
+    <meta property="og:description" content="How to generate a TypeScript interface from a JSON Schema, what gets handled well, and what still needs manual review." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/blog/json-schema-to-typescript-interface/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Turn a JSON Schema into a TypeScript interface in seconds",
+        "datePublished": "2026-09-08",
+        "dateModified": "2026-09-08",
+        "author": { "@type": "Organization", "name": "Schema Validator" },
+        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/json-schema-to-typescript-interface/"
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>Turn a JSON Schema into a TypeScript interface in seconds</h1>
+      <p class="lede">Keeping a hand-written TypeScript type in sync with a JSON Schema by hand is exactly the kind of thing that should be automated.</p>
+
+      <h2>Why this drifts in the first place</h2>
+      <p>A JSON Schema validates data at runtime; a TypeScript interface types it at compile time. They describe the same shape, written twice, by hand, usually by two different people at two different times — which is exactly how they drift apart. A schema update that isn't mirrored into the type leaves TypeScript confidently wrong about what a value actually contains.</p>
+
+      <h2>What a best-effort generator handles well</h2>
+      <p>The common cases — <code>type</code>, <code>properties</code>, <code>required</code>, array <code>items</code>, <code>enum</code>, and <code>oneOf</code>/<code>anyOf</code> as unions — map cleanly to TypeScript. Nested objects become their own named interfaces automatically, so a deeply nested schema doesn't produce one giant inline type.</p>
+
+      <h2>What still needs a human</h2>
+      <p>Conditional schemas (<code>if</code>/<code>then</code>/<code>else</code>), <code>allOf</code> composition, and tuple-style <code>items</code> don't map onto TypeScript cleanly enough to auto-generate correctly — these fall back to <code>unknown</code>, which is a signal to review that part of the type by hand, not a bug.</p>
+
+      <h2>Try it</h2>
+      <p><a href="/json-to-typescript/">Schema Validator's TypeScript export</a> generates this directly from your schema, in the browser.</p>
+
+      <a class="cta" href="/json-to-typescript/">Export a TypeScript interface</a>
+    </main>
+    <footer>
+      <a href="/blog/">← Back to blog</a> · <a href="/">Schema Validator</a>
+    </footer>
+  </body>
+</html>

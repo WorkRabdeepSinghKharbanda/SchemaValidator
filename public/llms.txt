@@ -19,7 +19,17 @@ five supported data formats.
 - [CSV Schema Validator](https://schema-validator-livid.vercel.app/csv-validator/): batch-validating every row of a CSV file.
 - [TOML Validator](https://schema-validator-livid.vercel.app/toml-validator/): validating TOML config files.
 - [XML Validator](https://schema-validator-livid.vercel.app/xml-validator/): validating XML against a JSON Schema instead of an XSD.
-- [Blog](https://schema-validator-livid.vercel.app/blog/): guides on JSON Schema drafts, OpenAPI vs. JSON Schema, and running schema checks in CI.
+- [JSON Schema Generator](https://schema-validator-livid.vercel.app/json-schema-generator/): inferring a draft schema from sample data.
+- [Sample JSON Generator](https://schema-validator-livid.vercel.app/sample-json-generator/): generating example data from a schema.
+- [JSON to TypeScript](https://schema-validator-livid.vercel.app/json-to-typescript/): exporting a schema as a TypeScript interface.
+- [JSON/YAML Converter](https://schema-validator-livid.vercel.app/json-yaml-converter/): converting data between JSON, YAML, TOML, XML, and CSV.
+- [JSON Schema Linter](https://schema-validator-livid.vercel.app/json-schema-linter/): best-practice hints for a schema.
+- [Regex Tester](https://schema-validator-livid.vercel.app/regex-tester/): testing a schema's pattern keyword live.
+- [Batch JSON Validator](https://schema-validator-livid.vercel.app/batch-json-validator/): validating every record in an array against one schema.
+- [JSON Schema Diff](https://schema-validator-livid.vercel.app/json-schema-diff/): comparing two versions of a schema.
+- [JSON Repair](https://schema-validator-livid.vercel.app/json-repair/): auto-fixing trailing commas, single quotes, unquoted keys.
+- [JSON Schema Docs Generator](https://schema-validator-livid.vercel.app/json-schema-docs-generator/): generating readable field documentation from a schema.
+- [Blog](https://schema-validator-livid.vercel.app/blog/): guides on JSON Schema drafts, schema generation, TypeScript export, linting, regex patterns, batch validation, $ref resolution, JSON repair, field docs, and format conversion.
 - [Privacy Policy](https://schema-validator-livid.vercel.app/#privacy): what's stored locally, AdSense cookie use, opt-out link.
 
 ## Notes for automated agents

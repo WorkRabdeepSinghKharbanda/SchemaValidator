@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON Schema Diff — Compare Two Schema Versions Free</title>
+    <meta name="description" content="Compare your current JSON Schema against a saved version and see a line diff, free, in your browser. No sign-up, nothing uploaded." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/json-schema-diff/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="JSON Schema Diff — Compare Two Schema Versions Free" />
+    <meta property="og:description" content="Compare your current JSON Schema against a saved version and see a line diff, free, in your browser. No sign-up, nothing uploaded." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/json-schema-diff/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="JSON Schema Diff — Compare Two Schema Versions Free" />
+    <meta name="twitter:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Can I diff two saved workspaces directly?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Not two arbitrary saved schemas against each other \u2014 diff compares a saved workspace against whatever is currently in the schema pane, so load one as current first."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it diff data too, or just the schema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Just the schema. For data, use \"Diff from last valid\", which compares current data against the last version that passed validation."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is anything uploaded?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No, the diff is computed entirely in your browser."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>JSON Schema Diff</h1>
+      <p class="lede">See exactly what changed between two versions of a JSON Schema — free, in your browser, as a line diff.</p>
+      <a class="cta" href="/">Compare schema versions</a>
+
+      <h2>Why diff a schema instead of eyeballing two files?</h2>
+      <p>A schema change that looks small in a text editor — a field moved from <code>required</code>, a type widened, a nested object restructured — can have a large effect on what data now passes or fails. A line diff makes exactly what changed obvious at a glance.</p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>Save a version of your schema as a named workspace in <a href="/">Schema Validator</a>.</li>
+        <li>Edit the schema further, or load a different version into the schema pane.</li>
+        <li>Open the schema pane's "⋯" menu → "Compare with" and pick the saved workspace.</li>
+        <li>A line diff of that workspace's schema vs. the current one renders below the editors.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Can I diff two saved workspaces directly?</summary>
+        <p>Not two arbitrary saved schemas against each other — diff compares a saved workspace against whatever is currently in the schema pane, so load one as current first.</p>
+      </details>
+      <details>
+        <summary>Does it diff data too, or just the schema?</summary>
+        <p>Just the schema. For data, use "Diff from last valid", which compares current data against the last version that passed validation.</p>
+      </details>
+      <details>
+        <summary>Is anything uploaded?</summary>
+        <p>No, the diff is computed entirely in your browser.</p>
+      </details>
+
+      <p>
+        Want to catch structural issues before diffing? Try the <a href="/json-schema-linter/">schema linter</a> · <a href="/json-schema-generator/">schema generator</a> · <a href="/json-repair/">JSON auto-fix</a>
+      </p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/json-schema-linter/">schema linter</a> · <a href="/json-schema-generator/">schema generator</a> · <a href="/json-repair/">JSON auto-fix</a> · <a href="/blog/">Blog</a>
+    </footer>
+  </body>
+</html>

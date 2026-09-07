@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How to Generate a JSON Schema From an Example Payload</title>
+    <meta name="description" content="A practical approach to inferring a JSON Schema from real sample data instead of writing one from scratch." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/blog/generate-json-schema-from-example-payload/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="How to Generate a JSON Schema From an Example Payload" />
+    <meta property="og:description" content="A practical approach to inferring a JSON Schema from real sample data instead of writing one from scratch." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/blog/generate-json-schema-from-example-payload/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "How to generate a JSON Schema from an example payload",
+        "datePublished": "2026-09-08",
+        "dateModified": "2026-09-08",
+        "author": { "@type": "Organization", "name": "Schema Validator" },
+        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/generate-json-schema-from-example-payload/"
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>How to generate a JSON Schema from an example payload</h1>
+      <p class="lede">Writing a schema from scratch for data that already exists is backwards — infer a draft from the data, then refine it.</p>
+
+      <h2>Start from the data, not a blank schema</h2>
+      <p>If you already have a real API response, config file, or database export, its shape is right there. Schema inference reads that shape — property names, types, nesting — and produces a draft schema, which is almost always faster than typing every field by hand, even if you end up tightening it afterward.</p>
+
+      <h2>What inference gets right, and what it can't guess</h2>
+      <p>Inference can see types and structure directly from your sample. It can't guess intent: whether a field should be <code>required</code>, whether a string should have a <code>pattern</code>, or whether a number needs a <code>minimum</code>. Treat the generated schema as a first draft, not a final one — tighten constraints based on what you actually know about the data, not just what one sample happened to look like.</p>
+
+      <h2>A common trap: arrays</h2>
+      <p>An array's shape is usually inferred from its first element only. If your array can contain items with genuinely different shapes, review the generated <code>items</code> schema by hand rather than trusting it blindly.</p>
+
+      <h2>Try it</h2>
+      <p><a href="/json-schema-generator/">Schema Validator's schema generator</a> does this inference for you, directly in the browser, from data you paste.</p>
+
+      <a class="cta" href="/json-schema-generator/">Generate a schema from your data</a>
+    </main>
+    <footer>
+      <a href="/blog/">← Back to blog</a> · <a href="/">Schema Validator</a>
+    </footer>
+  </body>
+</html>

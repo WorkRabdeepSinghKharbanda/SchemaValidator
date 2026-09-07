@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON to YAML Converter — Convert Between JSON, YAML, TOML, XML, CSV Free</title>
+    <meta name="description" content="Convert data between JSON, YAML, TOML, XML, and CSV in your browser for free. No sign-up, nothing uploaded, and you can validate the result against a schema too." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/json-yaml-converter/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="JSON to YAML Converter — Convert Between JSON, YAML, TOML, XML, CSV Free" />
+    <meta property="og:description" content="Convert data between JSON, YAML, TOML, XML, and CSV in your browser for free. No sign-up, nothing uploaded, and you can validate the result against a schema too." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/json-yaml-converter/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="JSON to YAML Converter — Convert Between JSON, YAML, TOML, XML, CSV Free" />
+    <meta name="twitter:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Which formats are supported?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "JSON, YAML, TOML, XML, and CSV \u2014 convert between any pair."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does conversion ever lose data?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Only where the target format genuinely can't represent the source shape (e.g. deeply nested data flattened into CSV) \u2014 for JSON/YAML/TOML round-trips this is not an issue."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my data uploaded anywhere?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No, conversion runs entirely in the browser."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>JSON ⇄ YAML Converter</h1>
+      <p class="lede">Convert data between JSON, YAML, TOML, XML, and CSV — free, in your browser, with an optional schema check on the result.</p>
+      <a class="cta" href="/">Convert your data now</a>
+
+      <h2>Why convert formats in the same tool you validate with?</h2>
+      <p>Converting JSON to YAML (or any of the five supported formats to any other) is easy to get subtly wrong by hand — quoting, indentation, or a type that doesn't round-trip cleanly. Converting in the same editor you validate in means you can immediately check the converted output against your schema, not just eyeball it.</p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and paste your data in its current format.</li>
+        <li>Use the data pane's format tabs to switch to the target format — this reserializes the data.</li>
+        <li>Optionally paste a JSON Schema to validate the converted result matches expectations.</li>
+        <li>Copy or export the converted data.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Which formats are supported?</summary>
+        <p>JSON, YAML, TOML, XML, and CSV — convert between any pair.</p>
+      </details>
+      <details>
+        <summary>Does conversion ever lose data?</summary>
+        <p>Only where the target format genuinely can't represent the source shape (e.g. deeply nested data flattened into CSV) — for JSON/YAML/TOML round-trips this is not an issue.</p>
+      </details>
+      <details>
+        <summary>Is my data uploaded anywhere?</summary>
+        <p>No, conversion runs entirely in the browser.</p>
+      </details>
+
+      <p>
+        Once converted, validate the result against a schema with the <a href="/csv-validator/">CSV validator</a> · <a href="/toml-validator/">TOML validator</a> · <a href="/xml-validator/">XML validator</a>
+      </p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/csv-validator/">CSV validator</a> · <a href="/toml-validator/">TOML validator</a> · <a href="/xml-validator/">XML validator</a> · <a href="/blog/">Blog</a>
+    </footer>
+  </body>
+</html>

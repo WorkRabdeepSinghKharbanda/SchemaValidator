@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Handling Multi-File JSON Schemas With $ref</title>
+    <meta name="description" content="How JSON Schema's $ref works across multiple files, common resolution mistakes, and how to validate against schemas that reference each other." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/blog/handling-multi-file-json-schema-refs/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Handling Multi-File JSON Schemas With $ref" />
+    <meta property="og:description" content="How JSON Schema's $ref works across multiple files, common resolution mistakes, and how to validate against schemas that reference each other." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/blog/handling-multi-file-json-schema-refs/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Handling multi-file JSON Schemas with $ref",
+        "datePublished": "2026-09-08",
+        "dateModified": "2026-09-08",
+        "author": { "@type": "Organization", "name": "Schema Validator" },
+        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/handling-multi-file-json-schema-refs/"
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>Handling multi-file JSON Schemas with $ref</h1>
+      <p class="lede">A schema referencing another schema by <code>$ref</code> is only as validate-able as your tooling's ability to actually resolve it.</p>
+
+      <h2>Why schemas get split across files at all</h2>
+      <p>A shared "Address" or "Money" shape used by a dozen different schemas shouldn't be copy-pasted a dozen times — <code>$ref</code> lets one schema point at another so common shapes are defined once. This is exactly how OpenAPI specs structure <code>components.schemas</code> internally, and it's just as useful in plain multi-file JSON Schema.</p>
+
+      <h2>What has to happen for a $ref to actually resolve</h2>
+      <p>A validator needs every referenced schema registered before it compiles the schema that points at it — an unregistered <code>$ref</code> id fails at compile time, not with a helpful "file not found" message pointing at the actual problem, usually just a confusing internal ajv error.</p>
+
+      <h2>Testing this without a build pipeline</h2>
+      <p>If your validator supports uploading multiple schema files and registering them as references, you can test the exact multi-file setup you'll deploy with, without needing a bundler step that inlines every <code>$ref</code> into one file first.</p>
+
+      <h2>Try it</h2>
+      <p><a href="/">Schema Validator</a>'s reference-schema panel lets you upload multiple schema files and resolves <code>$ref</code>s between them directly in the browser — and the <a href="/openapi-validator/">OpenAPI import</a> does this automatically for an entire spec's <code>components.schemas</code>.</p>
+
+      <a class="cta" href="/openapi-validator/">Try OpenAPI $ref resolution</a>
+    </main>
+    <footer>
+      <a href="/blog/">← Back to blog</a> · <a href="/">Schema Validator</a>
+    </footer>
+  </body>
+</html>

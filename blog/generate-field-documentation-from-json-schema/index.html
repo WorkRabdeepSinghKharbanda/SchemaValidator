@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generating Field Documentation From a JSON Schema for Non-Engineers</title>
+    <meta name="description" content="How to turn a JSON Schema into a readable field reference that a non-engineer stakeholder can actually use." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/blog/generate-field-documentation-from-json-schema/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Generating Field Documentation From a JSON Schema for Non-Engineers" />
+    <meta property="og:description" content="How to turn a JSON Schema into a readable field reference that a non-engineer stakeholder can actually use." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/blog/generate-field-documentation-from-json-schema/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Generating field documentation from a JSON Schema for non-engineers",
+        "datePublished": "2026-09-08",
+        "dateModified": "2026-09-08",
+        "author": { "@type": "Organization", "name": "Schema Validator" },
+        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/generate-field-documentation-from-json-schema/"
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>Generating field documentation from a JSON Schema for non-engineers</h1>
+      <p class="lede">A JSON Schema is a great contract for a validator. It's a terrible thing to hand a product manager and ask them to read.</p>
+
+      <h2>The audience problem</h2>
+      <p>A schema is written for a validation engine, not a person — nested <code>properties</code>/<code>items</code>/<code>$ref</code> structure that's perfectly parseable by ajv is genuinely hard to skim for someone checking "does this API accept a phone number field, and is it required." Handing over the raw schema either gets ignored or triggers a round of clarifying questions that a readable doc would have answered up front.</p>
+
+      <h2>What a field doc needs that a schema doesn't have</h2>
+      <p>Plain field names, a plain-English type description, whether it's required, and any constraints worth knowing (an enum's allowed values, a format) — laid out as a table, not a nested tree structure.</p>
+
+      <h2>Keeping it in sync automatically</h2>
+      <p>The same problem that affects hand-written TypeScript types affects hand-written docs: they drift from the schema the moment either one changes without the other being updated. Generating the doc directly from the current schema means it can't describe a field that no longer exists.</p>
+
+      <h2>Try it</h2>
+      <p><a href="/json-schema-docs-generator/">Schema Validator's field docs export</a> generates a Markdown table (for a repo/wiki) or a branded PDF (ready to share as-is) directly from your schema.</p>
+
+      <a class="cta" href="/json-schema-docs-generator/">Generate field docs now</a>
+    </main>
+    <footer>
+      <a href="/blog/">← Back to blog</a> · <a href="/">Schema Validator</a>
+    </footer>
+  </body>
+</html>

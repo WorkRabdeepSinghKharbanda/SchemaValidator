@@ -75,4 +75,6 @@ One file per feature/tool. Source of truth is `CLAUDE.md`'s "Features, one by on
 - [Monetization Ad Slot](055-monetization-ad-slot.md)
 - [Cookie Consent Banner](056-cookie-consent-banner.md)
 - [Privacy Policy](057-privacy-policy.md)
+- [SEO Landing Pages](058-seo-landing-pages.md)
+- [AI Crawler Access](059-ai-crawler-access.md)
 

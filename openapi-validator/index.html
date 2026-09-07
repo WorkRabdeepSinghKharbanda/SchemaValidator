@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenAPI Schema Validator — Test Swagger/OpenAPI Schemas Free</title>
+    <meta
+      name="description"
+      content="Import an OpenAPI or Swagger spec, pick a component schema, and validate sample data against it — free, in your browser, with $ref resolution across the whole spec."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/openapi-validator/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="OpenAPI Schema Validator — Test Swagger/OpenAPI Schemas Free" />
+    <meta property="og:description" content="Import an OpenAPI or Swagger spec and validate sample data against any component schema, free, in your browser." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/openapi-validator/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="OpenAPI Schema Validator — Test Swagger/OpenAPI Schemas Free" />
+    <meta name="twitter:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Can I validate data against a schema from my OpenAPI spec?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Upload your OpenAPI 3 or Swagger 2 spec (JSON or YAML), pick one of its components.schemas or definitions entries, and it loads into the schema pane with sibling schemas auto-added so internal $refs resolve."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it handle $ref between schemas in my spec?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, for refs inside components/schemas or definitions. Refs pointing outside that (parameters, responses, external files) are flagged as unresolved rather than failing silently."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my OpenAPI spec uploaded anywhere?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No — the import and validation both happen entirely in your browser. Nothing is sent to a server."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>OpenAPI Schema Validator</h1>
+      <p class="lede">
+        Import an OpenAPI or Swagger spec, pick any component schema, and validate real request/response payloads
+        against it — free, in your browser, no server round-trip.
+      </p>
+      <a class="cta" href="/">Import a spec now</a>
+
+      <h2>Why validate against an OpenAPI component schema?</h2>
+      <p>
+        An OpenAPI spec describes dozens of request/response shapes, but testing whether an actual payload matches
+        one of them usually means spinning up the API or writing a throwaway script. Schema Validator lets you pull
+        any <code>components.schemas</code> or <code>definitions</code> entry straight out of the spec and validate
+        sample data against it immediately.
+      </p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and use the schema pane's "⋯" menu → Import from OpenAPI/Swagger.</li>
+        <li>Upload your spec file (JSON or YAML — both are tried automatically).</li>
+        <li>Pick the schema you want from the list of detected component schemas.</li>
+        <li>That schema loads into the schema pane, and every sibling schema is auto-added as a reference so internal <code>$ref</code>s resolve correctly.</li>
+        <li>Paste sample request/response data and validate as usual.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Can I validate data against a schema from my OpenAPI spec?</summary>
+        <p>Yes — import the spec, pick a component schema, and it's loaded into the schema pane with its sibling refs resolved.</p>
+      </details>
+      <details>
+        <summary>Does it handle $ref between schemas in my spec?</summary>
+        <p>Yes, for refs inside <code>components/schemas</code> or <code>definitions</code>. Refs to parameters, responses, or external files are flagged as unresolved instead of failing silently.</p>
+      </details>
+      <details>
+        <summary>Is my spec uploaded anywhere?</summary>
+        <p>No — everything runs client-side. Nothing is sent to a server.</p>
+      </details>
+
+      <p>
+        Prefer to write the schema by hand? Schema Validator also supports plain
+        <a href="/">JSON, YAML, TOML, XML, and CSV</a> validation without an OpenAPI spec.
+      </p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/yaml-validator/">YAML validator</a> · <a href="/csv-validator/">CSV validator</a>
+    </footer>
+  </body>
+</html>

@@ -1000,6 +1000,8 @@ header p {
 .app-footer {
   display: flex;
   justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
   padding: 4px 0 0;
 }
 

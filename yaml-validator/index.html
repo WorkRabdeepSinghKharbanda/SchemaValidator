@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YAML Schema Validator — Validate YAML Against a JSON Schema Free</title>
+    <meta
+      name="description"
+      content="Validate YAML files against a JSON Schema for free, right in your browser. Draft-07, 2019-09, and 2020-12 supported. No sign-up, no upload — your YAML never leaves your device."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/yaml-validator/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="YAML Schema Validator — Validate YAML Against a JSON Schema Free" />
+    <meta property="og:description" content="Validate YAML files against a JSON Schema for free, right in your browser. No sign-up, nothing uploaded to a server." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/yaml-validator/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="YAML Schema Validator — Validate YAML Against a JSON Schema Free" />
+    <meta name="twitter:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Can I validate a YAML file against a JSON Schema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Schema Validator parses YAML into a data structure and validates it against a JSON Schema using ajv, the same way it validates JSON — pick the YAML tab, paste your schema, and paste or upload your YAML file."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does my YAML get uploaded to a server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Schema Validator is a client-only app — parsing and validation both run in your browser. Nothing you paste or upload is sent anywhere."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Which JSON Schema drafts are supported for YAML validation?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Draft-07, 2019-09, and 2020-12, selectable from a dropdown. The app can also auto-detect the draft from a schema's $schema field."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>YAML Schema Validator</h1>
+      <p class="lede">
+        Validate YAML configuration files, CI pipelines, or API responses against a JSON Schema — free, in your
+        browser, with no data ever leaving your device.
+      </p>
+      <a class="cta" href="/">Validate your YAML now</a>
+
+      <h2>Why validate YAML against a JSON Schema?</h2>
+      <p>
+        YAML is the default format for Kubernetes manifests, GitHub Actions workflows, OpenAPI specs, and countless
+        app config files — but YAML's own syntax rules won't catch a missing required field, a wrong type, or a typo'd
+        enum value. A JSON Schema catches exactly those mistakes, and the same schema can validate both your YAML and
+        JSON representations of the same data.
+      </p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and switch the data pane's format tab to <strong>YAML</strong>.</li>
+        <li>Paste or upload your JSON Schema in the schema pane (JSON Schema is always authored as JSON, even when validating YAML data).</li>
+        <li>Paste or upload your YAML file in the data pane.</li>
+        <li>Errors appear inline with an approximate line number, plus a plain-English explanation of what's wrong.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Can I validate a YAML file against a JSON Schema?</summary>
+        <p>Yes — pick the YAML tab, paste your schema, and paste or upload your YAML file. Validation runs the same ajv engine used for JSON.</p>
+      </details>
+      <details>
+        <summary>Does my YAML get uploaded to a server?</summary>
+        <p>No. Everything runs client-side in your browser. Nothing you paste or upload is sent to a server.</p>
+      </details>
+      <details>
+        <summary>Which JSON Schema drafts are supported?</summary>
+        <p>Draft-07, 2019-09, and 2020-12 — switchable, or auto-detected from the schema's <code>$schema</code> field.</p>
+      </details>
+
+      <p>
+        Need a different format? Schema Validator also supports
+        <a href="/">JSON, TOML, XML, and CSV</a> data — same schema, same engine.
+      </p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/openapi-validator/">OpenAPI validator</a> · <a href="/csv-validator/">CSV validator</a>
+    </footer>
+  </body>
+</html>

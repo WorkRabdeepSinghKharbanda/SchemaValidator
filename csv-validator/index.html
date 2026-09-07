@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSV Schema Validator — Validate CSV Rows Against a JSON Schema Free</title>
+    <meta
+      name="description"
+      content="Validate every row of a CSV file against a JSON Schema for free, in your browser. Per-row pass/fail table, export failing rows only. No sign-up, nothing uploaded."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/csv-validator/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="CSV Schema Validator — Validate CSV Rows Against a JSON Schema Free" />
+    <meta property="og:description" content="Validate every row of a CSV file against a JSON Schema, free, in your browser, with a per-row pass/fail table." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/csv-validator/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CSV Schema Validator — Validate CSV Rows Against a JSON Schema Free" />
+    <meta name="twitter:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Can I validate a CSV file row by row against a schema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Turn on batch mode, paste or upload a CSV file, and each row is validated independently against your JSON Schema with a per-row pass/fail table and a progress bar."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I export just the CSV rows that failed validation?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — the batch results table has an \"Export failing only\" button that downloads just the invalid rows as JSON, plus a separate CSV export of the full results."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my CSV file uploaded to a server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No — CSV parsing and validation both happen in your browser. Nothing is sent anywhere."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <main class="wrap">
+      <h1>CSV Schema Validator</h1>
+      <p class="lede">
+        Validate every row of a CSV export against a JSON Schema — free, in your browser, with a per-row pass/fail
+        table so you can find bad records fast.
+      </p>
+      <a class="cta" href="/">Validate your CSV now</a>
+
+      <h2>Why validate a CSV against a JSON Schema?</h2>
+      <p>
+        CSV exports from a database, a form tool, or another system routinely have missing fields, wrong types
+        (a price column with a stray currency symbol), or values outside an expected set — and CSV itself has no way
+        to express or check those rules. A JSON Schema does, and batch mode runs it against every row in one pass.
+      </p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and turn on <strong>batch mode</strong>.</li>
+        <li>Switch the data pane's format tab to <strong>CSV</strong> and paste or upload your file.</li>
+        <li>Paste the JSON Schema each row should match.</li>
+        <li>Get a per-row pass/fail table with a progress bar — export all results, failing rows only, or as CSV.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Can I validate a CSV file row by row?</summary>
+        <p>Yes — batch mode validates each row independently and shows a pass/fail table with a progress bar.</p>
+      </details>
+      <details>
+        <summary>Can I export just the failing rows?</summary>
+        <p>Yes, the batch table has an "Export failing only" button, plus full JSON and CSV export of all results.</p>
+      </details>
+      <details>
+        <summary>Is my CSV uploaded anywhere?</summary>
+        <p>No — parsing and validation both run in your browser.</p>
+      </details>
+
+      <p>
+        Working with a single record instead of a batch? Schema Validator also supports
+        <a href="/">JSON, YAML, TOML, and XML</a> in single-record mode.
+      </p>
+    </main>
+    <footer>
+      <a href="/">Schema Validator</a> · <a href="/yaml-validator/">YAML validator</a> · <a href="/openapi-validator/">OpenAPI validator</a>
+    </footer>
+  </body>
+</html>

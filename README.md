@@ -101,6 +101,12 @@ These need a backend, a separate packaging step, or run arbitrary user code — 
 
 `public/og-image.png` is a real branded image (dark background, the app's actual gradient mark and tagline), not a placeholder — rendered once from a small standalone HTML file at exact 1200×630 via a headless browser screenshot, the same way the `public/icon-512.png`/`apple-touch-icon.png`/`favicon-*.png` set was generated from the existing `favicon.svg` design. If the brand visuals ever change, regenerate these the same way rather than hand-editing the PNGs.
 
+### Landing pages
+`yaml-validator/`, `openapi-validator/`, and `csv-validator/` are static, keyword-targeted landing pages (real prose, FAQ, `FAQPage` JSON-LD, canonical/OG tags) — plain HTML with no React, so they're fully indexable without executing JS, unlike the main `#root` app. Each is a separate Vite build entry (see `vite.config.ts`'s `rollupOptions.input`) sharing `public/landing.css`. They link back to `/` and to each other, and are linked from the main app's footer for internal linking. **Adding a new one = new dir + entry in `vite.config.ts` + `public/sitemap.xml` + `public/llms.txt`'s page list + a footer link in `App.tsx`.**
+
+### AI crawlers
+`public/robots.txt` explicitly allows the major AI crawlers/agents (GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, Claude-User, PerplexityBot, Google-Extended, CCBot) alongside the wildcard `Allow: /` — belt-and-suspenders since most already fall under `*`, but explicit entries are what these bots' own docs recommend checking for. `public/llms.txt` (the emerging llms.txt convention) gives LLM-based crawlers/agents a plain-markdown summary of what the app does, its pages, and a note that validation runs client-side with no API endpoint to call.
+
 One real gap, not fixed here:
 - **This is a client-only SPA with no server-side rendering.** `#root` is empty until JavaScript runs — the `<noscript>` block in `index.html` gives crawlers a fallback description, and modern Googlebot does execute JS, but there's no static HTML content for a crawler that doesn't. If organic search ranking matters more than it does today, revisit static generation (e.g. prerendering just this one page) — that would need a build-step change, not just meta tags.
 

@@ -1,0 +1,27 @@
+# Schema Validator
+
+> Free, client-only JSON Schema validator. Validates JSON, YAML, TOML, XML, and CSV data against
+> a JSON Schema (draft-07, 2019-09, 2020-12) entirely in the browser — no server, no sign-up,
+> no data ever leaves the device.
+
+Core capability: paste or upload a JSON Schema and a data file in any supported format; get
+back structured validation errors with line numbers, plain-English explanations, and one-click
+fixes. Also supports OpenAPI/Swagger schema import, batch validation of an array of records,
+schema inference from sample data, sample data generation, and format conversion between the
+five supported data formats.
+
+## Pages
+
+- [Schema Validator](https://schema-validator-livid.vercel.app/): the main app — validate JSON, YAML, TOML, XML, or CSV against a JSON Schema.
+- [YAML Schema Validator](https://schema-validator-livid.vercel.app/yaml-validator/): validating YAML specifically.
+- [OpenAPI Schema Validator](https://schema-validator-livid.vercel.app/openapi-validator/): importing an OpenAPI/Swagger spec and validating against one of its component schemas.
+- [CSV Schema Validator](https://schema-validator-livid.vercel.app/csv-validator/): batch-validating every row of a CSV file.
+- [Privacy Policy](https://schema-validator-livid.vercel.app/#privacy): what's stored locally, AdSense cookie use, opt-out link.
+
+## Notes for automated agents
+
+- Everything runs client-side — there is no API endpoint to call for validation. To reproduce a
+  check outside the browser, use the app's own "Copy as Node.js snippet" / "Copy as Python
+  snippet" feature, which generates a self-contained ajv or jsonschema script.
+- This is a single-page app with no server-rendered content beyond the landing pages listed
+  above; the root URL's `#root` div is populated by JavaScript.

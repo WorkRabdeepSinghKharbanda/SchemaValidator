@@ -1092,6 +1092,15 @@ function App() {
 
       <AdSlot id="footer" consented={adConsent === "accepted"} />
       <footer className="app-footer">
+        <a className="consent-link" href="/yaml-validator/">
+          YAML validator
+        </a>
+        <a className="consent-link" href="/openapi-validator/">
+          OpenAPI validator
+        </a>
+        <a className="consent-link" href="/csv-validator/">
+          CSV validator
+        </a>
         <button className="consent-link" onClick={() => setPrivacyOpen(true)}>
           Privacy Policy
         </button>

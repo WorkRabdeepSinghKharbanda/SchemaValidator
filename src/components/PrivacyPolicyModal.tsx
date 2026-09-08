@@ -44,10 +44,9 @@ export function PrivacyPolicyModal({ open, onClose }: { open: boolean; onClose: 
           <p>Clearing your browser's site data for this domain removes all of it.</p>
           <h4>Ads</h4>
           <p>
-            If you accept the cookie prompt, this site may show ads served by Google AdSense. AdSense can use
-            cookies to personalize the ads you see and to measure their performance. If you decline, no ad script
-            loads and no ad-related cookies are set. You can opt out of personalized advertising (or see which
-            companies are serving you ads) at{" "}
+            This site shows ads served by Google AdSense, which load on every page regardless of the cookie prompt's
+            Accept/Decline choice below. AdSense can use cookies to personalize the ads you see and to measure their
+            performance. You can opt out of personalized advertising (or see which companies are serving you ads) at{" "}
             <a href="https://adssettings.google.com" target="_blank" rel="noreferrer">
               adssettings.google.com
             </a>

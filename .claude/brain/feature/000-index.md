@@ -79,4 +79,5 @@ One file per feature/tool. Source of truth is `CLAUDE.md`'s "Features, one by on
 - [AI Crawler Access](059-ai-crawler-access.md)
 - [Blog](060-blog.md)
 - [Google Analytics](061-google-analytics.md)
+- [Search Console Verification](062-search-console-verification.md)
 

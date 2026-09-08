@@ -122,7 +122,12 @@ The AdSense Auto ads loader script is a static `<script async>` tag in every pag
 
 **Status:** the real publisher ID (`ca-pub-5852027898822024`) is wired in — `ADSENSE_PUBLISHER_ID` in `src/lib/adsense.ts`, `index.html`'s `google-adsense-account` meta tag and script tag, every static page's script tag, and `public/ads.txt`'s pub ID all match.
 
-**Still open:** once you've created ad units in the AdSense dashboard, pass their real slot IDs to `<AdSlot id="...">`'s `id` prop at each call site (currently just `"footer"`, a placeholder label) — AdSense needs a real numeric ad-unit slot ID per placement, not an arbitrary string.
+Manual `<ins class="adsbygoogle">` units also sit on every blog post and `blog/index.html` (content pages) — plain static HTML, styled via `public/landing.css`'s copy of the same `.ad-slot-frame` classes. The interactive app itself keeps only the one footer slot, on purpose (an ad shouldn't interrupt someone mid-validation).
+
+**Still open:** every manual ad unit — the app's `<AdSlot id="footer">` and every blog page's static `<ins data-ad-slot="0000000000">` — uses a placeholder slot ID. Once you've created real ad units in the AdSense dashboard, swap in their real numeric slot IDs (a repo-wide search-and-replace for the static pages' `0000000000`, plus the `id` prop for `AdSlot`).
+
+## Analytics: Google Analytics (gtag.js)
+Google's standard gtag.js snippet (Measurement ID `G-SEEZP9MLKB`) is the first thing inside `<head>` on every page — `index.html` and all static landing/blog pages — loaded unconditionally, same as AdSense and for the same reason (see [CLAUDE.md](CLAUDE.md)'s AdSense entry). Hardcoded per page rather than a shared constant, since these are static files.
 
 ## Remaining backlog
 - Custom ajv keywords/formats, user-registrable (see "Intentionally not built" — the sandboxing question needs resolving first).

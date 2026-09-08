@@ -120,3 +120,25 @@ footer a {
 ol, ul {
   padding-left: 1.2em;
 }
+
+/* ---- ad slot — mirrors src/App.css's .ad-slot-frame so live/placeholder ads look the same
+   whether they're on the React app or one of these static pages ---- */
+.ad-slot-frame {
+  max-width: 728px;
+  margin: 24px auto;
+}
+
+.ad-slot-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-dim);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.ad-slot {
+  display: flex;
+  min-height: 60px;
+}

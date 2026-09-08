@@ -1,7 +1,7 @@
-// Shown once until the visitor makes a choice (persisted via lib/consent.ts). Decline just
-// records the choice — AdSlot stays a placeholder, no AdSense script is ever loaded. Accept is
-// the only path that leads to loadAdsenseScript() being called (in App.tsx, keyed off the
-// consent state this banner sets) — the ad script must never load before consent (GDPR).
+// Shown once until the visitor makes a choice (persisted via lib/consent.ts, purely for the
+// record — see CLAUDE.md's AdSense entry). Neither Accept nor Decline affects whether ads
+// actually load: the AdSense script is a static <script> tag in every page's <head>, present
+// unconditionally, so the copy below must never claim otherwise.
 export function ConsentBanner({
   onAccept,
   onDecline,
@@ -14,7 +14,7 @@ export function ConsentBanner({
   return (
     <div className="consent-banner" role="dialog" aria-label="Cookie consent">
       <p>
-        This site may show ads once you accept — they use cookies for personalization.{" "}
+        This site shows ads, which may use cookies for personalization.{" "}
         <button className="consent-link" onClick={onOpenPrivacyPolicy}>
           Privacy Policy
         </button>

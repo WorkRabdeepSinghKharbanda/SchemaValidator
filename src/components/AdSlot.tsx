@@ -1,12 +1,14 @@
 import { useEffect } from "react";
 import { ADSENSE_PUBLISHER_ID, isAdsConfigured } from "../lib/adsense";
 
-// Renders a real AdSense unit once (a) a publisher ID is configured (see lib/adsense.ts) and
-// (b) the visitor has consented (see App.tsx's ConsentBanner wiring) — otherwise falls back to
-// a plain placeholder box so layout stays visible before either is true. Isolated in its own
-// component so ad-network code never touches App.tsx or the validator logic.
-export function AdSlot({ id, consented }: { id: string; consented: boolean }) {
-  const live = isAdsConfigured() && consented;
+// Renders a real AdSense unit once a publisher ID is configured (see lib/adsense.ts) — otherwise
+// falls back to a plain placeholder box so layout stays visible either way. The AdSense loader
+// script itself is a static <script> tag in every page's <head> (index.html and every static
+// landing/blog page), not gated behind cookie consent — a deliberate choice, see CLAUDE.md's
+// AdSense entry for what that trades away. Isolated in its own component so ad-network code
+// never touches App.tsx or the validator logic.
+export function AdSlot({ id }: { id: string }) {
+  const live = isAdsConfigured();
 
   useEffect(() => {
     if (!live) return;
@@ -22,20 +24,25 @@ export function AdSlot({ id, consented }: { id: string; consented: boolean }) {
 
   if (!live) {
     return (
-      <div className="ad-slot ad-slot-placeholder" data-ad-slot={id}>
-        <span>Ad space reserved</span>
+      <div className="ad-slot-frame">
+        <div className="ad-slot ad-slot-placeholder" data-ad-slot={id}>
+          <span>Ad space reserved</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <ins
-      className="adsbygoogle ad-slot"
-      style={{ display: "block" }}
-      data-ad-client={ADSENSE_PUBLISHER_ID}
-      data-ad-slot={id}
-      data-ad-format="auto"
-      data-full-width-responsive="true"
-    />
+    <div className="ad-slot-frame">
+      <span className="ad-slot-label">Advertisement</span>
+      <ins
+        className="adsbygoogle ad-slot"
+        style={{ display: "block" }}
+        data-ad-client={ADSENSE_PUBLISHER_ID}
+        data-ad-slot={id}
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      />
+    </div>
   );
 }

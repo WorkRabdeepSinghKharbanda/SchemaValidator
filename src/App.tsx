@@ -14,7 +14,6 @@ import { OverflowMenu } from "./components/OverflowMenu";
 import { AdSlot } from "./components/AdSlot";
 import { ConsentBanner } from "./components/ConsentBanner";
 import { PrivacyPolicyModal } from "./components/PrivacyPolicyModal";
-import { loadAdsenseScript } from "./lib/adsense";
 import { getConsentChoice, setConsentChoice, type ConsentChoice } from "./lib/consent";
 import { parse, type Format } from "./lib/parse";
 import { serialize } from "./lib/serialize";
@@ -151,13 +150,6 @@ function App() {
   useEffect(() => {
     localStorage.setItem("minimapEnabled", String(minimapEnabled));
   }, [minimapEnabled]);
-
-  // Covers both a returning visitor who already consented in a previous session (adConsent's
-  // initial state read from localStorage) and a fresh Accept click in this one — one place that
-  // decides "should the ad script be loaded", not duplicated in the Accept handler too.
-  useEffect(() => {
-    if (adConsent === "accepted") loadAdsenseScript();
-  }, [adConsent]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
@@ -1090,7 +1082,7 @@ function App() {
         />
       )}
 
-      <AdSlot id="footer" consented={adConsent === "accepted"} />
+      <AdSlot id="footer" />
       <footer className="app-footer">
         <a className="consent-link" href="/yaml-validator/">
           YAML validator

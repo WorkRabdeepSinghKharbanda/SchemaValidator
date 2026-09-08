@@ -55,11 +55,14 @@
 
     <meta name="theme-color" content="#0e0f13" />
 
-    <!-- Site-ownership verification for AdSense. Keep this in sync with
-         src/lib/adsense.ts's ADSENSE_PUBLISHER_ID by hand — this is static HTML, not built from
-         the TS constant. Deliberately just the verification meta tag, not the AdSense <script>
-         itself — that only loads after cookie consent, from lib/adsense.ts's loadAdsenseScript(). -->
+    <!-- Site-ownership verification for AdSense. Keep this, the script tag below, and
+         public/ads.txt's pub ID in sync with src/lib/adsense.ts's ADSENSE_PUBLISHER_ID by hand —
+         these are static files, not built from the TS constant. -->
     <meta name="google-adsense-account" content="ca-pub-5852027898822024" />
+    <!-- AdSense Auto ads loader — present on every page unconditionally (index.html and every
+         static landing/blog page), not gated behind cookie consent. Deliberate owner decision;
+         see CLAUDE.md's AdSense entry for what that trades away. -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5852027898822024" crossorigin="anonymous"></script>
 
     <script type="application/ld+json">
       {

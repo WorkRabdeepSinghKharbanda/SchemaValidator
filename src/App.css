@@ -170,7 +170,7 @@ header p {
 
 .app.focus-mode header,
 .app.focus-mode .toolbar,
-.app.focus-mode .ad-slot {
+.app.focus-mode .ad-slot-frame {
   display: none;
 }
 
@@ -979,6 +979,24 @@ header p {
 }
 
 /* ---- reserved ad slot ---- */
+/* Frame keeps a live ad visually contained (max-width + margin) so it can't stretch edge-to-edge
+   or crowd the footer below it — a full-width-responsive AdSense unit alone has no such cap. */
+.ad-slot-frame {
+  max-width: 728px;
+  margin: 24px auto 8px;
+  padding: 0 20px;
+}
+
+.ad-slot-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-dim);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
 .ad-slot {
   display: flex;
   min-height: 60px;

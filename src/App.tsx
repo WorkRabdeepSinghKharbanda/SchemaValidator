@@ -1082,7 +1082,7 @@ function App() {
         />
       )}
 
-      <AdSlot id="footer" />
+      <AdSlot id="3418754801" />
       <footer className="app-footer">
         <a className="consent-link" href="/yaml-validator/">
           YAML validator

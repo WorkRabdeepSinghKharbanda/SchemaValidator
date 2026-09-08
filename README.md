@@ -126,7 +126,11 @@ The AdSense Auto ads loader script is a static `<script async>` tag in every pag
 
 Manual `<ins class="adsbygoogle">` units also sit on every blog post and `blog/index.html` (content pages) — plain static HTML, styled via `public/landing.css`'s copy of the same `.ad-slot-frame` classes. The interactive app itself keeps only the one footer slot, on purpose (an ad shouldn't interrupt someone mid-validation).
 
-**Still open:** every manual ad unit — the app's `<AdSlot id="footer">` and every blog page's static `<ins data-ad-slot="0000000000">` — uses a placeholder slot ID. Once you've created real ad units in the AdSense dashboard, swap in their real numeric slot IDs (a repo-wide search-and-replace for the static pages' `0000000000`, plus the `id` prop for `AdSlot`).
+**Status:** all manual ad units — the app's `<AdSlot id="3418754801">` and every blog page's `<ins data-ad-slot="3418754801">` — use the same real "CommonAd" ad-unit slot ID, created in the AdSense dashboard. The same unit can safely render in multiple placements/pages at once.
+
+**Related posts:** every blog post ends with a "Related posts" section (3 hand-picked links to topically-adjacent posts) — more pageviews per session, and it's genuinely useful, not just an ad-impressions trick. `blog/index.html` doesn't need one (it already lists everything).
+
+**Keep adding content:** SEO/content pages compound over months, not days — periodically adding new landing pages (a new supported keyword/feature angle) and blog posts (tied to a real shipped feature, per CLAUDE.md's rule) is expected ongoing maintenance, not a one-time task.
 
 ## Analytics: Google Analytics (gtag.js)
 Google's standard gtag.js snippet (Measurement ID `G-SEEZP9MLKB`) is the first thing inside `<head>` on every page — `index.html` and all static landing/blog pages — loaded unconditionally, same as AdSense and for the same reason (see [CLAUDE.md](CLAUDE.md)'s AdSense entry). Hardcoded per page rather than a shared constant, since these are static files.

@@ -49,7 +49,7 @@
     }
   },
   "keywords": "generate field documentation from json schema, json schema",
-  "wordCount": 1177,
+  "wordCount": 1210,
   "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/generate-field-documentation-from-json-schema/"
 }
     </script>
@@ -140,8 +140,8 @@
         <p>Only if you regenerate it after the schema changes — the export reads the schema's current state each time you run it, so it can't describe a field that's since been removed, but it won't automatically update a doc you already downloaded.</p>
       </details>
       <details>
-        <summary>Will this document nested objects and arrays, not just top-level fields?</summary>
-        <p>The field table is generated from the schema's actual structure, including nested <code>properties</code> and array <code>items</code>, so a reader can see a nested object's own fields, not just that the parent field exists.</p>
+        <summary>Will this document deeply nested objects and arrays?</summary>
+        <p>Top-level fields and one level of nested object properties are documented — a nested object's own fields show up in the table, not just that the parent field exists. Array <code>items</code> aren't expanded into their own rows; an array field shows as an array, without a further breakdown of what each item should look like.</p>
       </details>
       <details>
         <summary>Is this the same as generating an OpenAPI/Swagger doc site?</summary>

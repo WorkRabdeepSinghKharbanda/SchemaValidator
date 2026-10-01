@@ -42,12 +42,38 @@
         "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/json-schema-draft-differences/"
       }
     </script>
-  </head>
+      <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://schema-validator-livid.vercel.app/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https://schema-validator-livid.vercel.app/blog/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "JSON Schema draft-07 vs 2019-09 vs 2020-12: what actually changed"
+    }
+  ]
+}
+    </script>
+</head>
   <body>
     <nav class="top">
       <a href="/"><span class="brand">◆</span> Schema Validator</a>
       <a href="/">Open the validator →</a>
     </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/blog/">Blog</a> / <span>JSON Schema draft-07 vs 2019-09 vs 2020-12: what actually changed</span></nav>
     <main class="wrap">
       <h1>JSON Schema draft-07 vs 2019-09 vs 2020-12: what actually changed</h1>
       <p class="lede">A practical rundown, not a spec diff — what you'll actually run into picking a draft for a real project.</p>

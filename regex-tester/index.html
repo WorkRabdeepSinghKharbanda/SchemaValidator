@@ -58,16 +58,56 @@
               "@type": "Answer",
               "text": "Yes, it's offered specifically alongside a <code>pattern</code>-keyword validation error in the error list."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Will results match Python/Java/PHP's regex engine, not just JavaScript's?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Not necessarily — JSON Schema's pattern keyword is defined against ECMA-262 (JavaScript) regex syntax, which this tester matches exactly. Another language's regex engine can behave differently on the same pattern."
+            }
           }
         ]
       }
     </script>
-  </head>
+      <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://schema-validator-livid.vercel.app/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Tools",
+      "item": "https://schema-validator-livid.vercel.app/tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Schema Tools",
+      "item": "https://schema-validator-livid.vercel.app/tools/schema-tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Regex Tester for JSON Schema Patterns"
+    }
+  ]
+}
+    </script>
+</head>
   <body>
     <nav class="top">
       <a href="/"><span class="brand">◆</span> Schema Validator</a>
       <a href="/">Open the validator →</a>
     </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/tools/">Tools</a> / <a href="/tools/schema-tools/">Schema Tools</a> / <span>Regex Tester for JSON Schema Patterns</span></nav>
     <main class="wrap">
       <h1>Regex Tester for JSON Schema Patterns</h1>
       <p class="lede">See exactly why a <code>pattern</code> validation error fired, and test a fix live — free, in your browser.</p>
@@ -96,6 +136,10 @@
       <details>
         <summary>Is this only for pattern errors?</summary>
         <p>Yes, it's offered specifically alongside a <code>pattern</code>-keyword validation error in the error list.</p>
+      </details>
+      <details>
+        <summary>Will results match Python/Java/PHP's regex engine, not just JavaScript's?</summary>
+        <p>Not necessarily — JSON Schema's <code>pattern</code> keyword is defined against ECMA-262 (JavaScript) regex syntax, which this tester matches exactly. Another language's regex engine can behave differently on the same pattern (lookbehind support, named groups, Unicode handling) — if you're validating with a non-JS library elsewhere, test there too rather than assuming this result transfers exactly.</p>
       </details>
 
       <p>

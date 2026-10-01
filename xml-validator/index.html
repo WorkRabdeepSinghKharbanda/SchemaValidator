@@ -61,16 +61,56 @@
               "@type": "Answer",
               "text": "No — parsing and validation both run in your browser."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "I actually need to validate against an XSD, not a JSON Schema — can I use this?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No, not for that — this tool doesn't read or check against XSD files at all. It's for the separate case where you already have a JSON Schema as your source of truth and need to check XML data against it too."
+            }
           }
         ]
       }
     </script>
-  </head>
+      <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://schema-validator-livid.vercel.app/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Tools",
+      "item": "https://schema-validator-livid.vercel.app/tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Format Validators",
+      "item": "https://schema-validator-livid.vercel.app/tools/format-validators/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "XML Validator"
+    }
+  ]
+}
+    </script>
+</head>
   <body>
     <nav class="top">
       <a href="/"><span class="brand">◆</span> Schema Validator</a>
       <a href="/">Open the validator →</a>
     </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/tools/">Tools</a> / <a href="/tools/format-validators/">Format Validators</a> / <span>XML Validator</span></nav>
     <main class="wrap">
       <h1>XML Validator</h1>
       <p class="lede">
@@ -105,6 +145,10 @@
       <details>
         <summary>Is my XML uploaded anywhere?</summary>
         <p>No, everything runs client-side.</p>
+      </details>
+      <details>
+        <summary>I actually need to validate against an XSD, not a JSON Schema — can I use this?</summary>
+        <p>No, not for that — this tool doesn't read or check against XSD files at all. If your requirement is specifically "validate this XML against an XSD," you'll need an XSD-aware validator instead. This tool is for the separate case where you already have (or want) a JSON Schema as your source of truth and need to check XML data against it too.</p>
       </details>
 
       <p>

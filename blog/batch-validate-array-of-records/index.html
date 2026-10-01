@@ -39,12 +39,38 @@
         "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/batch-validate-array-of-records/"
       }
     </script>
-  </head>
+      <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://schema-validator-livid.vercel.app/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https://schema-validator-livid.vercel.app/blog/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Batch-validating an array of records against one schema"
+    }
+  ]
+}
+    </script>
+</head>
   <body>
     <nav class="top">
       <a href="/"><span class="brand">◆</span> Schema Validator</a>
       <a href="/">Open the validator →</a>
     </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/blog/">Blog</a> / <span>Batch-validating an array of records against one schema</span></nav>
     <main class="wrap">
       <h1>Batch-validating an array of records against one schema</h1>
       <p class="lede">Validating one record proves your schema works. Validating a thousand imported records proves your data does.</p>

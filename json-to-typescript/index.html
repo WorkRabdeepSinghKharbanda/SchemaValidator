@@ -58,16 +58,64 @@
               "@type": "Answer",
               "text": "No \u2014 a <code>$ref</code> is rendered by its final path segment as a type name, not resolved/inlined."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this convert raw JSON data to TypeScript, or a JSON Schema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A JSON Schema \u2014 paste the schema, not a sample data file. If you only have example data, use the schema generator first to infer a schema from it."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it generate a class, or an interface?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "An interface declaration (.d.ts-style), not a class \u2014 there's no constructor or methods, just the shape of the data."
+            }
           }
         ]
       }
     </script>
-  </head>
+      <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://schema-validator-livid.vercel.app/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Tools",
+      "item": "https://schema-validator-livid.vercel.app/tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Schema Tools",
+      "item": "https://schema-validator-livid.vercel.app/tools/schema-tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "JSON Schema to TypeScript"
+    }
+  ]
+}
+    </script>
+</head>
   <body>
     <nav class="top">
       <a href="/"><span class="brand">◆</span> Schema Validator</a>
       <a href="/">Open the validator →</a>
     </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/tools/">Tools</a> / <a href="/tools/schema-tools/">Schema Tools</a> / <span>JSON Schema to TypeScript</span></nav>
     <main class="wrap">
       <h1>JSON Schema to TypeScript</h1>
       <p class="lede">Turn a JSON Schema into a TypeScript interface — free, in your browser, no build step required.</p>
@@ -96,6 +144,14 @@
       <details>
         <summary>Does $ref get resolved against my reference schemas?</summary>
         <p>No — a <code>$ref</code> is rendered by its final path segment as a type name, not resolved/inlined.</p>
+      </details>
+      <details>
+        <summary>Does this convert raw JSON data to TypeScript, or a JSON Schema?</summary>
+        <p>A JSON Schema — paste the schema, not a sample data file. If you only have example data, use the <a href="/json-schema-generator/">schema generator</a> first to infer a schema from it, then export that schema as TypeScript here.</p>
+      </details>
+      <details>
+        <summary>Does it generate a class, or an interface?</summary>
+        <p>An <code>interface</code> declaration (<code>.d.ts</code>-style), not a class — there's no constructor or methods, just the shape of the data.</p>
       </details>
 
       <p>

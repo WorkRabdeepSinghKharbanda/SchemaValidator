@@ -42,12 +42,38 @@
         "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/validate-json-in-ci/"
       }
     </script>
-  </head>
+      <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://schema-validator-livid.vercel.app/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https://schema-validator-livid.vercel.app/blog/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Validating JSON config files in CI without a server"
+    }
+  ]
+}
+    </script>
+</head>
   <body>
     <nav class="top">
       <a href="/"><span class="brand">◆</span> Schema Validator</a>
       <a href="/">Open the validator →</a>
     </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/blog/">Blog</a> / <span>Validating JSON config files in CI without a server</span></nav>
     <main class="wrap">
       <h1>Validating JSON config files in CI without a server</h1>
       <p class="lede">Design the schema interactively in a browser, then run the exact same check as a pipeline step.</p>

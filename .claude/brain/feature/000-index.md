@@ -80,4 +80,7 @@ One file per feature/tool. Source of truth is `CLAUDE.md`'s "Features, one by on
 - [Blog](060-blog.md)
 - [Google Analytics](061-google-analytics.md)
 - [Search Console Verification](062-search-console-verification.md)
+- [Tool Hubs and Breadcrumbs](063-tool-hubs-and-breadcrumbs.md)
+- [Sitemap Automation](064-sitemap-automation.md)
+- [Keyword Research](065-keyword-research.md)
 

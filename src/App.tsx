@@ -1084,14 +1084,8 @@ function App() {
 
       <AdSlot id="3418754801" />
       <footer className="app-footer">
-        <a className="consent-link" href="/yaml-validator/">
-          YAML validator
-        </a>
-        <a className="consent-link" href="/openapi-validator/">
-          OpenAPI validator
-        </a>
-        <a className="consent-link" href="/csv-validator/">
-          CSV validator
+        <a className="consent-link" href="/tools/">
+          All tools
         </a>
         <a className="consent-link" href="/blog/">
           Blog

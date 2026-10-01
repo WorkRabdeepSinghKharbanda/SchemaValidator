@@ -61,16 +61,56 @@
               "@type": "Answer",
               "text": "No — the import and validation both happen entirely in your browser. Nothing is sent to a server."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Which OpenAPI/Swagger versions does this support?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "OpenAPI 3.0 and 3.1 (components.schemas) and Swagger 2.0 (definitions) — both are detected automatically from the spec's structure."
+            }
           }
         ]
       }
     </script>
-  </head>
+      <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://schema-validator-livid.vercel.app/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Tools",
+      "item": "https://schema-validator-livid.vercel.app/tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Schema Tools",
+      "item": "https://schema-validator-livid.vercel.app/tools/schema-tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "OpenAPI Schema Validator"
+    }
+  ]
+}
+    </script>
+</head>
   <body>
     <nav class="top">
       <a href="/"><span class="brand">◆</span> Schema Validator</a>
       <a href="/">Open the validator →</a>
     </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/tools/">Tools</a> / <a href="/tools/schema-tools/">Schema Tools</a> / <span>OpenAPI Schema Validator</span></nav>
     <main class="wrap">
       <h1>OpenAPI Schema Validator</h1>
       <p class="lede">
@@ -108,6 +148,10 @@
       <details>
         <summary>Is my spec uploaded anywhere?</summary>
         <p>No — everything runs client-side. Nothing is sent to a server.</p>
+      </details>
+      <details>
+        <summary>Which OpenAPI/Swagger versions does this support?</summary>
+        <p>OpenAPI 3.0 and 3.1 (<code>components.schemas</code>) and Swagger 2.0 (<code>definitions</code>) — both are detected automatically from the spec's structure.</p>
       </details>
 
       <p>

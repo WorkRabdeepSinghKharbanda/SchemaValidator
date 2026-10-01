@@ -62,12 +62,44 @@
         ]
       }
     </script>
-  </head>
+      <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://schema-validator-livid.vercel.app/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Tools",
+      "item": "https://schema-validator-livid.vercel.app/tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Schema Tools",
+      "item": "https://schema-validator-livid.vercel.app/tools/schema-tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "JSON Schema Documentation Generator"
+    }
+  ]
+}
+    </script>
+</head>
   <body>
     <nav class="top">
       <a href="/"><span class="brand">◆</span> Schema Validator</a>
       <a href="/">Open the validator →</a>
     </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/tools/">Tools</a> / <a href="/tools/schema-tools/">Schema Tools</a> / <span>JSON Schema Documentation Generator</span></nav>
     <main class="wrap">
       <h1>JSON Schema Documentation Generator</h1>
       <p class="lede">Turn a JSON Schema into a readable field-by-field doc — Markdown or a branded PDF table — free, in your browser.</p>

@@ -58,16 +58,56 @@
               "@type": "Answer",
               "text": "Yes, it's a normal editable schema in the schema pane \u2014 refine it in Code mode or the Visual builder like any other schema."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this generate a UI form from my schema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No \u2014 this goes the other direction, inferring a schema from data. It doesn't render an input form from a schema."
+            }
           }
         ]
       }
     </script>
-  </head>
+      <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://schema-validator-livid.vercel.app/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Tools",
+      "item": "https://schema-validator-livid.vercel.app/tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Schema Tools",
+      "item": "https://schema-validator-livid.vercel.app/tools/schema-tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "JSON Schema Generator"
+    }
+  ]
+}
+    </script>
+</head>
   <body>
     <nav class="top">
       <a href="/"><span class="brand">◆</span> Schema Validator</a>
       <a href="/">Open the validator →</a>
     </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/tools/">Tools</a> / <a href="/tools/schema-tools/">Schema Tools</a> / <span>JSON Schema Generator</span></nav>
     <main class="wrap">
       <h1>JSON Schema Generator</h1>
       <p class="lede">Paste an example JSON payload and get a draft JSON Schema back — free, in your browser, in one click.</p>
@@ -96,6 +136,14 @@
       <details>
         <summary>Can I edit the generated schema afterward?</summary>
         <p>Yes, it's a normal editable schema in the schema pane — refine it in Code mode or the Visual builder like any other schema.</p>
+      </details>
+      <details>
+        <summary>Does this generate a UI form from my schema?</summary>
+        <p>No — this goes the other direction, inferring a schema from data. It doesn't render an input form from a schema.</p>
+      </details>
+      <details>
+        <summary>Can I pick which JSON Schema draft the output targets?</summary>
+        <p>Yes — the draft dropdown (draft-07, 2019-09, 2020-12) applies to the whole app, including inferred schemas.</p>
       </details>
 
       <p>

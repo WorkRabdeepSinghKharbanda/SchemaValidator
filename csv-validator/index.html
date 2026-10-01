@@ -61,16 +61,56 @@
               "@type": "Answer",
               "text": "No — CSV parsing and validation both happen in your browser. Nothing is sent anywhere."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this check CSV file encoding, like whether it's valid UTF-8?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No — this validates the parsed rows' structure and values against a JSON Schema, not the raw file's byte encoding."
+            }
           }
         ]
       }
     </script>
-  </head>
+      <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://schema-validator-livid.vercel.app/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Tools",
+      "item": "https://schema-validator-livid.vercel.app/tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Format Validators",
+      "item": "https://schema-validator-livid.vercel.app/tools/format-validators/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "CSV Schema Validator"
+    }
+  ]
+}
+    </script>
+</head>
   <body>
     <nav class="top">
       <a href="/"><span class="brand">◆</span> Schema Validator</a>
       <a href="/">Open the validator →</a>
     </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/tools/">Tools</a> / <a href="/tools/format-validators/">Format Validators</a> / <span>CSV Schema Validator</span></nav>
     <main class="wrap">
       <h1>CSV Schema Validator</h1>
       <p class="lede">
@@ -106,6 +146,10 @@
       <details>
         <summary>Is my CSV uploaded anywhere?</summary>
         <p>No — parsing and validation both run in your browser.</p>
+      </details>
+      <details>
+        <summary>Does this check CSV file encoding (e.g. is it valid UTF-8)?</summary>
+        <p>No — this validates the parsed rows' structure and values against a JSON Schema, not the raw file's byte encoding. If a CSV fails to parse at all because of an encoding issue, that will show as a parse error, but detecting/fixing encoding problems specifically isn't what this tool does.</p>
       </details>
 
       <p>

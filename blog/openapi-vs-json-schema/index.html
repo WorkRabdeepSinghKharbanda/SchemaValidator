@@ -42,12 +42,38 @@
         "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/openapi-vs-json-schema/"
       }
     </script>
-  </head>
+      <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://schema-validator-livid.vercel.app/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https://schema-validator-livid.vercel.app/blog/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "OpenAPI schemas vs. plain JSON Schema: when to use which"
+    }
+  ]
+}
+    </script>
+</head>
   <body>
     <nav class="top">
       <a href="/"><span class="brand">◆</span> Schema Validator</a>
       <a href="/">Open the validator →</a>
     </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/blog/">Blog</a> / <span>OpenAPI schemas vs. plain JSON Schema: when to use which</span></nav>
     <main class="wrap">
       <h1>OpenAPI schemas vs. plain JSON Schema: when to use which</h1>
       <p class="lede">OpenAPI's <code>components.schemas</code> section is JSON Schema, dialect quirks aside — here's what that means in practice.</p>

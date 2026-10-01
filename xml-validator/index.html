@@ -51,7 +51,7 @@
             "name": "Does it give exact line numbers for XML errors?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "XML validation errors are message-only, without a line number — JSON is the only format with exact line mapping."
+              "text": "Not for schema-validation errors — those are message-only. A genuine XML syntax error, like a mismatched tag, does get a line and column from the parser, before schema validation even runs."
             }
           },
           {
@@ -68,6 +68,38 @@
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "No, not for that — this tool doesn't read or check against XSD files at all. If your requirement is specifically \"validate this XML against an XSD,\" you'll need an XSD-aware validator instead. This tool is for the separate case where you already have (or want) a JSON Schema as your source of truth and need to check XML data against it too."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I just check if my XML is well-formed, without a schema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — leave the schema pane empty for a plain syntax/well-formedness check, with no need to write a schema at all."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How are XML attributes represented when validating against a schema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Each attribute becomes a property prefixed with @_ (an id attribute becomes \"@_id\"), while child elements keep their plain names — schemas need that prefix for attributes."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this validate SOAP XML or a specific XML dialect?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "It validates any well-formed XML the same way, with no SOAP-specific envelope handling — write a JSON Schema for the structure you care about."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do XML namespaces (xmlns) cause problems?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A namespace prefix becomes part of the parsed property name, so a schema has to reference that exact prefixed name — there's no namespace-aware resolution that strips prefixes before validation."
             }
           }
         ]
@@ -123,15 +155,90 @@
         If your team already writes JSON Schemas for your JSON/YAML APIs, maintaining a separate XSD for an XML
         variant of the same data is duplicate work. Schema Validator parses XML into the same kind of data structure
         JSON produces, then runs it through the identical schema — one set of rules for every format you accept.
+        <strong>This is not an XSD validator</strong> — if what you actually need is to check XML against an XML
+        Schema Definition (XSD) file, this tool doesn't do that; see the FAQ below before going further.
+      </p>
+      <p>
+        Where this does fit even if you don't already have a JSON Schema: a quick, no-install "is this XML
+        well-formed" syntax check works here too, with no schema pane needed at all — paste XML, leave the schema
+        empty, and you get a plain structural check (matching tags, valid attribute syntax, one root element) without
+        writing any schema.
       </p>
 
       <h2>How it works</h2>
       <ol>
         <li>Open <a href="/">Schema Validator</a> and switch the data pane's format tab to <strong>XML</strong>.</li>
-        <li>Paste or upload your JSON Schema.</li>
+        <li>Paste or upload your JSON Schema (optional — leave it empty for a syntax-only check).</li>
         <li>Paste or upload your XML file.</li>
-        <li>Errors appear as a message list (no line number for this format) with plain-English explanations.</li>
+        <li>Errors appear as a message list (no line number for schema-validation errors in this format) with plain-English explanations.</li>
       </ol>
+      <p>Attributes are parsed with an <code>@_</code> prefix, so a schema has to account for that when checking an attribute rather than an element's text content:</p>
+      <pre><code>&lt;!-- data (XML) --&gt;
+&lt;order id="4821"&gt;
+  &lt;status&gt;pending&lt;/status&gt;
+&lt;/order&gt;
+
+// parses to:
+{ "order": { "@_id": "4821", "status": "pending" } }
+
+// schema has to match that shape:
+{
+  "type": "object",
+  "properties": {
+    "order": {
+      "type": "object",
+      "properties": {
+        "@_id": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "shipped"] }
+      }
+    }
+  }
+}</code></pre>
+      <p>
+        That <code>@_id</code> prefix is the single most common source of a schema that "should" match but doesn't —
+        if a property mysteriously reports as missing, check whether it's an XML attribute (needs the <code>@_</code>
+        prefix in the schema) rather than a child element (doesn't).
+      </p>
+
+      <h2>Common errors and how to read them</h2>
+      <ul>
+        <li>
+          <strong>Mismatched or unclosed tags</strong> — <code>&lt;order&gt;...&lt;/orde&gt;</code>. This is a genuine
+          XML syntax error, caught before schema validation runs, and unlike a schema-validation mismatch it does get
+          a line and column — the parser reports exactly where the malformed closing tag was found.
+        </li>
+        <li>
+          <strong>Missing or multiple root elements</strong> — XML requires exactly one root element; two sibling
+          top-level elements with no common wrapper fail to parse. Wrap them in a single parent element.
+        </li>
+        <li>
+          <strong>An unescaped <code>&amp;</code> or <code>&lt;</code> inside text content</strong> — a literal
+          ampersand in element text (<code>&lt;name&gt;Smith &amp; Co&lt;/name&gt;</code> written without
+          <code>&amp;amp;</code>) breaks parsing. Escape it, or wrap the text in a <code>CDATA</code> section.
+        </li>
+        <li>
+          <strong>A schema-validation error with no line number</strong> — once XML parses successfully, any
+          remaining errors (wrong type, missing required field, failed enum) come from ajv checking the parsed object
+          tree, the same as for CSV — message-only, since no line-mapping exists back to the original XML source for
+          this format. Use the error's reported path (e.g. <code>order/status</code>) to find the right element by
+          name instead of by line.
+        </li>
+      </ul>
+
+      <h2>Use cases</h2>
+      <p>
+        Checking a legacy system's XML export against a JSON Schema you maintain once elsewhere (so you're not
+        hand-writing an XSD just to cover an XML variant of an already-schema'd JSON API); a one-off "is this XML
+        well-formed" sanity check on a file before feeding it into another tool; and validating SOAP-adjacent or
+        config-style XML (an app's <code>web.config</code>-style settings file, for example) against structural rules
+        even without a formal XSD in place.
+      </p>
+      <p>
+        A migration scenario worth calling out: a team moving an XML-based integration to JSON can write the new JSON
+        Schema first, then validate the existing XML feed against the same schema to find every field-level mismatch
+        before the consuming code switches over — rather than discovering each mismatch one bug report at a time after
+        the cutover.
+      </p>
 
       <h2>Frequently asked questions</h2>
       <details>
@@ -140,7 +247,7 @@
       </details>
       <details>
         <summary>Exact line numbers?</summary>
-        <p>No, XML errors are message-only. JSON is the only format with exact line mapping.</p>
+        <p>Not for schema-validation errors — those are message-only. A genuine XML syntax error (a mismatched tag) does get a line and column from the parser, before schema validation even runs.</p>
       </details>
       <details>
         <summary>Is my XML uploaded anywhere?</summary>
@@ -149,6 +256,36 @@
       <details>
         <summary>I actually need to validate against an XSD, not a JSON Schema — can I use this?</summary>
         <p>No, not for that — this tool doesn't read or check against XSD files at all. If your requirement is specifically "validate this XML against an XSD," you'll need an XSD-aware validator instead. This tool is for the separate case where you already have (or want) a JSON Schema as your source of truth and need to check XML data against it too.</p>
+      </details>
+      <details>
+        <summary>Can I just check if my XML is well-formed, without a schema?</summary>
+        <p>
+          Yes — leave the schema pane empty. You'll get a plain syntax/well-formedness check (matching tags, one root
+          element, valid attribute syntax) with no need to write a schema at all.
+        </p>
+      </details>
+      <details>
+        <summary>How are XML attributes represented when validating against a schema?</summary>
+        <p>
+          Each attribute becomes a property prefixed with <code>@_</code> (e.g. <code>id="4821"</code> on
+          <code>&lt;order&gt;</code> becomes <code>"@_id": "4821"</code>), while child elements and text content keep
+          their plain names — your schema's <code>properties</code> need to use that prefix for attributes.
+        </p>
+      </details>
+      <details>
+        <summary>Does this validate SOAP XML or a specific XML dialect?</summary>
+        <p>
+          It validates any well-formed XML the same way, with no SOAP-specific envelope handling — you write a JSON
+          Schema for the structure you care about, the same as for any other XML document.
+        </p>
+      </details>
+      <details>
+        <summary>Do XML namespaces (xmlns) cause problems?</summary>
+        <p>
+          A namespace prefix becomes part of the parsed property name (e.g. <code>&lt;ns:id&gt;</code> parses to a key
+          literally named <code>ns:id</code>), so a schema has to reference that exact prefixed name — there's no
+          namespace-aware resolution that strips or rewrites prefixes before validation.
+        </p>
       </details>
 
       <p>

@@ -69,6 +69,38 @@
               "@type": "Answer",
               "text": "OpenAPI 3.0 and 3.1 (components.schemas) and Swagger 2.0 (definitions) — both are detected automatically from the spec's structure."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I import an OpenAPI 3.1 spec specifically, not just 3.0?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — components.schemas is read the same way for 3.0 and 3.1. Once imported, pick the draft matching how the spec's schemas were authored (3.1 is closer to 2020-12, 3.0 closer to draft-07) in the draft dropdown for the strictest match."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens to refs pointing at parameters or responses, not schemas?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Those aren't rewritten or auto-resolved — only refs inside components/schemas or definitions are. A ref to components/parameters, components/responses, or an external file is reported as unresolved instead of failing silently later."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I validate request parameters or headers, not just request/response bodies?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Only if they're expressed as a schema under components.schemas/definitions and picked directly — parameter and header definitions under components.parameters or inline in a path item aren't extracted as pickable schemas."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this replace a full OpenAPI contract-testing tool?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No — it validates one payload against one chosen schema on demand. It doesn't run a full test suite across every path/method/response combination or spin up a mock server; it's for a quick one-off check."
+            }
           }
         ]
       }
@@ -124,17 +156,87 @@
         An OpenAPI spec describes dozens of request/response shapes, but testing whether an actual payload matches
         one of them usually means spinning up the API or writing a throwaway script. Schema Validator lets you pull
         any <code>components.schemas</code> or <code>definitions</code> entry straight out of the spec and validate
-        sample data against it immediately.
+        sample data against it immediately — useful for checking a mock response, a test fixture, or a payload a
+        teammate pasted into a bug report before you trust it matches the contract the spec promises.
+      </p>
+      <p>
+        A few concrete use cases this covers: confirming a third-party API's actual response matches what its own
+        published spec claims (a real and common source of integration bugs — the spec and the implementation
+        drift apart over time); checking a request body you're about to send against the endpoint's declared schema
+        before debugging a 400 response the hard way; and verifying a mock/fixture file used in tests still matches
+        the contract after the spec itself was updated, without re-running the whole test suite just to catch a
+        shape mismatch.
       </p>
 
       <h2>How it works</h2>
       <ol>
         <li>Open <a href="/">Schema Validator</a> and use the schema pane's "⋯" menu → Import from OpenAPI/Swagger.</li>
-        <li>Upload your spec file (JSON or YAML — both are tried automatically).</li>
+        <li>Upload your spec file (JSON or YAML — both are tried automatically, since specs ship as either).</li>
         <li>Pick the schema you want from the list of detected component schemas.</li>
         <li>That schema loads into the schema pane, and every sibling schema is auto-added as a reference so internal <code>$ref</code>s resolve correctly.</li>
         <li>Paste sample request/response data and validate as usual.</li>
       </ol>
+      <p>
+        The import step does real work under the hood: internal refs like <code>"$ref": "#/components/schemas/Address"</code>
+        get rewritten to a plain reference name (<code>"Address"</code>), and every other schema in the spec is
+        registered so that rewritten ref resolves at validate time. For example, importing a spec with:
+      </p>
+      <pre><code>{
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "address": { "$ref": "#/components/schemas/Address" }
+        },
+        "required": ["name", "address"]
+      },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "city": { "type": "string" },
+          "zip": { "type": "string", "pattern": "^[0-9]{5}$" }
+        },
+        "required": ["city", "zip"]
+      }
+    }
+  }
+}</code></pre>
+      <p>
+        and picking <code>User</code> loads that schema into the schema pane with <code>Address</code> auto-added as
+        a reference schema — so validating <code>{"name": "Dana", "address": {"city": "Austin", "zip": "ABCDE"}}</code>
+        correctly fails on the <code>zip</code> pattern, without you having to manually copy <code>Address</code>
+        anywhere.
+      </p>
+
+      <h2>Common errors and how to read them</h2>
+      <ul>
+        <li>
+          <strong>"Unresolved ref" warning after import.</strong> The spec has a <code>$ref</code> pointing outside
+          <code>components/schemas</code> (or <code>definitions</code> for Swagger 2) — commonly a
+          <code>parameters</code> or <code>responses</code> ref, or a ref into an external file. These can't be
+          rewritten automatically; the panel lists them instead of letting validation fail silently later with a
+          confusing "schema not found" error from ajv.
+        </li>
+        <li>
+          <strong>Validation fails with "can't resolve reference" even though the spec looked fine.</strong> Usually
+          means the schema you picked references another schema that failed the unresolved-ref check above, or the
+          spec used a non-standard ref path that doesn't match the expected
+          <code>#/components/schemas/Name</code> / <code>#/definitions/Name</code> shape.
+        </li>
+        <li>
+          <strong>Import panel says it couldn't parse the file.</strong> The importer tries JSON first, then YAML.
+          If both fail, the file usually isn't a valid OpenAPI/Swagger document at all — check for a stray top-level
+          array instead of an object, or a <code>.yaml</code> file that's actually tab-indented (invalid YAML).
+        </li>
+        <li>
+          <strong>A Swagger 2.0 spec's schemas don't show up.</strong> Swagger 2.0 keeps its schemas under
+          top-level <code>definitions</code>, not <code>components.schemas</code> — if the importer finds neither,
+          double check the spec actually declares <code>swagger: "2.0"</code> or an <code>openapi</code> version
+          field; a spec missing both won't be auto-detected correctly.
+        </li>
+      </ul>
 
       <h2>Frequently asked questions</h2>
       <details>
@@ -153,10 +255,47 @@
         <summary>Which OpenAPI/Swagger versions does this support?</summary>
         <p>OpenAPI 3.0 and 3.1 (<code>components.schemas</code>) and Swagger 2.0 (<code>definitions</code>) — both are detected automatically from the spec's structure.</p>
       </details>
+      <details>
+        <summary>Can I import an OpenAPI 3.1 spec specifically, not just 3.0?</summary>
+        <p>
+          Yes — the importer reads <code>components.schemas</code> the same way for 3.0 and 3.1, since the schema
+          object shape didn't change between them for this purpose. Once imported, pick the draft matching what
+          the spec's schemas were authored against (3.1 schemas are closer to 2020-12 JSON Schema; 3.0 schemas are
+          closer to draft-07 with some restrictions) in the toolbar's draft dropdown for the strictest match.
+        </p>
+      </details>
+      <details>
+        <summary>What happens to refs pointing at parameters or responses, not schemas?</summary>
+        <p>
+          Those aren't rewritten or auto-resolved — <code>extractOpenApiSchemas()</code> only handles refs inside
+          <code>components/schemas</code> (or <code>definitions</code>). A ref to <code>components/parameters</code>,
+          <code>components/responses</code>, or an external file is reported back as an unresolved ref so you know
+          about the gap rather than hitting a silent ajv compile failure later.
+        </p>
+      </details>
+      <details>
+        <summary>Can I validate request parameters or headers, not just request/response bodies?</summary>
+        <p>
+          Only if they're expressed as a schema under <code>components.schemas</code>/<code>definitions</code> and
+          you pick it directly — parameter and header definitions that live under
+          <code>components.parameters</code> or inline in a path item aren't extracted as pickable schemas by the
+          importer today.
+        </p>
+      </details>
+      <details>
+        <summary>Does this replace a full OpenAPI contract-testing tool?</summary>
+        <p>
+          No — it validates one payload against one chosen schema from the spec, on demand, in the browser. It
+          doesn't run your whole test suite against every path/method/response-code combination in a spec, and
+          doesn't spin up a mock server. For that scope, you'd still want a dedicated contract-testing setup;
+          this tool is for a quick one-off check.
+        </p>
+      </details>
 
       <p>
         Prefer to write the schema by hand? Schema Validator also supports plain
-        <a href="/">JSON, YAML, TOML, XML, and CSV</a> validation without an OpenAPI spec.
+        <a href="/">JSON, YAML, TOML, XML, and CSV</a> validation without an OpenAPI spec. Need to validate many
+        payloads at once instead of one? See the <a href="/batch-json-validator/">batch JSON validator</a>.
       </p>
     </main>
     <footer>

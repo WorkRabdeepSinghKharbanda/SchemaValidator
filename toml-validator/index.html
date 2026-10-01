@@ -61,6 +61,30 @@
               "@type": "Answer",
               "text": "No — parsing and validation both happen in your browser."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I validate a Cargo.toml or pyproject.toml file directly?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — paste the file as-is with the TOML tab selected, and supply your own JSON Schema for the fields you want checked. No built-in Cargo or Poetry schema is bundled."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does TOML's array-of-tables syntax work here?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — double-bracket array-of-tables parse into a JSON array of objects, validated the same way a JSON or YAML array would be."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this support the same JSON Schema drafts as the JSON and YAML validators?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — draft-07, 2019-09, and 2020-12, selected from the same dropdown used for every other format."
+            }
           }
         ]
       }
@@ -113,9 +137,25 @@
 
       <h2>Why validate TOML against a JSON Schema?</h2>
       <p>
-        TOML is the config format behind Cargo, Poetry, and plenty of app settings files. TOML's own parser catches
-        malformed syntax, but not a missing required key, a wrong type, or a value outside an allowed set — a JSON
-        Schema does, using the exact same rules you'd apply to a JSON or YAML version of the same config.
+        TOML is the config format behind Cargo (<code>Cargo.toml</code>), Poetry and other Python packaging tools
+        (<code>pyproject.toml</code>), and plenty of app settings files that favor TOML's more explicit, less
+        indentation-sensitive syntax over YAML. TOML's own parser catches malformed syntax — an unclosed table header,
+        a string missing its closing quote — but not a missing required key, a wrong type, or a value outside an
+        allowed set. A JSON Schema does, using the exact same rules you'd apply to a JSON or YAML version of the same
+        config, which matters if your tooling needs to accept more than one config format for the same underlying
+        settings.
+      </p>
+      <p>
+        TOML parses into the same kind of nested object structure as JSON or YAML once read — tables become nested
+        objects, arrays of tables become arrays of objects — so the same ajv-based schema that validates your JSON
+        config validates a TOML one too, with no TOML-specific schema dialect to learn.
+      </p>
+      <p>
+        TOML also has a couple of shorthand forms that are easy to misread as something more complex than they are:
+        dotted keys (<code>package.name = "foo"</code>, equivalent to a <code>[package]</code> table with a
+        <code>name</code> key) and inline tables (<code>point = { x = 1, y = 2 }</code>, a whole table on one line).
+        Both parse to the identical nested-object shape a schema would expect from the longer <code>[package]</code>
+        block form — the schema doesn't need to know or care which syntax the TOML author chose.
       </p>
 
       <h2>How it works</h2>
@@ -125,6 +165,74 @@
         <li>Paste or upload your <code>.toml</code> file.</li>
         <li>Errors appear with an approximate line and a plain-English explanation.</li>
       </ol>
+      <p>A <code>pyproject.toml</code>-style example — a schema requiring a package name and version, against a file missing the version:</p>
+      <pre><code># schema (JSON)
+{
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" }
+      }
+    }
+  }
+}
+
+# data (TOML) — fails: version is missing
+[project]
+name = "my-package"</code></pre>
+      <p>
+        This reports <code>project.version</code> as a required property that's missing, with an approximate line
+        near the <code>[project]</code> table header — the line the TOML parser itself associates with the error,
+        which may be a line or two off from the exact key depending on how the parser reports table boundaries.
+      </p>
+
+      <h2>Common errors and how to read them</h2>
+      <ul>
+        <li>
+          <strong>Unclosed or mismatched table headers</strong> — <code>[project</code> missing its closing
+          <code>]</code>, or a duplicate <code>[project]</code> table defined twice. These are genuine TOML syntax
+          errors and fail before schema validation even runs, with a message from the TOML parser pointing at roughly
+          where the table header was expected to close.
+        </li>
+        <li>
+          <strong>An array-of-tables confused with a single table</strong> — <code>[[dependencies]]</code> (double
+          brackets, an array of tables) vs <code>[dependencies]</code> (single brackets, one table). If your schema
+          expects <code>dependencies</code> to be an object but the TOML uses double brackets, you'll get an array
+          where an object was expected — check the bracket count against what your schema's <code>type</code> keyword
+          actually declares.
+        </li>
+        <li>
+          <strong>A bare value that needs quoting</strong> — dates (<code>2024-01-01</code>) and some numeric-looking
+          strings parse as their native TOML types (a date type, a number) rather than staying strings; if your schema
+          expects a string and gets a type mismatch, check whether the TOML value needs explicit quotes.
+        </li>
+        <li>
+          <strong>Schema written for JSON reused as-is for TOML</strong> — since parsing produces the same object
+          shape, a schema that already validates your JSON config should validate the equivalent TOML without
+          changes; if it doesn't, the mismatch is almost always in how a specific value was authored in TOML (see the
+          two points above), not in the schema itself.
+        </li>
+      </ul>
+
+      <h2>Use cases</h2>
+      <p>
+        Checking a <code>Cargo.toml</code> against an internal schema before a crate is published internally;
+        validating a <code>pyproject.toml</code>'s required <code>[project]</code> metadata (name, version, dependencies)
+        before a package build; and checking an app's own TOML settings file against the shape the app's config loader
+        expects, catching a renamed or misspelled key before it silently falls back to a default value at runtime. A
+        team standardizing config across multiple services — some using TOML, some JSON, some YAML — can also write
+        one schema per config shape and validate every service's file against it here regardless of which format that
+        service happens to use, rather than keeping three parallel schema dialects in sync by hand.
+      </p>
+      <p>
+        If your workflow is scripted rather than one-off, the schema pane's "Copy as Node.js/Python snippet" output
+        works for a TOML check the same way it does for JSON or YAML — the snippet validates whatever parsed object
+        you hand it, independent of which format produced that object.
+      </p>
 
       <h2>Frequently asked questions</h2>
       <details>
@@ -138,6 +246,29 @@
       <details>
         <summary>Is my file uploaded anywhere?</summary>
         <p>No, everything runs client-side.</p>
+      </details>
+      <details>
+        <summary>Can I validate a Cargo.toml or pyproject.toml file directly?</summary>
+        <p>
+          Yes — paste the file as-is into the data pane with the TOML tab selected. You'll need to supply your own
+          JSON Schema describing the fields you want checked; this tool doesn't bundle a built-in Cargo or Poetry
+          schema.
+        </p>
+      </details>
+      <details>
+        <summary>Does TOML's array-of-tables syntax work here?</summary>
+        <p>
+          Yes — <code>[[name]]</code> array-of-tables parse into a JSON array of objects, which a schema's
+          <code>"type": "array"</code> with an <code>items</code> sub-schema validates the same way it would for a
+          JSON or YAML array.
+        </p>
+      </details>
+      <details>
+        <summary>Does this support the same JSON Schema drafts as the JSON and YAML validators?</summary>
+        <p>
+          Yes — draft-07, 2019-09, and 2020-12, selected from the same dropdown used for every other format, since
+          schema compilation doesn't depend on which data format is being checked against it.
+        </p>
       </details>
 
       <p>

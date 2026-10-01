@@ -74,6 +74,30 @@
               "@type": "Answer",
               "text": "An interface declaration (.d.ts-style), not a class \u2014 there's no constructor or methods, just the shape of the data."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "What about a \"model\" or \"type\" instead of an interface?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Not generated separately \u2014 the output is always an export interface declaration. A TypeScript type alias and an interface are interchangeable for an object shape like this, so swapping the keyword works if your codebase prefers that convention."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does integer vs number get typed?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Both become TypeScript's number \u2014 TypeScript has no separate integer type, so this distinction from JSON Schema doesn't carry over."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens with tuple-style arrays?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Falls back to unknown \u2014 the generator handles 'array of one item type' but not the tuple form where items is itself an array of per-position schemas."
+            }
           }
         ]
       }
@@ -132,6 +156,55 @@
         <li>Copy it into your codebase.</li>
       </ol>
 
+      <h2>What the generated output actually looks like</h2>
+      <p>Given this schema:</p>
+      <pre><code>{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "role": { "enum": ["admin", "member"] },
+    "address": {
+      "type": "object",
+      "properties": {
+        "city": { "type": "string" },
+        "zip": { "type": "string" }
+      },
+      "required": ["city"]
+    }
+  },
+  "required": ["id", "address"]
+}</code></pre>
+      <p>the generator produces two interfaces — the nested <code>address</code> object gets its own name, declared above the interface that references it, and a field not listed in <code>required</code> becomes optional (<code>?</code>):</p>
+      <pre><code>export interface Schema_addressNested0 {
+  "city": string;
+  "zip"?: string;
+}
+
+export interface Schema {
+  "id": string;
+  "role"?: "admin" | "member";
+  "address": Schema_addressNested0;
+}</code></pre>
+      <p>Nested interface names follow a predictable <code>{ParentName}_{fieldName}Nested{N}</code> pattern — so <code>Schema_addressNested0</code> reads as "the nested object under <code>Schema</code>'s <code>address</code> field," not a naming bug or leftover placeholder.</p>
+
+      <h2>How specific keywords map to TypeScript</h2>
+      <ul>
+        <li><code>"type": "integer"</code> and <code>"type": "number"</code> both become TypeScript's <code>number</code> — TypeScript has no separate integer type, so this isn't a loss of information the generator could fix.</li>
+        <li><code>enum</code> becomes a union of literal types (<code>"admin" | "member"</code>), not a TypeScript <code>enum</code> construct — this matches how most codebases consume JSON Schema enums as literal unions rather than native TS enums.</li>
+        <li><code>oneOf</code> and <code>anyOf</code> are both rendered as a union (<code>|</code>) of their branch types — TypeScript doesn't distinguish "exactly one of" from "any of" the way JSON Schema does, so both collapse to the same union syntax.</li>
+        <li><code>$ref</code> becomes a bare type reference using only the final path segment of the pointer — <code>"$ref": "#/components/schemas/Address"</code> becomes the type name <code>Address</code>, not an inlined copy of that schema's shape.</li>
+        <li><code>allOf</code>, <code>if</code>/<code>then</code>/<code>else</code> conditionals, and tuple-style <code>items</code> (an array of per-position schemas rather than one schema for every item) all fall back to <code>unknown</code> — these don't have a clean, unambiguous TypeScript equivalent the generator is willing to guess at.</li>
+      </ul>
+
+      <h2>Common errors and how to read them</h2>
+      <p><strong>Every field comes out as <code>unknown</code>.</strong> Check that you pasted a JSON Schema, not a raw JSON data sample — a plain data object like <code>{"id": "abc"}</code> has no <code>type</code>/<code>properties</code> keywords for the generator to read, so it falls through to the catch-all. Run it through the <a href="/json-schema-generator/">schema generator</a> first if all you have is example data.</p>
+      <p><strong>A referenced type name doesn't exist anywhere in the output.</strong> <code>$ref</code> targets aren't resolved or inlined — if your schema references <code>#/definitions/Address</code> but <code>Address</code> isn't defined elsewhere in your own codebase, you'll need to either generate that referenced schema separately and merge the interfaces by hand, or inline the full schema in place of the <code>$ref</code> before exporting.</p>
+      <p><strong>A field you expected to be optional isn't, or vice versa.</strong> Optionality is read directly from the schema's <code>required</code> array at each nesting level — a property's own schema has no bearing on whether it's optional; only whether its name appears in the parent's <code>required</code> list does.</p>
+      <p><strong>Nested interface names look auto-generated and ugly.</strong> They are — <code>{Name}Nested{N}</code> is deliberately mechanical rather than guessing a nicer name from context. Rename them by hand after pasting into your codebase if the generated names aren't descriptive enough for your use.</p>
+
+      <h2>When this is (and isn't) the right tool</h2>
+      <p>This is a good fit when a JSON Schema is already your source of truth — an API contract, a config file schema, a validated webhook payload — and you want the matching TypeScript shape without maintaining two documents by hand. It's not a substitute for an OpenAPI-to-TypeScript code generation pipeline if you need request/response types for an entire API surface with many operations; for that, OpenAPI's <code>components.schemas</code> can be pulled into this tool via the schema pane's OpenAPI import feature one schema at a time, but there's no batch "generate every type in this spec" mode here.</p>
+
       <h2>Frequently asked questions</h2>
       <details>
         <summary>Does it handle every JSON Schema keyword?</summary>
@@ -139,11 +212,11 @@
       </details>
       <details>
         <summary>What happens to nested objects?</summary>
-        <p>Each becomes its own named interface, generated above the interface that references it.</p>
+        <p>Each becomes its own named interface, generated above the interface that references it, following a <code>{ParentName}_{fieldName}Nested{N}</code> naming pattern.</p>
       </details>
       <details>
         <summary>Does $ref get resolved against my reference schemas?</summary>
-        <p>No — a <code>$ref</code> is rendered by its final path segment as a type name, not resolved/inlined.</p>
+        <p>No — a <code>$ref</code> is rendered by its final path segment as a type name, not resolved/inlined. If the referenced type isn't declared elsewhere in your codebase, you'll need to add it yourself.</p>
       </details>
       <details>
         <summary>Does this convert raw JSON data to TypeScript, or a JSON Schema?</summary>
@@ -152,6 +225,18 @@
       <details>
         <summary>Does it generate a class, or an interface?</summary>
         <p>An <code>interface</code> declaration (<code>.d.ts</code>-style), not a class — there's no constructor or methods, just the shape of the data.</p>
+      </details>
+      <details>
+        <summary>What about a "model" or "type" instead of an interface?</summary>
+        <p>Not generated separately — the output is always an <code>export interface</code> declaration. A TypeScript <code>type</code> alias and an <code>interface</code> are interchangeable for describing an object shape like this one, so pasting the generated interface and changing the keyword to <code>type</code> plus <code>=</code> works if your codebase's convention prefers that.</p>
+      </details>
+      <details>
+        <summary>How does <code>integer</code> vs <code>number</code> get typed?</summary>
+        <p>Both become TypeScript's <code>number</code> — TypeScript has no separate integer type, so this distinction from JSON Schema doesn't carry over.</p>
+      </details>
+      <details>
+        <summary>What happens with tuple-style arrays (a fixed sequence of different types per position)?</summary>
+        <p>Falls back to <code>unknown</code> — the generator handles the common case of "array of one item type" (<code>items</code> as a single schema) but not the tuple form where <code>items</code> is itself an array of per-position schemas.</p>
       </details>
 
       <p>

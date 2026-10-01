@@ -56,7 +56,39 @@
             "name": "Does it cover nested fields?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, the field table walks the schema's structure, not just its flat top level."
+              "text": "Yes, the field table walks into nested object properties, shown with a dotted prefix like address.city."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it break down what's inside an array field?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No — an array field is documented as a single row of type array. The schema for its items is not expanded into its own rows."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it resolve $ref pointers to external or reference schemas?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "It documents the schema as written. A $ref to a registered reference schema isn't dereferenced into the output table."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I generate docs for just part of a large schema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Not directly — export covers the whole schema currently in the schema pane. Paste just the fragment you need documented instead."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this work for OpenAPI-derived schemas?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — import an OpenAPI/Swagger spec's component schemas and export docs for any one of them the same way."
             }
           }
         ]
@@ -106,15 +138,53 @@
       <a class="cta" href="/">Generate field docs now</a>
 
       <h2>Why generate docs from a schema instead of writing them separately?</h2>
-      <p>A schema and a hand-written field-reference doc drift apart the same way a schema and a hand-written TypeScript type do. Generating the doc directly from the schema means it can never describe a field that no longer exists, or miss one that was just added — and it's readable by someone who's never seen raw JSON Schema.</p>
+      <p>A schema and a hand-written field-reference doc drift apart the same way a schema and a hand-written TypeScript type do. Someone adds a field to the schema, forgets the doc, and six months later the doc is actively wrong rather than just incomplete. Generating the doc directly from the schema removes that failure mode entirely — the doc can never describe a field that no longer exists, or omit one that was just added, because it's rebuilt from the schema every time you export it.</p>
+      <p>It also solves a distribution problem. A product manager, support engineer, or external API consumer usually doesn't want the raw schema — nested <code>properties</code>, <code>$ref</code> pointers, <code>additionalProperties: false</code> — they want a table of field names, types, and whether each one is required. That's exactly what this generates.</p>
 
       <h2>How it works</h2>
       <ol>
-        <li>Open <a href="/">Schema Validator</a> and paste your JSON Schema.</li>
+        <li>Open <a href="/">Schema Validator</a> and paste your JSON Schema into the schema pane.</li>
         <li>Use the schema pane's "⋯" menu → "Export field docs".</li>
-        <li>Choose Markdown (for a repo/wiki) or PDF (a branded table, ready to share as-is).</li>
-        <li>Send it to whoever needs a plain-English reference, not the raw schema.</li>
+        <li>Choose Markdown (for a repo README or wiki page) or PDF (a branded table, ready to share as-is, no further formatting needed).</li>
+        <li>Send it to whoever needs a plain-English reference instead of the raw schema.</li>
       </ol>
+      <p>Given a schema like this:</p>
+      <pre><code>{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "email": { "type": "string", "format": "email" },
+    "address": {
+      "type": "object",
+      "properties": {
+        "city": { "type": "string" },
+        "zip": { "type": "string", "pattern": "^[0-9]{5}$" }
+      },
+      "required": ["city"]
+    },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["id", "email"]
+}</code></pre>
+      <p>the Markdown export produces a flat table — one row per top-level field, and one row per field inside the nested <code>address</code> object (shown as <code>address.city</code>, <code>address.zip</code>) — with its type, required/optional status, and any <code>format</code>/<code>enum</code>/description pulled from the schema. The <code>tags</code> field shows up as a single row of type <code>array</code>; its <code>items</code> shape is not expanded into separate rows (see the FAQ below).</p>
+
+      <h2>Common gaps and how to read the output</h2>
+      <ul>
+        <li><strong>An array field shows no column for what's inside it.</strong> This is the most common surprise — a <code>tags</code> or <code>items</code> array field appears as one row, type <code>array</code>, with no indication that each entry must itself be a string, object, or number. If the array's items have real structure worth documenting, call it out manually in the schema's <code>description</code> for that field, or open the schema itself alongside the doc.</li>
+        <li><strong>A field documented via <code>$ref</code> won't show its real shape</strong> unless the reference is already resolved in the schema pane — the docs generator walks the schema's own <code>properties</code>, not resolved reference schemas. Register the referenced schema first (schema pane's "⋯" menu → reference schemas) if you need the dereferenced shape documented.</li>
+        <li><strong>Missing descriptions show as a bare dash.</strong> The "Details" column only has content if the schema itself carries a <code>description</code>, <code>format</code>, or <code>enum</code> — an undocumented field in the schema stays undocumented in the output. Add a <code>description</code> to the schema, not to the generated doc, so it survives the next export.</li>
+        <li><strong>A field with a non-trivial <code>required</code> array for a nested object</strong> is read correctly — the "Required" column for <code>address.city</code> reflects <code>address</code>'s own <code>required</code> list, not the root schema's.</li>
+      </ul>
+
+      <h2>Typical use case</h2>
+      <p>A common flow: write the schema once as the source of truth for an internal API payload or a config file format, then export field docs whenever a new team member or external integrator needs a reference — instead of maintaining a separate hand-written spec that silently falls out of sync the first time someone adds a field under deadline pressure.</p>
+      <p>Another common case: a support team fielding "what does this field mean" tickets about a webhook payload or config file, where the engineering team already has the schema but nobody's translated it into something a non-engineer can skim. Exporting field docs once and dropping the Markdown into an internal wiki page closes that gap without anyone hand-maintaining a second document.</p>
+
+      <h2>Markdown vs. PDF: which to pick</h2>
+      <p>Both exports cover the same table — the choice is about where it's going, not what it contains. Markdown fits a GitHub/GitLab repo README, an internal wiki page, or anywhere else that already renders Markdown natively; it's plain text, so it diffs cleanly in version control and can be edited further by hand. The PDF export is for anywhere a polished, finished document is expected — an email attachment to an external partner, a spec handed to a vendor, or anywhere Markdown's raw syntax would look unfinished. The PDF carries the app's own dark branding (header band, diamond mark, consistent footer) rather than a generic default-styled table, so it reads as a deliberate deliverable rather than a debug dump.</p>
+
+      <h2>Keeping docs in sync over time</h2>
+      <p>Because the doc is generated, not maintained, "keeping it in sync" is really just "re-export after a schema change" rather than a separate editing task. A practical habit: re-export field docs as part of whatever process already updates the schema itself (a PR that changes the schema, a release checklist) rather than waiting until someone notices the doc is stale. Since the export is a single menu action, this costs seconds, not a dedicated step in a larger process.</p>
 
       <h2>Frequently asked questions</h2>
       <details>
@@ -127,7 +197,23 @@
       </details>
       <details>
         <summary>Does it cover nested fields?</summary>
-        <p>Yes, the field table walks the schema's structure, not just its flat top level.</p>
+        <p>Yes, the field table walks into nested <code>object</code> properties, shown with a dotted prefix like <code>address.city</code>.</p>
+      </details>
+      <details>
+        <summary>Does it break down what's inside an array field?</summary>
+        <p>No — an array field is documented as a single row of type <code>array</code>. The schema for its <code>items</code> is not expanded into its own rows. If the array items are themselves objects with meaningful structure, document that structure in the field's <code>description</code> or keep the schema itself nearby.</p>
+      </details>
+      <details>
+        <summary>Does it resolve <code>$ref</code> pointers to external or reference schemas?</summary>
+        <p>It documents the schema as written. A <code>$ref</code> to a reference schema registered in the app's reference-schema panel isn't dereferenced into the output table — document the referenced schema separately, or inline it before exporting if you need one combined table.</p>
+      </details>
+      <details>
+        <summary>Can I generate docs for just part of a large schema?</summary>
+        <p>Not directly — export covers the whole schema currently in the schema pane. For a subset, paste just that fragment (as its own valid schema object) into the schema pane before exporting.</p>
+      </details>
+      <details>
+        <summary>Does this work for OpenAPI-derived schemas?</summary>
+        <p>Yes — import an OpenAPI/Swagger spec's component schemas (via the OpenAPI import panel) and export docs for any one of them the same way.</p>
       </details>
 
       <p>

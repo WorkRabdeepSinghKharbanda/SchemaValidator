@@ -58,6 +58,46 @@
               "@type": "Answer",
               "text": "No, conversion runs entirely in the browser."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I convert a top-level array to TOML?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Not directly — TOML documents are tables at the root, so a bare array has no document-level representation. Wrap it in an object first, e.g. {\"items\": [...]}."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens to nested objects when converting to CSV?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "They're flattened into a single cell's worth of text rather than split across columns — CSV has no native nesting concept."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does the converter run a CLI or need an install?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No — it's a browser-only feature of this SPA, no CLI or package install needed."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I validate the converted output against a schema in the same step?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — paste a JSON Schema in the schema pane before or after converting; validation runs against whatever format the data pane's active tab currently shows."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is YAML better than JSON?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "That's a format-choice question, not a conversion one — see the YAML vs JSON blog post for the comparison. This page covers converting between the two mechanically."
+            }
           }
         ]
       }
@@ -116,6 +156,39 @@
         <li>Copy or export the converted data.</li>
       </ol>
 
+      <h2>What the conversion actually does, step by step</h2>
+      <p>This isn't a text transform — it's a parse into an in-memory JavaScript value, followed by a re-serialize into the target format. Given this JSON:</p>
+      <pre><code>{
+  "name": "Ada Lovelace",
+  "roles": ["engineer", "writer"],
+  "active": true
+}</code></pre>
+      <p>switching to the YAML tab produces:</p>
+      <pre><code>name: Ada Lovelace
+roles:
+  - engineer
+  - writer
+active: true</code></pre>
+      <p>Because the intermediate form is a plain JS object/array tree, types survive the round trip correctly — <code>true</code> stays a YAML boolean, not the string <code>"true"</code>; a number stays a number. This is the same reason converting JSON → YAML → JSON again reproduces the original data: both directions go through the identical parse/serialize pair, so nothing is lost that either format can represent.</p>
+
+      <h2>Format-specific quirks worth knowing</h2>
+      <ul>
+        <li><strong>TOML expects a table (object) at the root.</strong> A top-level JSON array or bare scalar has no TOML equivalent at the document root — TOML documents are always key-value tables. Wrap an array in an object first (<code>{"items": [...]}</code>) if you need to target TOML.</li>
+        <li><strong>CSV expects an array of flat-ish records.</strong> A single JSON object gets wrapped into a one-row CSV automatically; a deeply nested object inside a record (an object or array as a field value) gets flattened into a single cell's worth of text rather than spread across columns — CSV has no native concept of nesting.</li>
+        <li><strong>XML needs a value fast-xml-parser can represent as elements.</strong> A top-level array converts awkwardly to XML (no single root element) — wrapping in an object with one root key, same as TOML, gives a cleaner result.</li>
+        <li><strong>YAML and JSON are the closest pair.</strong> Every JSON document is representable in YAML with no loss (YAML is a superset in practice for data this tool handles) — this is the cleanest conversion of the five.</li>
+      </ul>
+
+      <h2>Common errors and how to read them</h2>
+      <p><strong>Converting to TOML silently reorganizes your data, or fails.</strong> Check whether your top-level value is an object — if your JSON starts with <code>[</code> (an array) or a bare string/number, that's the mismatch described above; wrap it in an object with a named key first.</p>
+      <p><strong>CSV output has one column full of <code>[object Object]</code>-style text or escaped JSON.</strong> That's a nested object or array inside one of your records — CSV has no columns for nested structure, so the value is serialized to a flat string instead of being split into more columns. If you need each nested field as its own column, flatten the structure in the source data before converting, or accept the flattened cell if it's only being used for a quick export.</p>
+      <p><strong>The converted output fails schema validation, but the original data passed.</strong> This usually means the schema was written against one specific format's quirks — e.g. a schema expecting a numeric string because the source was always CSV (where every value parses as a string) now sees an actual YAML number instead. Converting between formats can change a value's inferred type even when the value "looks" the same; validate the schema's <code>type</code> keywords match what the new format's parser actually produces.</p>
+      <p><strong>Switching format tabs with an empty or unparsable data pane does nothing visible.</strong> The conversion needs a successfully parsed source first — fix any parse error shown in the current format's tab before switching, or the target tab has no new data to show.</p>
+
+      <h2>A typical use case</h2>
+      <p>A common flow: an API returns JSON, but the config file it's feeding into is YAML (Kubernetes manifests, GitHub Actions workflows, most infra-as-code tooling). Paste the JSON response, switch the format tab to YAML, and the result is ready to paste into the target file — with an optional schema check in between to confirm the shape didn't quietly change along the way.</p>
+      <p>For a deeper comparison of when to reach for YAML over JSON in the first place (not a conversion question, a format-choice one), see <a href="/blog/yaml-vs-json/">YAML vs JSON: when to use which</a>.</p>
+
       <h2>Frequently asked questions</h2>
       <details>
         <summary>Which formats are supported?</summary>
@@ -123,11 +196,31 @@
       </details>
       <details>
         <summary>Does conversion ever lose data?</summary>
-        <p>Only where the target format genuinely can't represent the source shape (e.g. deeply nested data flattened into CSV) — for JSON/YAML/TOML round-trips this is not an issue.</p>
+        <p>Only where the target format genuinely can't represent the source shape (e.g. deeply nested data flattened into CSV, or an array at the TOML document root) — for JSON/YAML round-trips this is not an issue.</p>
       </details>
       <details>
         <summary>Is my data uploaded anywhere?</summary>
         <p>No, conversion runs entirely in the browser.</p>
+      </details>
+      <details>
+        <summary>Can I convert a top-level array to TOML?</summary>
+        <p>Not directly — TOML documents are tables at the root, so a bare array has no document-level representation. Wrap it in an object first, e.g. <code>{"items": [...]}</code>.</p>
+      </details>
+      <details>
+        <summary>What happens to nested objects when converting to CSV?</summary>
+        <p>They're flattened into a single cell's worth of text rather than split across columns — CSV has no native nesting concept. If you need per-field columns, flatten the source structure before converting.</p>
+      </details>
+      <details>
+        <summary>Does the converter run a CLI or need an install?</summary>
+        <p>No — it's a browser-only feature of this SPA, no CLI or package install. If you need format conversion in a script or CI pipeline, the schema pane's "Copy as Node.js/Python snippet" feature covers re-running a validation check outside the browser, though it doesn't cover conversion specifically.</p>
+      </details>
+      <details>
+        <summary>Can I validate the converted output against a schema in the same step?</summary>
+        <p>Yes — paste a JSON Schema in the schema pane before or after converting; validation runs against whatever format the data pane's active tab currently shows.</p>
+      </details>
+      <details>
+        <summary>Is YAML better than JSON?</summary>
+        <p>That's a format-choice question, not a conversion one — see <a href="/blog/yaml-vs-json/">YAML vs JSON: when to use which</a> for the comparison. This page covers converting between the two mechanically, not which to pick for a new project.</p>
       </details>
 
       <p>

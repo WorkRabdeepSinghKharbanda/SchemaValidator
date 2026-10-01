@@ -69,6 +69,30 @@
               "@type": "Answer",
               "text": "Not built — this is intentionally a browser-only tool, no CLI or npm package. For CI, use the schema pane's \"Copy as Node.js/Python snippet\" feature to get a self-contained script that runs the same check outside the browser, including against Kubernetes manifests or any other YAML config."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Can this validate Kubernetes manifests specifically?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, in the sense that a manifest is just YAML — supply a JSON Schema describing the fields your team requires and validate against it. No built-in Kubernetes API schemas are bundled."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do I get exact line numbers for YAML errors, like I do for JSON?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No — YAML gets an approximate line number from the YAML library's own error object, not the exact line/column mapping JSON gets."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is \"lint YAML\" the same thing as \"validate YAML against a schema\" here?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In this tool, yes — there's no separate style/formatting linter, only schema validation, which covers the correctness checking most people mean by linting a config file."
+            }
           }
         ]
       }
@@ -126,6 +150,12 @@
         enum value. A JSON Schema catches exactly those mistakes, and the same schema can validate both your YAML and
         JSON representations of the same data.
       </p>
+      <p>
+        Under the hood this works because YAML is a superset of what JSON Schema cares about: once parsed, a YAML
+        document is the same kind of nested object/array/string/number structure a JSON document would produce, so
+        the identical ajv engine and identical schema validate either one. You don't maintain a YAML-specific schema
+        and a JSON-specific schema separately — one schema covers both.
+      </p>
 
       <h2>How it works</h2>
       <ol>
@@ -134,6 +164,74 @@
         <li>Paste or upload your YAML file in the data pane.</li>
         <li>Errors appear inline with an approximate line number, plus a plain-English explanation of what's wrong.</li>
       </ol>
+      <p>A Kubernetes-style example — a schema that requires a container's resource limits, and a manifest fragment that's missing them:</p>
+      <pre><code># schema (JSON, as always)
+{
+  "type": "object",
+  "properties": {
+    "resources": {
+      "type": "object",
+      "required": ["limits"],
+      "properties": {
+        "limits": { "type": "object", "required": ["cpu", "memory"] }
+      }
+    }
+  },
+  "required": ["resources"]
+}
+
+# data (YAML) — fails: limits is missing entirely
+resources:
+  requests:
+    cpu: "250m"
+    memory: "64Mi"</code></pre>
+      <p>
+        This reports <code>resources.limits</code> as a missing required property, with an approximate line pointing
+        near the <code>resources:</code> block — close enough to navigate to, though not the exact line JSON gets,
+        since the error is mapped from the parsed data tree rather than YAML's own source positions.
+      </p>
+
+      <h2>Common errors and how to read them</h2>
+      <ul>
+        <li>
+          <strong>Indentation mismatch</strong> — YAML is whitespace-significant; a key indented one space off from
+          its siblings either attaches to the wrong parent or throws a parse error outright
+          (<code>bad indentation</code>-style messages from the YAML library). Since YAML parse errors are
+          approximate, check a few lines around the reported one, not just that exact line.
+        </li>
+        <li>
+          <strong>Tabs instead of spaces</strong> — YAML disallows tab characters for indentation; a file edited in a
+          tab-indenting editor often fails to parse with a message about an unexpected character, even though it
+          looks fine visually.
+        </li>
+        <li>
+          <strong>An unquoted value that YAML "helpfully" reinterprets</strong> — <code>version: 1.20</code> parses as
+          a number, truncating a semantic-version-looking string; <code>enabled: yes</code> parses as a boolean. If
+          your schema expects a string and the data looks right but fails with a type error, this is almost always
+          why — quote the value (<code>version: "1.20"</code>) to force it to stay a string.
+        </li>
+        <li>
+          <strong>A schema mismatch that's really a structural difference</strong> — e.g. a Kubernetes manifest with
+          multiple documents separated by <code>---</code>. This parser reads one YAML document per validation — a
+          multi-document file needs each document validated separately (split and paste one block at a time, or
+          validate the first and reuse the process for the rest).
+        </li>
+      </ul>
+
+      <h2>Use cases</h2>
+      <p>
+        Common real uses: checking a Kubernetes Deployment or ConfigMap against an internal schema before applying it
+        with <code>kubectl</code>; validating a GitHub Actions workflow file's structure against a schema you maintain
+        for your org's conventions; linting an app's <code>config.yaml</code> against the shape the app's code
+        actually expects, to catch a typo'd key before a deploy; and checking an OpenAPI 3.x spec authored in YAML —
+        for the OpenAPI-specific schema extraction and <code>$ref</code> handling, see the
+        <a href="/openapi-validator/">OpenAPI validator</a> page instead of hand-writing that schema yourself.
+      </p>
+      <p>
+        For a recurring check rather than a one-off paste, the schema pane's "Copy as Node.js/Python snippet" produces
+        a self-contained script that loads the YAML file with the same library this tool uses and runs it through ajv
+        — a reasonable stopgap for a pre-commit hook or a CI step, short of maintaining a dedicated CLI.
+      </p>
 
       <h2>Frequently asked questions</h2>
       <details>
@@ -151,6 +249,29 @@
       <details>
         <summary>Is there a CLI version for CI pipelines?</summary>
         <p>Not built — this is intentionally a browser-only tool, no CLI or npm package. For CI, use the schema pane's "Copy as Node.js/Python snippet" feature to get a self-contained script that runs the same check outside the browser, including against Kubernetes manifests or any other YAML config.</p>
+      </details>
+      <details>
+        <summary>Can this validate Kubernetes manifests specifically?</summary>
+        <p>
+          Yes, in the sense that a manifest is just YAML — write (or find) a JSON Schema describing the fields your
+          team requires on a Deployment/Service/ConfigMap and validate against it here. This tool doesn't ship
+          built-in Kubernetes API schemas; you supply the schema.
+        </p>
+      </details>
+      <details>
+        <summary>Do I get exact line numbers for YAML errors, like I do for JSON?</summary>
+        <p>
+          No — YAML gets an approximate line number from the YAML library's own error object, not the exact
+          line/column mapping JSON gets. It's close enough to find the right area of the file, not a precise marker.
+        </p>
+      </details>
+      <details>
+        <summary>Is "lint YAML" the same thing as "validate YAML against a schema" here?</summary>
+        <p>
+          In this tool, yes — there's no separate style/formatting linter (trailing whitespace, key ordering); what's
+          offered is schema validation, which also happens to be what most people mean by "lint my YAML" when they're
+          checking a config file's correctness rather than its formatting.
+        </p>
       </details>
 
       <p>

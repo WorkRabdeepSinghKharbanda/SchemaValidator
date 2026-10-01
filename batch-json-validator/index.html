@@ -58,6 +58,38 @@
               "@type": "Answer",
               "text": "Yes \u2014 batch mode works with any of the five supported data formats, not just JSON."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I export the results as CSV instead of JSON?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, an \"Export CSV\" button reserializes the batch results table as CSV, useful for triaging failures in a spreadsheet."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens if I paste a single object instead of an array?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Batch mode expects a top-level array \u2014 wrap a single record in square brackets ([ ]) if you want to batch-validate just one, or turn off batch mode to validate it directly."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does each failing record show the same error detail as single-record validation?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes \u2014 the same ajv error objects (message, instancePath, keyword) per record, just scoped to that array index instead of the whole document."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is there a limit on how many records I can batch-validate?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No hard limit imposed by the tool itself, but this runs entirely in the browser \u2014 a very large array will be slower than a server-side batch job, since there's no streaming or pagination."
+            }
           }
         ]
       }
@@ -116,6 +148,40 @@
         <li>Get a per-record pass/fail table with a progress bar — export all results, failing records only, or as CSV.</li>
       </ol>
 
+      <h2>What a batch run looks like, with an example</h2>
+      <p>Given this array and schema:</p>
+      <pre><code>[
+  { "sku": "A-100", "price": 19.99 },
+  { "sku": "A-101", "price": "19.99" },
+  { "sku": "A-102" }
+]</code></pre>
+      <pre><code>{
+  "type": "object",
+  "properties": {
+    "sku": { "type": "string" },
+    "price": { "type": "number" }
+  },
+  "required": ["sku", "price"]
+}</code></pre>
+      <p>the result table shows row 1 passing, row 2 failing (<code>price</code> is a string, not a number — a common artifact of data that passed through CSV at some point, where every value is a string), and row 3 failing (missing <code>price</code> entirely). Each failing row's errors are the same ajv error objects single-record mode produces — same messages, same <code>instancePath</code> — just scoped to that one array index instead of the whole document.</p>
+
+      <h2>Reading the results: three export options</h2>
+      <ul>
+        <li><strong>Export JSON</strong> — every row's result (pass or fail, with error details) as one JSON file, useful for feeding into another script or keeping an audit trail of a specific validation run.</li>
+        <li><strong>Export failing only</strong> — the same export, pre-filtered to just the records that didn't pass. This is the one most people want after a real import: you already know the passing records are fine, you just need the broken ones to go fix at the source.</li>
+        <li><strong>Export CSV</strong> — the batch results reserialized as CSV (via the same <code>serialize()</code> path the format converter uses), useful for pasting into a spreadsheet to triage failures with non-technical teammates.</li>
+      </ul>
+
+      <h2>Common errors and how to read them</h2>
+      <p><strong>Every single record fails with the same error.</strong> Before assuming the schema is wrong, check whether the top-level pasted value is actually an array — if you pasted a single object instead of an array of them, batch mode has nothing to iterate, and depending on how the data is structured you may see one misleading result instead of the per-record breakdown you expected. Wrap a single record in <code>[ ]</code> to batch-validate just one.</p>
+      <p><strong>The progress bar finishes instantly with zero rows shown.</strong> An empty array (<code>[]</code>) is valid input with nothing to validate — this isn't an error, there's just nothing to report on. Check the array actually has elements.</p>
+      <p><strong>A record fails that looks identical to one that passed.</strong> Check for a type mismatch invisible at a glance — a trailing space making a "number-looking" string not parse as intended, or inconsistent key casing between records from different data sources merged into one array. The per-row error list shows the exact <code>instancePath</code> and <code>keyword</code> that failed, same as single-record mode, so expand the failing row rather than comparing two rows by eye.</p>
+      <p><strong>Leaving the schema pane empty shows every record as passing.</strong> This is intentional, not a bug — an empty schema is treated as trivially valid in both batch and single-record mode (a syntax-only check), so if you expected real validation and got all-green, confirm the schema pane actually has your schema in it.</p>
+
+      <h2>When batch mode is the right tool</h2>
+      <p>This is built for checking an already-assembled array — a paginated API response flattened into one JSON file, a seed-data fixture for tests, an export from another system before importing it into yours. It's not a bulk-upload or streaming validator for files too large to paste into a browser editor comfortably; for genuinely large datasets, consider validating a representative sample here first to confirm the schema is right, then applying the same schema via the "Copy as Node.js/Python snippet" feature in a script that can stream the full file.</p>
+      <p>A closely related but distinct need: validating CSV data specifically (each row as a record) is covered by the dedicated <a href="/csv-validator/">CSV validator</a> page — batch mode here works with CSV too (any of the five supported formats, loaded as an array), but that page focuses on CSV's specific quirks (type coercion, since every CSV cell parses as a string).</p>
+
       <h2>Frequently asked questions</h2>
       <details>
         <summary>What if the schema pane is empty?</summary>
@@ -128,6 +194,22 @@
       <details>
         <summary>Does this work for YAML/CSV arrays too?</summary>
         <p>Yes — batch mode works with any of the five supported data formats, not just JSON.</p>
+      </details>
+      <details>
+        <summary>Can I export the results as CSV instead of JSON?</summary>
+        <p>Yes, an "Export CSV" button reserializes the batch results table as CSV, useful for triaging failures in a spreadsheet.</p>
+      </details>
+      <details>
+        <summary>What happens if I paste a single object instead of an array?</summary>
+        <p>Batch mode expects a top-level array — wrap a single record in square brackets (<code>[ ]</code>) if you want to batch-validate just one record, or turn off batch mode to validate it directly.</p>
+      </details>
+      <details>
+        <summary>Does each failing record show the same error detail as single-record validation?</summary>
+        <p>Yes — the same ajv error objects (message, <code>instancePath</code>, <code>keyword</code>) per record, just scoped to that array index instead of the whole document.</p>
+      </details>
+      <details>
+        <summary>Is there a limit on how many records I can batch-validate?</summary>
+        <p>No hard limit imposed by the tool itself, but this runs entirely in the browser — a very large array (tens of thousands of records) will be slower than a server-side batch job, since there's no streaming or pagination.</p>
       </details>
 
       <p>

@@ -61,6 +61,46 @@
               "@type": "Answer",
               "text": "Yes. Both the schema and data JSON panes tolerate comments and trailing commas (JSONC-style) rather than rejecting strictly-standard JSON only."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I use this JSON validator inside VS Code, Notepad++, Postman, or REST Assured?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No — this is a browser app, not an IDE plugin or test-framework integration. Use the schema pane's copy-as-snippet feature to get a self-contained Node.js or Python script for CI or test-script use instead."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this tool fix broken JSON, not just report errors?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "For a plain parse error, yes — an Auto-fix button wraps jsonrepair to repair common mistakes like missing quotes, trailing commas, and unquoted keys in one click."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can my schema use $ref to point at another schema file?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — upload reference schemas from the schema pane's menu and a main schema's $ref can resolve against them by id."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Which JSON Schema drafts does this support?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Draft-07, 2019-09, and 2020-12, selectable from a dropdown or auto-detected from the schema's $schema field."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I validate a JSON array where every item must match a schema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — use an array schema with items for one combined result, or turn on batch mode to validate each element independently as a pass/fail table."
+            }
           }
         ]
       }
@@ -115,16 +155,88 @@
       <p>
         Paste JSON with an empty schema pane and get a plain syntax check: is this valid JSON, and if not, exactly
         which line broke it. Add a JSON Schema and the same data gets checked against required fields, types,
-        patterns, and every other constraint the schema declares.
+        patterns, and every other constraint the schema declares. Nothing you paste is uploaded — parsing with
+        <code>jsonc-parser</code> and schema checking with <a href="https://ajv.js.org/" rel="noopener">ajv</a> both run
+        in your browser.
       </p>
 
       <h2>How it works</h2>
       <ol>
         <li>Open <a href="/">Schema Validator</a> — the JSON tab is selected by default.</li>
         <li>Paste or upload your JSON data.</li>
-        <li>Optionally paste a JSON Schema (draft-07, 2019-09, or 2020-12) to validate structure, not just syntax.</li>
+        <li>Optionally paste a JSON Schema (draft-07, 2019-09, or 2020-12 — the dropdown auto-detects the draft from a <code>$schema</code> field if your schema has one) to validate structure, not just syntax.</li>
         <li>Errors show inline at the exact line, each with a plain-English explanation and, for common mistakes, a one-click fix.</li>
       </ol>
+      <p>
+        A minimal example — schema and data that fails it:
+      </p>
+      <pre><code>// schema
+{
+  "type": "object",
+  "required": ["id", "email"],
+  "properties": {
+    "id": { "type": "integer" },
+    "email": { "type": "string", "format": "email" }
+  }
+}
+
+// data — fails: id is a string, email is missing
+{
+  "id": "4821"
+}</code></pre>
+      <p>
+        Validating this pair reports two errors: <code>/id</code> should be <code>integer</code> (with a one-click
+        "Convert to integer" fix, since <code>"4821"</code> is unambiguously numeric), and <code>email</code> is a
+        required property (with a "Make optional" fix if you'd rather loosen the schema than add the field). Both
+        quick-fixes are specific to the keyword that failed — a <code>pattern</code> mismatch instead gets an inline
+        regex tester against the schema's actual pattern, rather than either of those two buttons.
+      </p>
+
+      <h2>Common errors and how to read them</h2>
+      <p>
+        Most JSON syntax errors fall into a handful of repeat offenders. Here's what each looks like and how to fix it:
+      </p>
+      <ul>
+        <li>
+          <strong>Trailing comma before a closing brace/bracket</strong> — <code>{ "a": 1, }</code>. Strict
+          <code>JSON.parse</code> rejects this; this validator's JSONC leniency accepts it in both panes, so you'll
+          only see this as an error if your target system (an API, a config loader) uses a stricter parser than this
+          tool does — worth testing with a plain syntax check (empty schema pane) first if you're unsure whether your
+          downstream consumer is JSONC-tolerant too.
+        </li>
+        <li>
+          <strong>Missing comma between properties</strong> — <code>{ "a": 1 "b": 2 }</code>. This one JSONC can't
+          forgive; it's a genuine syntax error and gets an exact line/column marker pointing at the token right after
+          the missing comma.
+        </li>
+        <li>
+          <strong>Unescaped quote inside a string</strong> — <code>{ "name": "Say "hi"" }</code>. The parser reports
+          the error at the second unescaped <code>"</code>, which is usually a few characters earlier than where the
+          mistake actually is (the missing <code>\"</code>) — check the preceding few characters, not just the
+          reported column.
+        </li>
+        <li>
+          <strong>Type mismatch against the schema</strong> — schema says <code>"type": "integer"</code>, data has
+          <code>"4821"</code> (a string). This is a schema-validation error, not a syntax error — the JSON itself is
+          valid, it just doesn't match the shape the schema requires. These get the "Convert to {type}" quick-fix when
+          the value is unambiguous.
+        </li>
+        <li>
+          <strong>Duplicate keys</strong> — <code>{ "id": 1, "id": 2 }</code>. Both this parser and strict JSON agree
+          here: it's not a syntax error, but only the last value survives, silently. If you're debugging data that
+          "looks right" in the schema pane but validates unexpectedly, search for a duplicate key before assuming the
+          schema itself is wrong.
+        </li>
+      </ul>
+
+      <h2>Use cases</h2>
+      <p>
+        Beyond ad-hoc "is this JSON valid" checks, people use this for: validating an API response body against its
+        documented schema before debugging a client-side bug; checking a config file (a build tool's JSON config, a
+        <code>package.json</code>-style manifest) against a schema before committing it; validating webhook payloads
+        from a third-party service against the shape their docs promise; and generating a quick regression fixture by
+        pasting a known-good payload and using "Generate sample" to produce variations that should still pass.
+      </p>
 
       <h2>Frequently asked questions</h2>
       <details>
@@ -139,10 +251,52 @@
         <summary>Comments and trailing commas allowed?</summary>
         <p>Yes, both panes tolerate JSONC-style comments and trailing commas.</p>
       </details>
+      <details>
+        <summary>Can I use this JSON validator inside VS Code, Notepad++, Postman, or REST Assured?</summary>
+        <p>
+          No — this is a browser app, not an IDE plugin or test-framework integration. If you need the same check
+          inside a script, test suite, or CI pipeline, use the schema pane's "⋯" menu to copy a self-contained
+          Node.js or Python snippet that runs an equivalent ajv (or <code>jsonschema</code>) check outside the
+          browser, including from inside a REST Assured or Postman pre-request/test script that can shell out to it.
+        </p>
+      </details>
+      <details>
+        <summary>Does this tool fix broken JSON, not just report errors?</summary>
+        <p>
+          For a plain parse error (not a schema mismatch), yes — an "Auto-fix" button wraps
+          <a href="/json-repair/">jsonrepair</a> to repair common mistakes (missing quotes, trailing commas, unquoted
+          keys) in one click. For a deeper look at JSON repair specifically, see the
+          <a href="/json-repair/">JSON repair tool</a> page.
+        </p>
+      </details>
+      <details>
+        <summary>Can my schema use <code>$ref</code> to point at another schema file?</summary>
+        <p>
+          Yes — upload reference schemas from the schema pane's "⋯" menu and they're registered before compilation,
+          so a main schema's <code>$ref</code> can resolve against them by the id you give each one.
+        </p>
+      </details>
+      <details>
+        <summary>Which JSON Schema drafts does this support?</summary>
+        <p>
+          Draft-07, 2019-09, and 2020-12, selectable from a dropdown — or auto-detected from the schema's
+          <code>$schema</code> field if it has one.
+        </p>
+      </details>
+      <details>
+        <summary>Can I validate a JSON array where every item must match a schema?</summary>
+        <p>
+          Yes, in two ways: a top-level <code>"type": "array"</code> schema with an <code>items</code> keyword
+          validates the whole array as one document, or turn on batch mode to validate each array element
+          independently and get a pass/fail table — useful when you want to know exactly which records in a large
+          dataset fail, not just that "something" in the array does.
+        </p>
+      </details>
 
       <p>
         Working with a different format? Schema Validator also supports
-        <a href="/yaml-validator/">YAML</a>, <a href="/csv-validator/">CSV</a>, TOML, and XML against the same schema.
+        <a href="/yaml-validator/">YAML</a>, <a href="/csv-validator/">CSV</a>, <a href="/toml-validator/">TOML</a>,
+        and <a href="/xml-validator/">XML</a> against the same schema.
       </p>
     </main>
     <footer>

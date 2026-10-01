@@ -58,6 +58,38 @@
               "@type": "Answer",
               "text": "No, the diff is computed entirely in your browser."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Is there a JSON Schema compare tool I can use online without saving anything?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The comparison always runs against a saved workspace by design, since the diff needs something stable to compare against. Saving a workspace is a one-click action and nothing leaves your browser, so it's still an entirely local, no-sign-up comparison."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What's the difference between anyOf and oneOf in JSON Schema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "anyOf passes if the data matches at least one listed subschema (matching more than one is fine); oneOf requires matching exactly one, failing if two or more match. See the anyOf vs oneOf blog post for worked examples."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does the diff understand JSON Schema semantics, like reordered properties meaning no real change?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No — it's a plain line diff over the schema's text, not a schema-aware structural comparison. Reordering properties keys with no other change still shows as a diff."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I see when a required field was added or removed across versions?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, as long as it shows up as a text change — a field added to or removed from the required array appears as an added/removed line, same as any other schema change."
+            }
           }
         ]
       }
@@ -107,6 +139,14 @@
 
       <h2>Why diff a schema instead of eyeballing two files?</h2>
       <p>A schema change that looks small in a text editor — a field moved from <code>required</code>, a type widened, a nested object restructured — can have a large effect on what data now passes or fails. A line diff makes exactly what changed obvious at a glance.</p>
+      <p>
+        This matters most right before a schema change ships somewhere else consumes it — an API contract, a config
+        validator, a data pipeline's intake check. A reviewer skimming two JSON blocks side by side in a pull
+        request easily misses a single added entry in a <code>required</code> array buried among a dozen unchanged
+        properties, even though that one line is the whole behavioral difference: previously-valid data starts
+        failing the moment it ships. A focused line diff turns that into something obvious at a glance instead of
+        something you hope someone notices in review.
+      </p>
 
       <h2>How it works</h2>
       <ol>
@@ -115,6 +155,66 @@
         <li>Open the schema pane's "⋯" menu → "Compare with" and pick the saved workspace.</li>
         <li>A line diff of that workspace's schema vs. the current one renders below the editors.</li>
       </ol>
+      <p>
+        One important detail: the comparison is always <strong>saved workspace vs. whatever is currently in the
+        schema pane</strong>, never two saved workspaces against each other directly. To diff two specific past
+        versions, load the older one into the schema pane first (via the Saved drawer), then pick the newer one
+        from "Compare with" — or vice versa, since a line diff reads the same information either direction, just
+        with additions and removals swapped.
+      </p>
+      <p>For example, saving this as a workspace named <code>v1</code>:</p>
+      <pre><code>{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "age": { "type": "integer" }
+  },
+  "required": ["name"]
+}</code></pre>
+      <p>then editing the schema pane to:</p>
+      <pre><code>{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "age": { "type": "integer", "minimum": 0 },
+    "email": { "type": "string", "format": "email" }
+  },
+  "required": ["name", "age"]
+}</code></pre>
+      <p>
+        and picking <code>v1</code> from "Compare with" shows a line diff highlighting the new <code>"minimum": 0</code>
+        constraint, the added <code>email</code> property, and <code>age</code> moving into <code>required</code> —
+        exactly the kind of change that's easy to miss scanning two JSON blocks side by side but obvious in a line
+        diff, and exactly the kind of change ("age is now required") that would start rejecting previously-valid
+        data if you rolled it out without noticing.
+      </p>
+
+      <h2>Common errors and how to read them</h2>
+      <ul>
+        <li>
+          <strong>"Compare with" dropdown is empty.</strong> There are no saved workspaces yet — the diff needs at
+          least one named workspace to compare against. Save your current schema (or an earlier version of it) as a
+          workspace first via the Saved drawer.
+        </li>
+        <li>
+          <strong>Diff shows the whole schema as removed and re-added, not a focused change.</strong> Usually means
+          formatting changed as much as content — different indentation, key order, or quote style between the
+          saved version and the current one. The diff operates on text lines, not a structural/semantic AST
+          comparison, so reformatting the whole file (even with no real schema change) can produce a noisy diff.
+          Keep formatting consistent between saves if you want diffs to stay focused on actual changes.
+        </li>
+        <li>
+          <strong>Diff doesn't reflect a change you just made.</strong> The diff panel renders against the schema
+          pane's current text at the moment you open "Compare with" — if you're in Visual builder mode and haven't
+          synced back to Code mode, or the schema pane has an unsaved syntax error, check the Code view actually
+          shows your latest edit before comparing.
+        </li>
+        <li>
+          <strong>Expected a data diff, got nothing / wrong panel.</strong> This feature only diffs schemas. For
+          data, use "Diff from last valid" instead, which compares the current data pane against the last version
+          that passed validation — a different feature, reachable from the data pane, not the schema pane's menu.
+        </li>
+      </ul>
 
       <h2>Frequently asked questions</h2>
       <details>
@@ -128,6 +228,44 @@
       <details>
         <summary>Is anything uploaded?</summary>
         <p>No, the diff is computed entirely in your browser.</p>
+      </details>
+      <details>
+        <summary>Is there a JSON Schema compare tool I can use online without saving anything?</summary>
+        <p>
+          The comparison itself always runs against a saved workspace, by design — the diff needs something stable
+          to compare the current schema pane against, and "whatever happened to be in the pane a minute ago" isn't
+          stable. Saving a workspace is a one-click action (name it, done) and nothing leaves your browser, so it's
+          still an entirely local, no-sign-up comparison — just one that needs that one save step first.
+        </p>
+      </details>
+      <details>
+        <summary>What's the difference between anyOf and oneOf in JSON Schema?</summary>
+        <p>
+          Briefly: <code>anyOf</code> passes if the data matches at least one of the listed subschemas (matching
+          more than one is fine), while <code>oneOf</code> requires matching <em>exactly</em> one — matching two or
+          more subschemas fails <code>oneOf</code> even though each individually would have passed. This trips
+          people up most with overlapping subschemas (e.g. a loose <code>{"type": "object"}</code> alongside a
+          stricter one). See the
+          <a href="/blog/anyof-vs-oneof/">anyOf vs oneOf</a> post for worked examples — it's a separate
+          point of confusion from schema diffing, not something this diff feature itself resolves.
+        </p>
+      </details>
+      <details>
+        <summary>Does the diff understand JSON Schema semantics, like reordered properties meaning no real change?</summary>
+        <p>
+          No — it's a plain line diff (via the <code>diff</code> package) over the schema's text, not a
+          schema-aware structural comparison. Reordering <code>properties</code> keys with no other change will
+          show as a diff even though the schema's meaning is identical. Keep formatting/ordering consistent between
+          saves if that matters to you.
+        </p>
+      </details>
+      <details>
+        <summary>Can I see when a required field was added or removed across versions?</summary>
+        <p>
+          Yes, as long as it shows up as a text change — a field added to or removed from the <code>required</code>
+          array appears as an added/removed line in the diff, same as any other schema change. There's no dedicated
+          "required fields changed" summary separate from the line diff itself.
+        </p>
       </details>
 
       <p>

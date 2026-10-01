@@ -66,6 +66,30 @@
               "@type": "Answer",
               "text": "Not necessarily — JSON Schema's pattern keyword is defined against ECMA-262 (JavaScript) regex syntax, which this tester matches exactly. Another language's regex engine can behave differently on the same pattern."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this tester support flags like case-insensitive matching?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No — it tests the pattern string exactly as written in the schema, with no flags applied, matching how ajv itself compiles a pattern value."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why does my pattern work in a standalone regex tester but not here?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Usually implicit anchoring differences, or the other tool using a different regex dialect (Python/PCRE) than the JS engine this tester and ajv both use."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I test a pattern without first triggering a validation error?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The tester is surfaced alongside a pattern-keyword error in the error list, so you need a schema with a pattern and data that currently violates it to see the button."
+            }
           }
         ]
       }
@@ -114,7 +138,7 @@
       <a class="cta" href="/">Test a pattern now</a>
 
       <h2>Why test a regex inside the validator instead of a separate regex tool?</h2>
-      <p>A <code>pattern</code>-keyword validation error tells you a value didn't match, but not why — testing the actual schema pattern against candidate values in a separate regex tool means re-copying the pattern by hand and hoping you copied it exactly. Testing it inline, against the same pattern string ajv just used, removes that step.</p>
+      <p>A <code>pattern</code>-keyword validation error tells you a value didn't match, but not why — testing the actual schema pattern against candidate values in a separate regex tool means re-copying the pattern by hand and hoping you copied it exactly, with no quotes, escapes, or anchors dropped in transit. Testing it inline, against the same pattern string ajv just used, removes that step: the pattern is pulled straight from the schema, re-compiled independently with JavaScript's own <code>new RegExp</code>, and tested live as you type candidate values.</p>
 
       <h2>How it works</h2>
       <ol>
@@ -123,6 +147,30 @@
         <li>Type candidate values and see a live match/no-match against the schema's actual pattern.</li>
         <li>Adjust your data (or the schema's pattern) based on what you see.</li>
       </ol>
+      <p>For example, a schema with:</p>
+      <pre><code>{
+  "type": "string",
+  "pattern": "^[A-Z]{2}[0-9]{4}$"
+}</code></pre>
+      <p>validated against the data <code>"ab1234"</code> fails with a <code>pattern</code> error. Expanding the tester and typing <code>ab1234</code> shows no-match immediately, and typing <code>AB1234</code> shows a match — making it obvious the fix is uppercasing the first two characters, not that the pattern itself needs changing.</p>
+
+      <h2>Common pattern mistakes</h2>
+      <ul>
+        <li><strong>Unanchored patterns matching more than intended.</strong> <code>[0-9]{5}</code> without <code>^</code> and <code>$</code> matches a 5-digit substring anywhere in the string — so <code>"abc12345xyz"</code> passes, which is rarely what you want for a full-value check like a zip code. Anchor with <code>^...$</code> when the pattern should describe the whole string, not a substring of it.</li>
+        <li><strong>Forgetting to escape a literal dot.</strong> <code>.</code> in regex means "any character," not a literal period — a pattern meant to require a literal <code>.</code> (like a simple file-extension check) needs <code>\.</code>. <code>file\.txt</code> matches <code>"file.txt"</code> but also note <code>file.txt</code> (unescaped) would match <code>"fileXtxt"</code> too.</li>
+        <li><strong>Case sensitivity surprises.</strong> JSON Schema's <code>pattern</code> has no case-insensitive flag of its own — <code>[a-z]+</code> won't match uppercase letters. If both cases should be valid, write <code>[a-zA-Z]+</code> explicitly rather than assuming case-insensitivity.</li>
+        <li><strong>Mixing up <code>{n,m}</code> quantifier syntax.</strong> <code>[0-9]{4}</code> means exactly 4 digits; <code>[0-9]{4,}</code> means 4 or more; <code>[0-9]{4,8}</code> means 4 to 8. A stray missing comma or brace silently changes the constraint rather than erroring — the live tester is the fastest way to confirm it does what you meant.</li>
+        <li><strong>Assuming <code>\d</code>, <code>\w</code> behave identically everywhere.</strong> These shorthand classes work in JS regex (and in most pattern-keyword schemas) but their exact character sets (does <code>\w</code> include Unicode letters?) can differ subtly across regex engines — see the dialect FAQ below.</li>
+      </ul>
+
+      <h2>Reading a pattern-mismatch error</h2>
+      <p>When validation fails on a <code>pattern</code> keyword, the error list shows the failing <code>instancePath</code> (which field), the pattern string itself, and the "Test pattern" toggle. The workflow that gets you to a fix fastest: expand the tester, paste the actual failing value from your data (not a value you assume is close), and watch whether it matches. If it doesn't, try small variants of that exact value — strip or add a character at a time — until you see where the mismatch is, rather than guessing at the whole pattern's intent from scratch. This is usually faster than reading the regex character-by-character, especially for a pattern with several groups or alternations.</p>
+
+      <h2>Writing your own pattern from scratch</h2>
+      <p>If you're writing a new <code>pattern</code> constraint rather than debugging an existing one, build it incrementally in the tester before saving it to the schema: start with the loosest version that captures the basic shape (e.g. <code>^[A-Z0-9]+$</code> for "uppercase alphanumeric code"), confirm it matches your known-good examples, then tighten it (add a length bound, restrict to a specific prefix) one constraint at a time — checking after each change that your known-good examples still match. Writing the full, tightly-constrained pattern in one attempt makes it much harder to tell which part of a multi-clause regex caused an unexpected non-match.</p>
+
+      <h2>Use case: validating structured string fields</h2>
+      <p>Patterns show up most often on fields that are technically strings but have real internal structure — product SKUs, postal codes, phone number formats, slugs, hex color codes. For a hex color field like <code>"pattern": "^#[0-9a-fA-F]{6}$"</code>, the tester immediately shows why <code>"#fff"</code> (3-digit shorthand) fails while <code>"#ffffff"</code> passes — a distinction that's easy to miss just reading the regex if you're not used to counting character classes.</p>
 
       <h2>Frequently asked questions</h2>
       <details>
@@ -139,7 +187,19 @@
       </details>
       <details>
         <summary>Will results match Python/Java/PHP's regex engine, not just JavaScript's?</summary>
-        <p>Not necessarily — JSON Schema's <code>pattern</code> keyword is defined against ECMA-262 (JavaScript) regex syntax, which this tester matches exactly. Another language's regex engine can behave differently on the same pattern (lookbehind support, named groups, Unicode handling) — if you're validating with a non-JS library elsewhere, test there too rather than assuming this result transfers exactly.</p>
+        <p>Not necessarily — JSON Schema's <code>pattern</code> keyword is defined against ECMA-262 (JavaScript) regex syntax, which this tester matches exactly. Another language's regex engine can behave differently on the same pattern (lookbehind support, named groups, Unicode handling) — if you're validating with a non-JS library elsewhere (Python's <code>re</code>, Java's <code>Pattern</code>, C#'s <code>Regex</code>, PHP's PCRE), test there too rather than assuming this result transfers exactly.</p>
+      </details>
+      <details>
+        <summary>Does this tester support flags like case-insensitive matching?</summary>
+        <p>No — it tests the pattern string exactly as written in the schema, with no flags applied, matching how ajv itself compiles a <code>pattern</code> value (JSON Schema's <code>pattern</code> keyword has no syntax for flags). If you need case-insensitive matching, write it into the character class itself (e.g. <code>[a-zA-Z]</code>) rather than relying on a flag.</p>
+      </details>
+      <details>
+        <summary>Why does my pattern work in a standalone regex tester but not here?</summary>
+        <p>Usually one of two things: the pattern is being tested against the wrong anchoring assumption (some regex tools add implicit anchors, JS's <code>RegExp.test()</code> does not), or the standalone tool uses a different regex dialect (Python/PCRE) than the JS engine this tester and ajv both use.</p>
+      </details>
+      <details>
+        <summary>Can I test a pattern without first triggering a validation error?</summary>
+        <p>The tester is surfaced specifically alongside a <code>pattern</code>-keyword error in the error list, so you need a schema with a <code>pattern</code> and data that currently violates it to see the "Test pattern" button. Write a draft schema and a deliberately non-matching value if you want to experiment before your real data is ready.</p>
       </details>
 
       <p>

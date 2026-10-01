@@ -69,6 +69,38 @@
               "@type": "Answer",
               "text": "No — this validates the parsed rows' structure and values against a JSON Schema, not the raw file's byte encoding. If a CSV fails to parse at all because of an encoding issue, that will show as a parse error, but detecting/fixing encoding problems specifically isn't what this tool does."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Is there a CSV validator library for Python, JavaScript, or a GitHub Action?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Not from this project — it's a browser tool, not a published library. Use the schema pane's \"Copy as Node.js snippet\" or \"Copy as Python snippet\" to get a self-contained ajv or jsonschema script templated with your current schema, for running the same check in CI or a script."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it matter what order the CSV columns are in?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Each row is parsed into an object keyed by its header name, and validation checks properties by name, not position."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I validate a CSV with nested or repeated fields, like a JSON column inside a cell?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A cell's content is validated as a plain string by default. If a column holds embedded JSON text, write that property's schema as \"type\": \"string\" — nested JSON inside a CSV cell isn't parsed automatically."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens to blank cells and empty rows?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A blank cell parses as an empty string, which fails a schema requiring a non-empty value or a numeric type — it's \"present but invalid,\" not \"missing.\" Fully empty rows are skipped before validation."
+            }
           }
         ]
       }
@@ -123,7 +155,11 @@
       <p>
         CSV exports from a database, a form tool, or another system routinely have missing fields, wrong types
         (a price column with a stray currency symbol), or values outside an expected set — and CSV itself has no way
-        to express or check those rules. A JSON Schema does, and batch mode runs it against every row in one pass.
+        to express or check those rules. A header row tells you the column names, nothing about whether
+        <code>age</code> should be a positive integer or <code>status</code> should only ever be
+        <code>"active"</code>, <code>"paused"</code>, or <code>"cancelled"</code>. A JSON Schema expresses exactly
+        that, and batch mode runs it against every row in one pass instead of you scrolling a spreadsheet looking
+        for the row that breaks a downstream import.
       </p>
 
       <h2>How it works</h2>
@@ -133,6 +169,59 @@
         <li>Paste the JSON Schema each row should match.</li>
         <li>Get a per-row pass/fail table with a progress bar — export all results, failing rows only, or as CSV.</li>
       </ol>
+      <p>
+        CSV has no native type system, so every cell parses as a string first. The parser (Papa Parse under the
+        hood, via <a href="/">Schema Validator</a>'s <code>lib/parse.ts</code>) converts each row into a plain
+        object keyed by header name before handing it to batch mode — so a schema written against that row shape
+        works exactly like it would against one record of parsed JSON. For example, with this CSV:
+      </p>
+      <pre><code>name,age,email
+Dana Lee,34,dana@example.com
+Priya K,twenty-nine,priya@example.com</code></pre>
+      <p>and this schema:</p>
+      <pre><code>{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "age": { "type": "integer", "minimum": 0 },
+    "email": { "type": "string", "format": "email" }
+  },
+  "required": ["name", "age", "email"]
+}</code></pre>
+      <p>
+        row 1 passes, row 2 fails on <code>age</code> — Papa Parse's dynamic typing leaves
+        <code>"twenty-nine"</code> as a string, which fails <code>"type": "integer"</code> rather than silently
+        coercing to a number. That's the per-row table doing its job: it surfaces exactly which records a strict
+        downstream system (a database import, an API bulk endpoint) would also reject.
+      </p>
+
+      <h2>Common errors and how to read them</h2>
+      <ul>
+        <li>
+          <strong>A numeric-looking column fails <code>type: integer</code>.</strong> CSV values are strings
+          unless Papa Parse's type inference recognizes them as numbers — a stray space, a currency symbol
+          (<code>"$34"</code>), or a thousands separator (<code>"1,200"</code>) all stay strings and fail. Clean the
+          column before validating, or loosen the schema to <code>"type": ["integer", "string"]</code> if the mixed
+          shape is expected.
+        </li>
+        <li>
+          <strong>Every row fails the same property with "must have required property".</strong> Almost always a
+          header mismatch — a column named <code>e-mail</code> in the file against a schema that requires
+          <code>email</code>. Check the header row's exact spelling and casing first; batch mode validates by
+          property name, not column position.
+        </li>
+        <li>
+          <strong>Rows shift after a certain line, failing on unrelated properties.</strong> An unescaped comma or
+          newline inside a quoted field earlier in the file. CSV requires a field containing a comma to be wrapped
+          in double quotes; one missing quote can misalign every row after it. Re-export the file with proper
+          quoting rather than hand-editing the CSV.
+        </li>
+        <li>
+          <strong>The whole batch run shows "0 rows" or errors before any row-level results appear.</strong> A
+          parse-level failure, usually a malformed header row or a file that isn't actually CSV (tab-separated,
+          semicolon-separated). Check the raw file first — batch mode can't validate rows it couldn't parse out.
+        </li>
+      </ul>
 
       <h2>Frequently asked questions</h2>
       <details>
@@ -151,10 +240,46 @@
         <summary>Does this check CSV file encoding (e.g. is it valid UTF-8)?</summary>
         <p>No — this validates the parsed rows' structure and values against a JSON Schema, not the raw file's byte encoding. If a CSV fails to parse at all because of an encoding issue, that will show as a parse error, but detecting/fixing encoding problems specifically isn't what this tool does.</p>
       </details>
+      <details>
+        <summary>Is there a CSV validator library for Python, JavaScript, or a GitHub Action?</summary>
+        <p>
+          Not from this project — it's a browser tool, not a published library. If you need the same check to run
+          outside the browser (CI, a script, a scheduled job), use the schema pane's "⋯" menu →
+          "Copy as Node.js snippet" or "Copy as Python snippet". Each generates a small self-contained script
+          (ajv for Node, <code>jsonschema</code> for Python) templated with your current schema, which you can drop
+          into a CI step or a GitHub Action yourself — it just won't loop over CSV rows for you; that part is a
+          few lines of <code>csv</code>/<code>papaparse</code> glue in whichever language you pick.
+        </p>
+      </details>
+      <details>
+        <summary>Does it matter what order the CSV columns are in?</summary>
+        <p>
+          No. Each row is parsed into an object keyed by its header name, and schema validation checks properties
+          by name, not position — reordering columns in the file doesn't change which rows pass or fail.
+        </p>
+      </details>
+      <details>
+        <summary>Can I validate a CSV with nested or repeated fields, like a JSON column inside a cell?</summary>
+        <p>
+          A cell's own content is validated as a plain string by default. If one column holds JSON text (e.g. an
+          embedded array or object serialized into a single cell), write the schema for that property as
+          <code>"type": "string"</code> — this tool doesn't parse nested JSON out of a CSV cell automatically.
+        </p>
+      </details>
+      <details>
+        <summary>What happens to blank cells and empty rows?</summary>
+        <p>
+          A blank cell in an otherwise valid row parses as an empty string, which will fail a schema that requires
+          a non-empty value, a specific <code>format</code>, or a numeric type — treat a blank cell as "present but
+          invalid," not "missing," unless you've made that property optional. Fully empty rows are skipped before
+          they reach the schema.
+        </p>
+      </details>
 
       <p>
         Working with a single record instead of a batch? Schema Validator also supports
-        <a href="/">JSON, YAML, TOML, and XML</a> in single-record mode.
+        <a href="/">JSON, YAML, TOML, and XML</a> in single-record mode. For validating many JSON records at once
+        instead of CSV rows, see the <a href="/batch-json-validator/">batch JSON validator</a>.
       </p>
     </main>
     <footer>

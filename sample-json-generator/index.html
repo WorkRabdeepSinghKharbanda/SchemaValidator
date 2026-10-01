@@ -58,6 +58,38 @@
               "@type": "Answer",
               "text": "No, generation runs entirely client-side."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Does generated data respect pattern and format constraints, not just type?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — enum, pattern, and known format values (like email or uuid) are all taken into account, not just the basic type."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I use this to seed a database or demo environment?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — batch-generate as many schema-valid records as you need (up to 500 per run) and export them as JSON for seeding."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is this the same as a JSON Schema-based mock API server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No — this generates static example data you copy out of the data pane. It doesn't run a mock HTTP server or respond to live requests."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What if my schema has conflicting or impossible constraints?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Generation can fail or produce unexpected output if the schema itself is contradictory. Run the schema through the validator first to catch structural issues before generating from it."
+            }
           }
         ]
       }
@@ -106,15 +138,60 @@
       <a class="cta" href="/">Generate sample data now</a>
 
       <h2>Why generate sample data from a schema?</h2>
-      <p>Once a schema exists, hand-writing example data that actually satisfies it is tedious and error-prone — a missed <code>required</code> field or a value outside an <code>enum</code> makes your own test fixture invalid. Generating it directly from the schema guarantees the sample matches every constraint the schema declares.</p>
+      <p>Once a schema exists, hand-writing example data that actually satisfies it is tedious and error-prone — a missed <code>required</code> field, a value outside an <code>enum</code>, or a string that doesn't match a <code>pattern</code> makes your own test fixture invalid before you even get to the code under test. Generating it directly from the schema, via <code>json-schema-faker</code>, guarantees the sample matches every constraint the schema declares — types, <code>required</code>, <code>enum</code> values, <code>format</code> hints, and <code>pattern</code> regexes are all respected, not just the top-level shape.</p>
+      <p>This is the reverse of schema inference: inference goes from <em>data → schema</em>, this tool goes from <em>schema → data</em>. Both are useful at different points — infer a schema when you only have example payloads, generate sample data when you already have (or are designing) the schema and need realistic records to work against.</p>
 
       <h2>How it works</h2>
       <ol>
         <li>Open <a href="/">Schema Validator</a> and paste your JSON Schema into the schema pane.</li>
         <li>Use the data pane's "⋯" menu → "Generate sample data".</li>
         <li>A generated example satisfying the schema is written into the data pane.</li>
-        <li>In batch mode, generate up to 500 sample records at once for bulk test fixtures.</li>
+        <li>In batch mode, generate up to 500 sample records at once for bulk test fixtures (a prompt asks for the count).</li>
       </ol>
+      <p>Given a schema like this:</p>
+      <pre><code>{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "email": { "type": "string", "format": "email" },
+    "status": { "type": "string", "enum": ["active", "pending", "closed"] },
+    "zip": { "type": "string", "pattern": "^[0-9]{5}$" }
+  },
+  "required": ["id", "email", "status"]
+}</code></pre>
+      <p>a generated sample respects every constraint at once — a real-looking UUID, an email-shaped string, one of the three allowed <code>status</code> values, and a 5-digit <code>zip</code> matching the pattern. You never have to manually satisfy the <code>pattern</code> or pick a valid <code>enum</code> value yourself.</p>
+
+      <h2>Use cases</h2>
+      <ul>
+        <li><strong>Test fixtures.</strong> Generate a handful of records that are guaranteed schema-valid, so a failing test tells you something about your code's logic, not about a fixture you typo'd by hand.</li>
+        <li><strong>Seeding a local database or demo environment.</strong> Batch-generate dozens or hundreds of records matching your schema to populate a UI with realistic-looking data before real data exists.</li>
+        <li><strong>Demos and screenshots.</strong> Quickly produce plausible example payloads for documentation or a product demo without inventing values field by field.</li>
+        <li><strong>Sanity-checking a schema you just wrote.</strong> If generated samples look obviously wrong (every <code>status</code> comes back empty, every <code>id</code> looks identical), that's often a sign the schema itself has a mistake — generation surfaces schema bugs you might not notice just by reading the schema.</li>
+      </ul>
+
+      <h2>Common issues and how to read them</h2>
+      <ul>
+        <li><strong>Generated values look "random" and nothing like real data.</strong> <code>json-schema-faker</code> fills in plausible-but-arbitrary values for anything the schema doesn't constrain tightly — a bare <code>{"type": "string"}</code> with no <code>format</code>/<code>pattern</code> generates a generic random string, not a meaningful one. Add <code>format</code> (e.g. <code>email</code>, <code>date-time</code>, <code>uuid</code>) or a <code>pattern</code> to the schema if you need more realistic-looking values.</li>
+        <li><strong>An array field's generated items are all identical in shape.</strong> This matches how the schema itself is written — a single <code>items</code> schema applied to every array entry produces structurally uniform (though not necessarily identical-value) entries, by design; JSON Schema's <code>items</code> keyword describes one shape for every element unless you're using <code>prefixItems</code> for a tuple.</li>
+        <li><strong>Batch generation stalls or feels slow near the 500 cap.</strong> 500 is a deliberate UX ceiling, not a technical hard limit — if you routinely need more, generate in a few smaller batches and combine the results, or run <code>json-schema-faker</code> directly in your own script for larger volumes.</li>
+        <li><strong>Generation seems to ignore a constraint.</strong> Double-check the constraint is actually attached to the right node in the schema — a <code>pattern</code> on the parent object instead of the specific string field, for instance, has no effect on that field's generated value.</li>
+      </ul>
+
+      <h2>Single sample vs. batch generation</h2>
+      <p>A single "Generate sample data" click is for the common case — you need one example to eyeball, paste into a test, or use as a quick demo payload. Batch mode's "Generate N samples" is a different tool for a different job: it's specifically for when you need volume — populating a table UI with dozens of rows, stress-testing a parser against hundreds of variations, or producing a CSV of fixture data. Both use the exact same generation logic underneath (schema-constrained, not hand-written), so a single sample and one row of a 500-record batch are equally valid against the schema — batch mode just runs the same generation repeatedly rather than using a different, faster, less-thorough method.</p>
+
+      <h2>A worked example: generating fixtures for a form schema</h2>
+      <p>Say you're testing a signup form's backend validation and have a schema requiring a username, an email, and an age between 18 and 120:</p>
+      <pre><code>{
+  "type": "object",
+  "properties": {
+    "username": { "type": "string", "minLength": 3, "maxLength": 20 },
+    "email": { "type": "string", "format": "email" },
+    "age": { "type": "integer", "minimum": 18, "maximum": 120 }
+  },
+  "required": ["username", "email", "age"]
+}</code></pre>
+      <p>Switching to batch mode and generating, say, 20 samples gives you 20 records where <code>username</code> is always 3-20 characters, <code>email</code> always looks like an email, and <code>age</code> is always an integer between 18 and 120 — a ready-made set of valid inputs to throw at your backend's happy-path tests, without writing any of the 20 records by hand or worrying one of them accidentally violates its own schema.</p>
 
       <h2>Frequently asked questions</h2>
       <details>
@@ -128,6 +205,22 @@
       <details>
         <summary>Is this uploaded anywhere?</summary>
         <p>No, generation runs entirely client-side.</p>
+      </details>
+      <details>
+        <summary>Does generated data respect <code>pattern</code> and <code>format</code> constraints, not just <code>type</code>?</summary>
+        <p>Yes — <code>enum</code>, <code>pattern</code>, and known <code>format</code> values (like <code>email</code> or <code>uuid</code>) are all taken into account, not just the basic type.</p>
+      </details>
+      <details>
+        <summary>Can I use this to seed a database or demo environment?</summary>
+        <p>Yes — batch-generate as many schema-valid records as you need (up to 500 per run) and export them as JSON for seeding.</p>
+      </details>
+      <details>
+        <summary>Is this the same as a JSON Schema-based mock API server?</summary>
+        <p>No — this generates static example data you copy out of the data pane. It doesn't run a mock HTTP server or respond to live requests.</p>
+      </details>
+      <details>
+        <summary>What if my schema has conflicting or impossible constraints?</summary>
+        <p>Generation can fail or produce unexpected output if the schema itself is contradictory (e.g. a <code>minimum</code> greater than a <code>maximum</code>). Run the schema through the validator first to catch structural issues before generating from it.</p>
       </details>
 
       <p>

@@ -56,7 +56,39 @@
             "name": "Can a lint hint ever be wrong?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The checks are deliberately conservative \u2014 only flagging things that are unambiguously worth a second look, not guessing at intent."
+              "text": "The checks are deliberately conservative \u2014 only flagging things that are unambiguously worth a second look, not guessing at intent. There's no pattern/format heuristic guessing, only checks that hold regardless of what the schema author actually meant."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does the linter check $ref targets?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No \u2014 a node with <code>$ref</code> is skipped entirely rather than resolved against an uploaded reference schema. Paste the referenced schema directly if you want it linted too."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What's the difference between the \"info\" and \"warn\" severities?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "<code>warn</code> is reserved for the undeclared-required-field case, since that schema can genuinely never be satisfied by any instance for that field. <code>additionalProperties</code> and single-value <code>enum</code> are <code>info</code>."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it flag missing minimum/maximum or format keywords?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No \u2014 only the three checks described on this page. Range and format-correctness issues are either caught by ajv at validation time or too intent-dependent to flag without guessing."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I lint a schema that uses allOf/oneOf/anyOf?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The linter walks <code>properties</code> and array <code>items</code> specifically \u2014 branches under <code>allOf</code>/<code>oneOf</code>/<code>anyOf</code> aren't separately recursed into, so hints inside those branches won't surface. Lint the branch schemas individually if you need coverage there."
             }
           }
         ]
@@ -106,7 +138,7 @@
       <a class="cta" href="/">Lint your schema now</a>
 
       <h2>Why lint a schema, if it already validates fine?</h2>
-      <p>A schema can be syntactically valid and still have real problems: a <code>required</code> field that's never declared in <code>properties</code> (which can never pass), an unset <code>additionalProperties</code> that silently accepts typo'd field names, or a single-value <code>enum</code> that should just be a <code>const</code>. These aren't validation errors — they're the kind of mistake that only shows up later, as a confusing bug report.</p>
+      <p>A schema can be syntactically valid and still have real problems: a <code>required</code> field that's never declared in <code>properties</code> (which can never pass), an unset <code>additionalProperties</code> that silently accepts typo'd field names, or a single-value <code>enum</code> that should just be a <code>const</code>. These aren't validation errors — ajv has nothing to complain about, because the schema is perfectly legal JSON Schema. They're the kind of mistake that only shows up later, as a confusing bug report from someone whose typo'd field was silently accepted, or a required field nobody can ever satisfy.</p>
 
       <h2>How it works</h2>
       <ol>
@@ -116,18 +148,65 @@
         <li>Fix what applies; hints are suggestions, not hard errors.</li>
       </ol>
 
+      <h2>The three checks, with examples</h2>
+      <p><strong>1. Unset <code>additionalProperties</code> on an object schema.</strong> By default, JSON Schema objects accept any extra property not listed in <code>properties</code> — this is correct behavior per spec, but it's rarely what someone means when they write a schema meant to describe an exact shape. Given:</p>
+      <pre><code>{
+  "type": "object",
+  "properties": {
+    "email": { "type": "string", "format": "email" }
+  }
+}</code></pre>
+      <p>a payload like <code>{ "emial": "a@b.com" }</code> validates successfully — the typo'd key is just an "extra" property, and no <code>email</code> was ever required, so there's nothing to fail on. The linter flags this schema with an info hint rather than guessing whether you meant <code>additionalProperties: false</code>, a <code>patternProperties</code> rule, or genuinely wanted an open shape — it only tells you the field is unset, not what to set it to. (If <code>patternProperties</code> is already present, the linter treats that as an intentional, already-handled case and stays quiet.)</p>
+      <p><strong>2. A <code>required</code> entry not declared in <code>properties</code>.</strong> This one is a <code>warn</code>-severity hint because it's an authoring mistake with no good-faith interpretation — usually a field that was renamed in <code>properties</code> without updating <code>required</code> to match, or a copy-paste from a different schema version:</p>
+      <pre><code>{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" }
+  },
+  "required": ["name", "email"]
+}</code></pre>
+      <p>Here <code>email</code> is required but was never declared as a property. The fix is almost always to either add the missing property definition or remove the stale entry from <code>required</code> — the linter doesn't pick for you.</p>
+      <p><strong>3. A single-value <code>enum</code>.</strong> <code>"enum": ["active"]</code> says the same thing as <code>"const": "active"</code>, but less clearly — <code>const</code> communicates "this value is fixed" at a glance, where a one-item <code>enum</code> reads like it might grow a second value later (and often it should, in which case the hint is a nudge to go add it, not just rename the keyword).</p>
+
+      <h2>Common patterns the linter deliberately doesn't flag</h2>
+      <p>If you're expecting more coverage than the three checks above, here's what's intentionally out of scope: pattern/format guessing (e.g. a <code>string</code> field named <code>email</code> with no <code>format: "email"</code> set — the linter won't infer intent from a field name), missing <code>description</code>/<code>title</code> annotations, numeric range sanity checks (<code>minimum</code> greater than <code>maximum</code>, which ajv itself would reject at compile time anyway), and anything involving <code>$ref</code> resolution — a schema node with <code>$ref</code> is skipped entirely rather than resolved, so lint hints never apply to the referenced schema's own shape from the referencing side.</p>
+
+      <h2>Common errors and how to read them</h2>
+      <p><strong>"additionalProperties isn't set on root — any extra field will silently pass validation."</strong> This is the hint on the top-level schema itself (empty <code>path</code> renders as "root"). If your schema describes an API request body you control end-to-end, set <code>additionalProperties: false</code> and re-check — if a legitimate field now gets rejected, it was missing from <code>properties</code>, which the linter would separately have caught if it were also listed in <code>required</code>.</p>
+      <p><strong>A hint path like <code>address.zip</code>.</strong> Hints on nested objects show a dotted path built from the property chain, and array items get a <code>[]</code> segment — e.g. <code>items[].sku</code> for an unset <code>additionalProperties</code> three levels into an array-of-objects schema. The recursion is depth-capped at 6 levels; a schema nested deeper than that stops producing hints past the cap rather than recursing indefinitely.</p>
+      <p><strong>No hints shown at all.</strong> Either the schema is genuinely clean by these three checks, or it's a non-object top-level schema (a bare <code>{"type": "string"}</code> schema has no <code>properties</code> to check) — the "Schema lint hints" section only has something to show for object-shaped schemas with nested structure.</p>
+
+      <h2>When this matters most</h2>
+      <p>The unset-<code>additionalProperties</code> check earns its keep most on schemas validating external input — a webhook payload, a form submission, an imported CSV row — where a typo'd key silently passing is worse than it sounds: it means the real field (which <em>is</em> required) is also missing, but if it's not marked required either, the whole record passes with neither the typo'd nor the correct key ever checked. Running the linter right after writing a new schema, before it's used against real traffic, catches this class of bug while it's still a one-line fix instead of a production incident.</p>
+
       <h2>Frequently asked questions</h2>
       <details>
         <summary>Does linting replace validation?</summary>
-        <p>No — it's a separate, best-practice pass alongside normal ajv validation, not a substitute for it.</p>
+        <p>No — it's a separate, best-practice pass alongside normal ajv validation, not a substitute for it. A schema can pass every lint check and still reject bad data, or fail every lint check and still validate data correctly; they're answering different questions.</p>
       </details>
       <details>
         <summary>Does it check nested schemas?</summary>
-        <p>Yes, recursing into nested <code>properties</code> and array <code>items</code> (depth-capped), skipping <code>$ref</code> nodes rather than guessing at what they resolve to.</p>
+        <p>Yes, recursing into nested <code>properties</code> and array <code>items</code> (depth-capped at 6 levels), skipping <code>$ref</code> nodes rather than guessing at what they resolve to.</p>
       </details>
       <details>
         <summary>Can a lint hint ever be wrong?</summary>
-        <p>The checks are deliberately conservative — only flagging things that are unambiguously worth a second look, not guessing at intent.</p>
+        <p>The checks are deliberately conservative — only flagging things that are unambiguously worth a second look, not guessing at intent. There's no pattern/format heuristic guessing (e.g. assuming a field named "email" should have <code>format: "email"</code>) — only checks that hold regardless of what the schema author actually meant.</p>
+      </details>
+      <details>
+        <summary>Does the linter check <code>$ref</code> targets?</summary>
+        <p>No — a node with <code>$ref</code> is skipped entirely rather than resolved against an uploaded reference schema. If you want the referenced schema itself linted, paste it into the schema pane directly (or as the main schema, if it's the one you're authoring).</p>
+      </details>
+      <details>
+        <summary>What's the difference between the "info" and "warn" severities?</summary>
+        <p><code>warn</code> is reserved for the undeclared-<code>required</code>-field case, since that schema can genuinely never be satisfied by any instance for that field. <code>additionalProperties</code> and single-value <code>enum</code> are <code>info</code> — stylistic/defensive suggestions, not logical impossibilities.</p>
+      </details>
+      <details>
+        <summary>Does it flag missing <code>minimum</code>/<code>maximum</code> or format keywords?</summary>
+        <p>No — only the three checks described above. Numeric range and format-correctness issues are either caught by ajv itself at validation time or are too intent-dependent to flag without guessing.</p>
+      </details>
+      <details>
+        <summary>Can I lint a schema that uses <code>allOf</code>/<code>oneOf</code>/<code>anyOf</code>?</summary>
+        <p>The linter walks <code>properties</code> and array <code>items</code> specifically — branches under <code>allOf</code>/<code>oneOf</code>/<code>anyOf</code> aren't separately recursed into in this version, so hints inside those branches won't surface. Lint the branch schemas individually if you need coverage there.</p>
       </details>
 
       <p>

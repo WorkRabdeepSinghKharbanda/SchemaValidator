@@ -74,6 +74,22 @@
               "@type": "Answer",
               "text": "Yes \u2014 the draft dropdown (draft-07, 2019-09, 2020-12) applies to the whole app, including inferred schemas."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Why does the inferred schema mark every field as required?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Inference only ever sees one example, so it treats every key it saw as required. Remove fields from required by hand for anything that's genuinely optional."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can it infer a schema from a complex, deeply nested payload?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes for object nesting, to any depth. The first-element-only limitation applies only to arrays, not nested objects."
+            }
           }
         ]
       }
@@ -122,7 +138,7 @@
       <a class="cta" href="/">Generate a schema now</a>
 
       <h2>Why generate a schema instead of writing one by hand?</h2>
-      <p>Writing a JSON Schema from scratch for an existing API response or config file means re-typing every field, type, and nesting level you can already see in the data. Schema inference reads your actual sample data and produces a starting schema in seconds, that you refine rather than write from zero.</p>
+      <p>Writing a JSON Schema from scratch for an existing API response or config file means re-typing every field, type, and nesting level you can already see in the data. Schema inference reads your actual sample data and produces a starting schema in seconds, that you refine rather than write from zero. It's also a faster way to get a second opinion on a schema's shape — infer one from a known-good example and diff it against what you already wrote to spot a field you forgot to constrain.</p>
 
       <h2>How it works</h2>
       <ol>
@@ -131,6 +147,55 @@
         <li>A draft schema is written into the schema pane, matching the data's types and nesting.</li>
         <li>Refine it — add <code>required</code> fields, tighten an <code>enum</code>, or switch to the Visual builder.</li>
       </ol>
+      <p>For example, given this sample data:</p>
+      <pre><code>{
+  "id": "a1b2c3",
+  "active": true,
+  "price": 19.99,
+  "tags": ["sale", "clearance"],
+  "shipping": {
+    "method": "standard",
+    "cost": 4.5
+  }
+}</code></pre>
+      <p>inference produces:</p>
+      <pre><code>{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "active": { "type": "boolean" },
+    "price": { "type": "number" },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "shipping": {
+      "type": "object",
+      "properties": {
+        "method": { "type": "string" },
+        "cost": { "type": "number" }
+      },
+      "required": ["method", "cost"]
+    }
+  },
+  "required": ["id", "active", "price", "tags", "shipping"]
+}</code></pre>
+      <p>Note that every top-level key present in the sample ends up in <code>required</code> — the inference has no way to know which fields are optional from a single example, so it treats everything it sees as required. This is a reasonable starting point, not a final answer: go through the inferred schema and remove any field from <code>required</code> that won't always be present in real data.</p>
+
+      <h2>Working with nested and complex sample data</h2>
+      <p>Object nesting infers correctly to any depth — a <code>shipping.address.country</code> three levels deep produces three levels of nested <code>properties</code> in the output, matching the "Visual schema builder" feature's own depth handling. Arrays are where inference is deliberately limited: an array's shape comes from its <strong>first element only</strong>. If your sample array looks like <code>[{"type": "email"}, {"type": "sms", "retries": 3}]</code>, the generated <code>items</code> schema is built purely from the first object — the <code>retries</code> field on the second element won't appear anywhere in the output schema, since it was never shown the second element.</p>
+      <p>In practice this means: if an array in your sample data mixes shapes (some objects have an extra optional field, some don't), either pick a sample element that has every field you want represented, or manually add the missing fields into the schema pane after inferring. A field that only exists on a later array element is the single most common gap to check for after inferring from real-world data.</p>
+
+      <h2>Troubleshooting</h2>
+      <ul>
+        <li><strong>Everything came back required and that's not what I want.</strong> Expected — see above. Manually edit the <code>required</code> array (or use the Visual builder, which lets you toggle a field's required status without touching raw JSON).</li>
+        <li><strong>An array field's items look too narrow.</strong> You're seeing the first-element-only limitation. Re-order your sample so the most "complete" object is first, or hand-edit <code>items.properties</code> afterward.</li>
+        <li><strong>A numeric field came back as <code>integer</code> when I wanted <code>number</code>.</strong> Inference checks <code>Number.isInteger()</code> on the sample value — if your example happened to be a whole number (e.g. <code>5</code> instead of <code>5.0</code>), it infers <code>integer</code>. Change it to <code>number</code> in the schema pane if the field should actually accept decimals.</li>
+        <li><strong>A <code>null</code> value in the sample produced <code>{"type": "null"}</code>.</strong> That's a literal reading of the sample — if the real field is nullable-or-string rather than always null, change the type by hand (e.g. <code>{"type": ["string", "null"]}</code>).</li>
+      </ul>
+
+      <h2>Use case: inferring a schema from an existing API response</h2>
+      <p>A common entry point: you're integrating against a third-party API that has no published schema, only example responses in its docs. Paste one real response into the data pane, infer a schema from it, then tighten it by hand — add <code>enum</code> constraints for fields you know only take specific values, loosen <code>required</code> for fields the docs say are optional, and add a <code>format</code> hint (<code>date-time</code>, <code>email</code>, <code>uri</code>) for fields that are more specific than a bare string. This gets you a working validation schema in minutes rather than hand-transcribing every field from documentation.</p>
+
+      <h2>From inferred schema to working validator</h2>
+      <p>An inferred schema is immediately usable — it's a normal schema in the schema pane, so the next natural step is usually to validate more sample data against it right away to see if the inferred shape actually generalizes. If a second real example fails validation against the schema inferred from the first, that's useful signal: either tighten the schema further, or loosen a field (drop it from <code>required</code>, broaden a <code>type</code> to an array of types) to match what real data actually looks like across more than one example. Treat the first inference as a hypothesis about the data's shape, confirmed or corrected by validating against further samples — not a final schema from a single example.</p>
 
       <h2>Frequently asked questions</h2>
       <details>
@@ -152,6 +217,14 @@
       <details>
         <summary>Can I pick which JSON Schema draft the output targets?</summary>
         <p>Yes — the draft dropdown (draft-07, 2019-09, 2020-12) applies to the whole app, including inferred schemas.</p>
+      </details>
+      <details>
+        <summary>Why does the inferred schema mark every field as required?</summary>
+        <p>Because inference only ever sees one example — it has no way to know which fields might be absent in other real records, so it treats every key it saw as required. Remove fields from <code>required</code> by hand for anything that's genuinely optional.</p>
+      </details>
+      <details>
+        <summary>Can it infer a schema from a complex, deeply nested payload?</summary>
+        <p>Yes for object nesting, to any depth — each nested object becomes its own nested <code>properties</code> block. The first-element-only limitation applies only to arrays, not nested objects.</p>
       </details>
 
       <p>

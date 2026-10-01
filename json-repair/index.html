@@ -58,6 +58,30 @@
               "@type": "Answer",
               "text": "Yes, a one-click Undo appears on the success toast right after."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Can it fix JSON that's missing a comma or a closing bracket, not just quote style?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — beyond the three cosmetic fixes (trailing commas, single quotes, unquoted keys), it also handles some structural gaps like a missing comma between fields or a missing closing bracket/brace. It still can't fix a value that's syntactically fine but semantically wrong."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this repair JSON for free, with no limits?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — it's free, runs entirely in your browser, and nothing is uploaded. There's no record limit or paywall on the repair itself."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is there a JSON repair API or command-line tool I can call from a script?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Not from this project — no backend or CLI is built here by design. The jsonrepair library this tool wraps is a standalone npm package you can install and call directly in Node."
+            }
           }
         ]
       }
@@ -107,6 +131,13 @@
 
       <h2>Why auto-fix instead of hunting for the broken character by hand?</h2>
       <p>Hand-written or copy-pasted JSON (from a log line, a chat message, a loosely-typed config) often has small syntax slips that a strict parser rejects outright: a trailing comma, single quotes instead of double, an unquoted key. Auto-fix repairs the common cases in one click instead of you scanning character by character.</p>
+      <p>
+        This comes up most with JSON that was never meant to be strict in the first place: a config file someone
+        wrote by hand and formatted like a JavaScript object literal, a log line that truncated mid-object, or JSON
+        copy-pasted out of a chat tool that silently "smart-quoted" the double quotes into curly ones. None of these
+        are safe to run through <code>JSON.parse</code> directly, and manually finding the one bad character in a
+        large pasted blob is slow and error-prone — a missing bracket three levels deep is easy to miss by eye.
+      </p>
 
       <h2>How it works</h2>
       <ol>
@@ -115,6 +146,65 @@
         <li>Click it — trailing commas, single quotes, unquoted keys, and some structural gaps (a missing comma or bracket) are repaired automatically.</li>
         <li>Didn't want the change? A one-click "Undo" on the success toast reverts it.</li>
       </ol>
+      <p>
+        Auto-fix wraps the <code>jsonrepair</code> library, dynamic-imported only when you click the button (so it
+        never adds weight to the page for people who don't need it). It's worth being precise about its real scope,
+        since it does more than the three cosmetic fixes it's best known for. Cosmetic fixes:
+      </p>
+      <pre><code>// before
+{ name: 'Dana', active: true, }
+
+// after
+{ "name": "Dana", "active": true }</code></pre>
+      <p>Unquoted keys, single quotes, and the trailing comma are all repaired in one pass. But it also handles some
+      structural gaps that aren't purely cosmetic — a missing comma between fields, or a missing closing bracket:</p>
+      <pre><code>// before (missing comma, missing closing brace)
+{ "name": "Dana" "age": 34
+
+// after
+{ "name": "Dana", "age": 34 }</code></pre>
+      <p>
+        What it does <em>not</em> do is fix logical/semantic errors — a value that parses fine as JSON but is wrong
+        in meaning. <code>{"age": "thirty-four"}</code> is syntactically valid JSON; auto-fix won't convert the
+        string to a number, infer that <code>age</code> should be numeric, or know that <code>-5</code> is an
+        invalid age. That's a schema-validation problem, not a syntax-repair one — pair auto-fix with the
+        <a href="/json-validator/">JSON validator</a>'s <code>type</code> checks, or the type-coercion quick-fix
+        that appears on a <code>type</code> error once the JSON itself parses.
+      </p>
+
+      <h2>Common errors and how to read them</h2>
+      <ul>
+        <li>
+          <strong>Auto-fix button doesn't appear at all.</strong> It's only offered for JSON data with a plain
+          parse error — if the format tab is set to YAML/TOML/XML/CSV, or the pane already has schema-validation
+          errors (meaning the JSON itself parsed successfully), there's nothing for it to fix.
+        </li>
+        <li>
+          <strong>Auto-fix ran but the result still fails validation.</strong> Expected if the original problem
+          was semantic, not syntactic — auto-fix got the text parsing again, but a wrong value (wrong type, out of
+          range, missing required field) is a separate, unrelated failure that schema validation will still catch.
+        </li>
+        <li>
+          <strong>The fixed JSON looks different from what you expected.</strong> <code>jsonrepair</code> makes a
+          best-effort structural guess when brackets or commas are missing — for deeply malformed input with
+          multiple overlapping issues, its guess about where a missing <code>}</code> belongs may not match your
+          intent. Check the diff before trusting it blindly on anything non-trivial, or use Undo and fix the
+          ambiguous section by hand.
+        </li>
+        <li>
+          <strong>Auto-fix silently did nothing after a long paste.</strong> The feature snapshots the data text
+          before running and re-checks it hasn't changed when the fix comes back — if you kept typing while it was
+          mid-fix, a changed snapshot is discarded rather than overwriting your newer edit. Click Auto-fix again
+          once you've stopped typing.
+        </li>
+        <li>
+          <strong>Repaired JSON parses but still looks "wrong" structurally, like an extra nested object.</strong>
+          When the input has more than one plausible structural reading — for example two consecutive objects with
+          no separator at all, rather than a single clearly missing comma — the library has to guess which fix
+          produces valid JSON, and its guess optimizes for "something that parses," not for matching exactly what
+          you originally meant. The messier the input, the more worth a manual check after auto-fix runs.
+        </li>
+      </ul>
 
       <h2>Frequently asked questions</h2>
       <details>
@@ -128,6 +218,31 @@
       <details>
         <summary>Can I undo an auto-fix?</summary>
         <p>Yes, a one-click Undo appears on the success toast right after.</p>
+      </details>
+      <details>
+        <summary>Can it fix JSON that's missing a comma or a closing bracket, not just quote style?</summary>
+        <p>
+          Yes — this is a common misconception about <code>jsonrepair</code>-style tools. Beyond the three cosmetic
+          fixes (trailing commas, single quotes, unquoted keys), it also handles some structural gaps like a
+          missing comma between fields or a missing closing bracket/brace. It still can't fix a value that's
+          syntactically fine but semantically wrong, like a string where a number was meant.
+        </p>
+      </details>
+      <details>
+        <summary>Does this repair JSON for free, with no limits?</summary>
+        <p>
+          Yes — it's free, runs entirely in your browser, and nothing is uploaded. There's no record limit or
+          paywall on the repair itself; it operates on whatever you paste into the data pane.
+        </p>
+      </details>
+      <details>
+        <summary>Is there a JSON repair API or command-line tool I can call from a script?</summary>
+        <p>
+          Not from this project — no backend or CLI is built here by design, intentionally, since that would need a
+          server or a packaging step outside this browser app. If you need the same repair logic outside the
+          browser, <code>jsonrepair</code> itself (the library this tool wraps) is a standalone npm package you can
+          install and call directly in Node.
+        </p>
       </details>
 
       <p>

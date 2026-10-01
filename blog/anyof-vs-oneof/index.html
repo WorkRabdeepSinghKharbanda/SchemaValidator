@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Google tag (gtag.js) — loaded unconditionally on every page, same as AdSense. -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SEEZP9MLKB"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-SEEZP9MLKB');
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>anyOf vs oneOf in JSON Schema: What's the Difference</title>
+    <meta
+      name="description"
+      content="anyOf and oneOf look almost identical but validate differently. A practical explanation of the difference, with examples of where each one goes wrong."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/blog/anyof-vs-oneof/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+    <!-- AdSense Auto ads loader — present on every page unconditionally, not gated behind
+         cookie consent. Deliberate owner decision; see CLAUDE.md's AdSense entry. -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5852027898822024" crossorigin="anonymous"></script>
+
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="anyOf vs oneOf in JSON Schema: What's the Difference" />
+    <meta property="og:description" content="anyOf and oneOf look almost identical but validate differently — a practical explanation with examples." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/blog/anyof-vs-oneof/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": "anyOf vs oneOf in JSON Schema: what's the difference",
+        "image": "https://schema-validator-livid.vercel.app/og-image.png",
+        "datePublished": "2026-10-01",
+        "dateModified": "2026-10-01",
+        "author": { "@type": "Organization", "name": "Schema Validator" },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Schema Validator",
+          "logo": { "@type": "ImageObject", "url": "https://schema-validator-livid.vercel.app/icon-512.png" }
+        },
+        "keywords": "anyof vs oneof, json schema anyof oneof difference",
+        "wordCount": 1189,
+        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/anyof-vs-oneof/"
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://schema-validator-livid.vercel.app/" },
+          { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://schema-validator-livid.vercel.app/blog/" },
+          { "@type": "ListItem", "position": 3, "name": "anyOf vs oneOf in JSON Schema: what's the difference" }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/blog/">Blog</a> / <span>anyOf vs oneOf in JSON Schema: what's the difference</span></nav>
+    <main class="wrap">
+      <h1>anyOf vs oneOf in JSON Schema: what's the difference</h1>
+      <p class="lede"><code>anyOf</code> means "at least one of these must match." <code>oneOf</code> means "exactly one of these must match." That one word — "at least" vs "exactly" — is the entire difference, and it trips people up constantly.</p>
+
+      <h2>What each keyword actually checks</h2>
+      <p>
+        Both <code>anyOf</code> and <code>oneOf</code> take an array of subschemas. A value is valid under
+        <code>anyOf</code> if it matches <strong>one or more</strong> of the listed subschemas — matching two
+        or three of them is still a pass. A value is valid under <code>oneOf</code> only if it matches
+        <strong>exactly one</strong> of the listed subschemas — matching two of them is a <em>failure</em>,
+        the same as matching zero.
+      </p>
+
+      <h2>A concrete example where they disagree</h2>
+      <p>Take this schema fragment, used with both keywords:</p>
+      <pre><code>{
+  "anyOf": [
+    { "type": "number" },
+    { "type": "integer" }
+  ]
+}</code></pre>
+      <p>
+        The value <code>5</code> is a number <em>and</em> an integer — it matches both subschemas. Under
+        <code>anyOf</code>, that's fine: at least one matched. Under <code>oneOf</code>, swapping in the same
+        two subschemas, <code>5</code> would <strong>fail</strong>, because it matched two branches instead of
+        exactly one. This is the single most common cause of a confusing "valid-looking data failed validation"
+        bug — a schema author used <code>oneOf</code> intending "pick one of these shapes," not realizing their
+        branches weren't mutually exclusive.
+      </p>
+
+      <h2>How to check which one your schema actually needs</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and paste your schema with the ambiguous <code>anyOf</code>/<code>oneOf</code> block.</li>
+        <li>Paste a value you expect to match more than one branch.</li>
+        <li>If it's currently <code>oneOf</code> and that value unexpectedly fails, that's the exact symptom described above — your branches overlap.</li>
+        <li>Either switch to <code>anyOf</code> (if "matches more than one branch" is actually fine) or tighten the branches so they're mutually exclusive (if you really do want exactly-one semantics).</li>
+      </ol>
+
+      <h2>When to reach for each one</h2>
+      <ul>
+        <li><strong>Use <code>anyOf</code></strong> when a value can legitimately satisfy more than one of the listed shapes and that's fine — e.g. "a string, OR a number, OR an array of strings," where the branches don't overlap but you're not relying on exclusivity as a rule.</li>
+        <li><strong>Use <code>oneOf</code></strong> when you specifically want to enforce that a value matches exactly one variant and not several — a tagged union / discriminated type, where matching two branches would indicate an ambiguous or malformed value you want to reject.</li>
+        <li><strong>If you're not sure which you want</strong>, <code>anyOf</code> is usually the safer default — it's less likely to reject data you didn't expect to reject, since it only requires one match rather than exclusivity.</li>
+      </ul>
+
+      <h2>Where this goes wrong in practice</h2>
+      <p>
+        The failure mode is almost always the same shape: someone writes a <code>oneOf</code> with branches
+        that look mutually exclusive on paper (a "circle" shape vs. a "square" shape) but actually overlap
+        because a required discriminator field was left optional, or a loosely-typed branch (like a bare
+        <code>{ "type": "object" }</code> with no further constraints) accidentally matches everything. The
+        fix is almost never "give up on oneOf" — it's adding a <code>required</code> discriminator field (like
+        <code>"type": "circle"</code> as a <code>const</code>) to each branch so they genuinely can't overlap.
+      </p>
+
+      <h2>Everyday use cases</h2>
+      <ul>
+        <li>A field that accepts either a string or an array of strings — <code>anyOf</code>, since the two shapes don't overlap but there's no need to enforce exclusivity.</li>
+        <li>A discriminated union — e.g. a "shape" object that's either a circle (radius) or a rectangle (width/height) — <code>oneOf</code> with a discriminator field in each branch, so a malformed object matching both (or neither) correctly fails.</li>
+        <li>An API field that's loosening over time from one fixed shape to "the old shape or the new shape" — <code>anyOf</code>, so either is accepted during the transition without worrying about overlap.</li>
+        <li>Validating a webhook payload that could be one of several distinct event types — <code>oneOf</code> with each event type requiring a literal <code>"type"</code> value, so an ambiguous payload is rejected rather than silently matching the wrong handler's expectations.</li>
+      </ul>
+
+      <h2>Fixing an overlapping oneOf with a discriminator</h2>
+      <p>Here's the shape-union example made concrete, with the bug and the fix side by side:</p>
+      <pre><code>// Before — ambiguous, both branches can match an object with no extra fields
+{
+  "oneOf": [
+    { "type": "object", "properties": { "radius": { "type": "number" } } },
+    { "type": "object", "properties": { "width": { "type": "number" }, "height": { "type": "number" } } }
+  ]
+}
+
+// After — a required, literal discriminator makes the branches mutually exclusive
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": { "kind": { "const": "circle" }, "radius": { "type": "number" } },
+      "required": ["kind", "radius"]
+    },
+    {
+      "type": "object",
+      "properties": { "kind": { "const": "rectangle" }, "width": { "type": "number" }, "height": { "type": "number" } },
+      "required": ["kind", "width", "height"]
+    }
+  ]
+}</code></pre>
+      <p>
+        The "before" version can fail in a surprising way: an object like <code>{}</code> (no properties at
+        all) satisfies both branches' <code>properties</code> constraints trivially, since neither branch
+        requires anything — so it matches both and fails <code>oneOf</code>, even though it looks like it
+        matches neither. Adding a required <code>kind</code> discriminator with a <code>const</code> value to
+        each branch fixes this: now exactly one branch can match any given object, by construction.
+      </p>
+
+      <h2>What the error message actually tells you</h2>
+      <p>
+        When a value fails a <code>oneOf</code> check in ajv (the validator this app uses), the error reported
+        is often just <code>"must match exactly one schema in oneOf"</code> — it doesn't by default tell you
+        <em>which</em> branches matched or didn't, or whether the failure was zero matches or multiple matches.
+        That ambiguity is exactly why checking the branches by hand (as in the earlier example) is often faster
+        than trying to debug from the error message alone — paste your schema and a borderline value into a
+        validator, and see directly which branches it does and doesn't satisfy.
+      </p>
+
+      <h2>Common mistakes</h2>
+      <p>
+        The single most common mistake is reaching for <code>oneOf</code> by habit (it "sounds" like the right
+        keyword for "this or that") without checking whether the branches can actually overlap. A close second:
+        forgetting that <code>allOf</code> is a third, different keyword — "the value must match <em>every</em>
+        listed subschema" — easy to confuse with the other two by name alone.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>What's the actual difference between anyOf and oneOf?</summary>
+        <p><code>anyOf</code> requires at least one subschema to match; <code>oneOf</code> requires exactly one. A value matching two or more branches passes <code>anyOf</code> but fails <code>oneOf</code>.</p>
+      </details>
+      <details>
+        <summary>Why is my valid-looking data failing a oneOf check?</summary>
+        <p>It's almost certainly matching more than one of the listed branches — check whether your branches genuinely are mutually exclusive, and add a discriminator field if not.</p>
+      </details>
+      <details>
+        <summary>Is allOf related to this?</summary>
+        <p>It's a third, different keyword: <code>allOf</code> requires a value to match every listed subschema, not just one or exactly-one.</p>
+      </details>
+      <details>
+        <summary>Which one should I default to if I'm not sure?</summary>
+        <p><code>anyOf</code> is usually the safer default — it won't reject data just because it happens to match more than one branch.</p>
+      </details>
+      <details>
+        <summary>Can I test this against my own schema?</summary>
+        <p>Yes — paste your schema and a borderline value into <a href="/">Schema Validator</a> and see which keyword actually produces the result you expect.</p>
+      </details>
+
+      <a class="cta" href="/">Test your schema now</a>
+
+      <h2>Related posts</h2>
+      <ul>
+        <li><a href="/blog/json-schema-draft-differences/">JSON Schema draft-07 vs 2019-09 vs 2020-12: what actually changed</a></li>
+        <li><a href="/blog/common-json-schema-mistakes-linting-catches/">Common JSON Schema mistakes a linter catches</a></li>
+        <li><a href="/blog/json-schema-to-typescript-interface/">Turn a JSON Schema into a TypeScript interface in seconds</a></li>
+      </ul>
+
+      <div class="ad-slot-frame">
+        <span class="ad-slot-label">Advertisement</span>
+        <ins
+          class="adsbygoogle ad-slot"
+          style="display:block"
+          data-ad-client="ca-pub-5852027898822024"
+          data-ad-slot="3418754801"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        ></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
+    </main>
+    <footer>
+      <a href="/blog/">← Back to blog</a> · <a href="/">Schema Validator</a>
+    </footer>
+  </body>
+</html>

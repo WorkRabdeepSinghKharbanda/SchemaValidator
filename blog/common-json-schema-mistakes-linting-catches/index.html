@@ -29,15 +29,29 @@
     <meta name="twitter:card" content="summary_large_image" />
 
     <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Common JSON Schema mistakes a linter catches (that validation won't)",
-        "datePublished": "2026-09-08",
-        "dateModified": "2026-09-08",
-        "author": { "@type": "Organization", "name": "Schema Validator" },
-        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/common-json-schema-mistakes-linting-catches/"
-      }
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Common JSON Schema mistakes a linter catches (that validation won't)",
+  "image": "https://schema-validator-livid.vercel.app/og-image.png",
+  "datePublished": "2026-09-08",
+  "dateModified": "2026-09-08",
+  "author": {
+    "@type": "Organization",
+    "name": "Schema Validator"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Schema Validator",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://schema-validator-livid.vercel.app/icon-512.png"
+    }
+  },
+  "keywords": "common json schema mistakes linting catches, json schema",
+  "wordCount": 1299,
+  "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/common-json-schema-mistakes-linting-catches/"
+}
     </script>
       <script type="application/ld+json">
 {
@@ -75,25 +89,73 @@
       <h1>Common JSON Schema mistakes a linter catches (that validation won't)</h1>
       <p class="lede">A schema that compiles fine can still be quietly wrong in ways that only surface later, as a confusing bug report.</p>
 
-      <h2>A required field that's never declared</h2>
-      <p>If <code>required</code> lists a property name that isn't in <code>properties</code>, the schema is syntactically fine — and every single record will fail, because that field can never be satisfied the way you intended. This is the single most useful thing a schema linter can flag, because it's invisible until you actually run validation against real data and wonder why nothing passes.</p>
+      <h2>What it is</h2>
+      <p>Validation and linting answer different questions. Validation asks "does this data satisfy this schema?" Linting asks "is this schema itself well-formed, in ways that won't show up as a validation error at all?" A schema can be perfectly valid JSON Schema — ajv compiles it without complaint — and still contain a mistake that quietly breaks your intent for every record that passes through it.</p>
+      <p>Schema Validator's linter runs a small, deliberately conservative set of checks against the current schema: a <code>required</code> entry that doesn't appear anywhere in <code>properties</code> (this one can never pass, for any input — it's flagged as a warning, not a suggestion), an object schema with <code>additionalProperties</code> left unset (which silently accepts extra, unexpected fields, including a typo'd version of a real field name), and an <code>enum</code> with exactly one allowed value (almost always meant to be <code>const</code> instead, which states the same constraint more clearly). The linter recurses into nested <code>properties</code> and array <code>items</code> up to a depth of six levels, and deliberately skips over <code>$ref</code> nodes rather than trying to resolve and re-check them. Results appear in a collapsible panel below the schema summary, so they're visible without getting in the way when you don't need them.</p>
 
-      <h2>Unset additionalProperties</h2>
-      <p>Leaving <code>additionalProperties</code> unset means any object schema silently accepts extra, unexpected fields — including a typo'd version of a real field name, which validation will never catch because as far as ajv is concerned, an extra field is just... extra.</p>
+      <h2>How to use it</h2>
+      <ol>
+        <li>Paste or write your schema in <a href="/">Schema Validator</a>'s schema pane — no data is required for linting to run.</li>
+        <li>Open the <a href="/json-schema-linter/">JSON Schema Linter</a> panel below the schema summary; it expands automatically if there's anything to flag.</li>
+        <li>Read each hint: it names the offending property path and which of the three checks triggered.</li>
+        <li>Fix the schema directly in the editor and watch the hint disappear once the issue is resolved — no separate re-run step.</li>
+      </ol>
 
-      <h2>A single-value enum</h2>
-      <p>An <code>enum</code> with exactly one allowed value is usually a sign the field should be a <code>const</code> instead — functionally similar, but clearer about intent to the next person reading the schema.</p>
+      <h2>Benefits</h2>
+      <p>The value of linting is that it catches mistakes before you ever run data through the schema — which matters because the three checks above are exactly the kind of thing that's invisible until it isn't. A <code>required</code> field that's never declared in <code>properties</code> doesn't throw a compile error; it just makes every single record fail, and the resulting ajv error ("must have required property X") looks identical to a normal validation failure, so you end up debugging the data when the schema was wrong all along. An unset <code>additionalProperties</code> doesn't fail anything either — it just means a typo'd field name (<code>emial</code> instead of <code>email</code>) sails through validation as an "extra" property instead of being caught as a missing one. Neither of these produces an error until you go looking for one, which is exactly why a linter that runs proactively, on the schema alone, is worth having.</p>
 
-      <h2>Try it</h2>
-      <p><a href="/json-schema-linter/">Schema Validator's schema linter</a> checks for all of these (and recurses into nested schemas) without needing a second tool.</p>
+      <h2>Where other approaches fall short</h2>
+      <p>Treating "the schema compiles" as "the schema is correct" is the most common gap here — a syntactically valid schema and a schema that expresses what the author actually meant are not the same thing, and most validators only check the former. Reading a schema by eye to catch these issues doesn't scale past a handful of properties, and gets worse exactly when it matters most: large, deeply nested schemas built up over months by more than one person, where a stray property name or a forgotten <code>additionalProperties</code> is easy to miss in a wall of JSON. A general-purpose JSON linter also won't help, since these are JSON Schema–specific semantic issues, not syntax issues — the JSON itself is fine; it's the meaning of the keywords relative to each other that's wrong.</p>
 
-      <a class="cta" href="/json-schema-linter/">Lint your schema now</a>
+      <h2>Everyday use cases</h2>
+      <ul>
+        <li>Reviewing a schema someone else wrote before adopting it, to catch an unset <code>additionalProperties</code> that would otherwise let bad data slip through silently.</li>
+        <li>Debugging a schema where validation reports 100% failures and the cause isn't obvious — checking for a <code>required</code>/<code>properties</code> mismatch first, before suspecting the data.</li>
+        <li>Cleaning up a schema that's grown organically over several PRs, where a field was renamed in <code>properties</code> but the old name was left behind in <code>required</code>.</li>
+        <li>Tightening a schema before using it as a public API contract, where an unset <code>additionalProperties</code> is a much bigger risk than in an internal config file.</li>
+        <li>Simplifying a schema inherited from another tool's auto-generated output, where single-value enums are a common artifact of generation from example data.</li>
+      </ul>
+
+      <h2>Tips and common mistakes</h2>
+      <p>Don't treat every hint as mandatory — the linter is about best practices, not spec compliance, and an unset <code>additionalProperties</code> is sometimes genuinely intentional (an evolving schema that needs to tolerate new fields from an upstream source, for instance). The one exception is the <code>required</code>/<code>properties</code> mismatch: because it can never pass for any input, there's no legitimate reason to leave it as-is, which is why it's the only one of the three shown as a warning rather than a plain suggestion.</p>
+      <p>A second common mistake is assuming lint hints mean the schema is "broken" — they don't. All three checks are advisory: the schema still compiles, and data can still validate against it. What they flag is a gap between what the schema says and what the author probably meant, which is a different, quieter kind of bug than a syntax error. That's also why the linter is conservative about what it checks at all — it deliberately avoids guessing at intent (like suggesting a <code>format</code> or <code>pattern</code> based on a property's name), sticking only to checks that are unambiguously correct regardless of context.</p>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Does a JSON Schema linter check the same thing as validation?</summary>
+        <p>No. Validation checks whether a piece of data satisfies a schema. Linting checks the schema itself for internal inconsistencies and best-practice gaps that won't produce a validation error at all — like a <code>required</code> field that's never declared in <code>properties</code>.</p>
+      </details>
+      <details>
+        <summary>Why does a schema with a required/properties mismatch still "validate" successfully?</summary>
+        <p>Because ajv (and every other JSON Schema validator) only checks that the schema is syntactically well-formed when it compiles it — it has no way to know that a name in <code>required</code> was supposed to match one in <code>properties</code>. The mismatch only shows up as every record failing once you run real data through it, which is exactly the gap a linter closes earlier.</p>
+      </details>
+      <details>
+        <summary>What does leaving additionalProperties unset actually do?</summary>
+        <p>By default, JSON Schema object validation allows any extra properties beyond the ones listed in <code>properties</code>. Leaving <code>additionalProperties</code> unset means a typo'd field name is treated as just another extra property rather than a missing required one, so it passes validation silently instead of surfacing as an error.</p>
+      </details>
+      <details>
+        <summary>Should I always set additionalProperties to false?</summary>
+        <p>Not always — it depends on whether the schema needs to tolerate fields it doesn't know about yet (common for schemas consuming data from an upstream system you don't control). The linter flags it as something to consider, not something to always fix.</p>
+      </details>
+      <details>
+        <summary>Why use const instead of a single-value enum?</summary>
+        <p>They're functionally equivalent — both only allow one specific value — but <code>const</code> states that intent directly, while a single-value <code>enum</code> reads as if more values were originally intended and later narrowed down, which is more ambiguous for the next person reading the schema.</p>
+      </details>
+      <details>
+        <summary>Does the linter resolve $ref before checking a schema?</summary>
+        <p>No — nested <code>$ref</code> nodes are deliberately skipped rather than resolved and re-checked, so a linted schema that references another schema via <code>$ref</code> won't have that referenced schema's own issues surfaced here.</p>
+      </details>
+      <details>
+        <summary>Is this a replacement for a full JSON Schema style guide or spec-compliance tool?</summary>
+        <p>No — it's intentionally narrow: three checks that are unambiguously correct regardless of what the schema author intended, not a broader opinionated style guide. That's a deliberate scope limit, not a missing feature.</p>
+      </details>
 
       <h2>Related posts</h2>
       <ul>
         <li><a href="/blog/json-schema-draft-differences/">JSON Schema draft-07 vs 2019-09 vs 2020-12: what actually changed</a></li>
         <li><a href="/blog/how-json-schema-pattern-regex-works/">How the JSON Schema pattern keyword actually works</a></li>
         <li><a href="/blog/generate-json-schema-from-example-payload/">How to generate a JSON Schema from an example payload</a></li>
+        <li><a href="/blog/anyof-vs-oneof/">anyOf vs oneOf in JSON Schema: what's the difference</a></li>
       </ul>
 
       <div class="ad-slot-frame">

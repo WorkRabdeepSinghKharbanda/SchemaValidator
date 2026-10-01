@@ -67,7 +67,7 @@
             "name": "Does this check CSV file encoding, like whether it's valid UTF-8?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No — this validates the parsed rows' structure and values against a JSON Schema, not the raw file's byte encoding."
+              "text": "No — this validates the parsed rows' structure and values against a JSON Schema, not the raw file's byte encoding. If a CSV fails to parse at all because of an encoding issue, that will show as a parse error, but detecting/fixing encoding problems specifically isn't what this tool does."
             }
           }
         ]

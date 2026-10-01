@@ -32,15 +32,29 @@
     <meta name="twitter:card" content="summary_large_image" />
 
     <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Validating JSON config files in CI without a server",
-        "datePublished": "2026-09-08",
-        "dateModified": "2026-09-08",
-        "author": { "@type": "Organization", "name": "Schema Validator" },
-        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/validate-json-in-ci/"
-      }
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Validating JSON config files in CI without a server",
+  "image": "https://schema-validator-livid.vercel.app/og-image.png",
+  "datePublished": "2026-09-08",
+  "dateModified": "2026-09-08",
+  "author": {
+    "@type": "Organization",
+    "name": "Schema Validator"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Schema Validator",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://schema-validator-livid.vercel.app/icon-512.png"
+    }
+  },
+  "keywords": "validate json in ci, json schema",
+  "wordCount": 1244,
+  "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/validate-json-in-ci/"
+}
     </script>
       <script type="application/ld+json">
 {
@@ -86,13 +100,28 @@
         Neither should be necessary for something this small.
       </p>
 
-      <h2>Design once, export a script</h2>
+      <h2>What this actually is</h2>
       <p>
-        <a href="/">Schema Validator</a>'s schema pane has a "Copy as Node.js snippet" / "Copy as Python snippet"
-        action in its "⋯" menu. It generates a small, self-contained script — ajv for Node, <code>jsonschema</code>
-        for Python — with your exact schema and draft version already baked in. Drop it into your repo and point it
-        at a config file path as an argument.
+        This isn't a CLI tool, a GitHub Action, or a hosted validation API — none of those are built, deliberately
+        (adding a public API endpoint or a packaged CLI means maintaining a server or a release pipeline for
+        something this small). What exists instead is a code generator: design and test your schema interactively in
+        the browser, then export the exact same validation logic as a small, self-contained script you commit to
+        your own repo and run however you like, including as a CI step.
       </p>
+      <p>
+        The script isn't a wrapper around this app calling out to anywhere — it's a standalone ajv (Node) or
+        <code>jsonschema</code> (Python) script with your schema and chosen draft baked directly into the source. It
+        has no dependency on this site once generated; it runs wherever Node or Python already runs in your pipeline.
+      </p>
+
+      <h2>How to use it</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and build/paste your schema in the schema pane, picking whichever draft matches your target (draft-07, 2019-09, or 2020-12).</li>
+        <li>Validate a few sample config files against it interactively until you're confident the schema actually catches the mistakes you care about.</li>
+        <li>Open the schema pane's "⋯" menu and choose "Copy as Node.js snippet" or "Copy as Python snippet" — whichever matches your pipeline's existing tooling.</li>
+        <li>Paste the generated script into your repo, e.g. <code>scripts/validate-config.js</code>, and point it at a config file path as a command-line argument.</li>
+        <li>Add it as a CI step (see below) so it runs automatically on every pull request, not just when someone remembers to check by hand.</li>
+      </ol>
 
       <h2>Wiring it into CI</h2>
       <pre><code># .github/workflows/validate-config.yml (Node example)
@@ -104,7 +133,82 @@
         regenerate it (paste the updated schema, copy again) whenever the schema changes.
       </p>
 
+      <h2>Why this is worth doing</h2>
+      <p>
+        Catching a malformed config at pull-request time is strictly cheaper than catching it at deploy time or,
+        worse, at runtime in production. A schema check that only exists as something a person remembers to run
+        manually will eventually get skipped — not out of carelessness, just because manual steps are the first
+        thing to get dropped under time pressure. Making the check part of CI removes the "did anyone actually check
+        this" question entirely: either the pipeline step passes, or the pull request is blocked.
+      </p>
+      <p>
+        There's also a workflow benefit that's easy to undervalue: designing the schema itself is much faster
+        interactively, with immediate feedback on a real sample file, than it is staring at a script's error output
+        and guessing which keyword is wrong. Doing the design work in the browser and only exporting once you're
+        confident in the result means the script you commit to CI is already battle-tested against the config shapes
+        you actually care about, not a first draft you're debugging live in a pipeline run.
+      </p>
+
+      <h2>Where other approaches fall short</h2>
+      <p>
+        Writing an ajv or <code>jsonschema</code> script from scratch for every config file you want to guard means
+        hand-maintaining boilerplate (CLI argument parsing, error formatting, exit codes) that has nothing to do with
+        the actual schema — and keeping that boilerplate in sync across multiple scripts as your validation library's
+        API changes. Standing up an API endpoint just to run a validation call adds a server, a deployment, and a
+        network dependency to a check that's fundamentally pure logic with no need for any of that. A purely
+        browser-based validator with no way to export its logic solves the "did I write the schema correctly"
+        problem but not the "does this run unattended in CI" problem — you're left re-implementing the check by hand
+        anyway.
+      </p>
+
+      <h2>Everyday use cases</h2>
+      <ul>
+        <li>Blocking a pull request that edits a <code>config/production.json</code> file with a typo'd key or wrong type, before it merges.</li>
+        <li>Validating a generated or templated config (e.g. from a build step) matches the shape downstream code expects, as part of the build itself.</li>
+        <li>Checking infrastructure-as-code JSON files (feature flags, environment manifests) against a schema that encodes your team's actual constraints.</li>
+        <li>Running the same validation locally via a pre-commit hook and in CI, using the identical generated script in both places.</li>
+        <li>Giving a non-technical teammate who edits a JSON config directly a CI failure with a specific, readable error instead of a runtime crash days later.</li>
+      </ul>
+
+      <h2>Tips and common mistakes</h2>
+      <p>
+        Regenerate the script whenever the schema changes — it's a one-way export, not a live link, so an edited
+        schema in the browser doesn't automatically update a script you already committed. Commit the schema itself
+        alongside the generated script (as a comment or a separate file) so a future reader can see the source of
+        truth without reverse-engineering it from the generated code. It's also worth matching the draft you select
+        before exporting to whatever the rest of your tooling expects — a script generated against the wrong draft
+        will still run without error, it'll just enforce a subtly different set of rules than you intended (see the
+        <a href="/blog/json-schema-draft-differences/">draft-07 vs 2019-09 vs 2020-12</a> post for why that can
+        matter more than it looks).
+      </p>
+
       <a class="cta" href="/">Design your schema, then export the script</a>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Is this a VS Code or IDE extension?</summary>
+        <p>No — this is a browser-based tool, not an editor plugin. If you want validation to run as you edit in an IDE, that's a separate integration; what this gives you instead is a generated script for running the same check unattended, in CI or any script-based workflow.</p>
+      </details>
+      <details>
+        <summary>Can I use this with Postman or REST Assured?</summary>
+        <p>Not directly — there's no built-in integration for either. The generated Node or Python script is plain, dependency-light code though, so it can be called from a custom test step in most pipelines that already shell out to scripts.</p>
+      </details>
+      <details>
+        <summary>Does this require a CLI tool to be installed?</summary>
+        <p>No separate CLI — you export a self-contained script that only needs Node (for the ajv snippet) or Python (for the <code>jsonschema</code> snippet) already available in your CI environment, which most pipelines have by default.</p>
+      </details>
+      <details>
+        <summary>What happens if I change the schema after generating the script?</summary>
+        <p>Nothing automatic — the exported script is a snapshot of the schema at export time. Update the schema in the browser, re-run "Copy as snippet," and replace the committed script to keep them in sync.</p>
+      </details>
+      <details>
+        <summary>Does the generated script call back to this website?</summary>
+        <p>No. It's a standalone script using ajv or <code>jsonschema</code> with your schema embedded directly in its source — it has no runtime dependency on this app once generated.</p>
+      </details>
+      <details>
+        <summary>Which draft does the generated script validate against?</summary>
+        <p>Whichever draft is selected in the dropdown when you copy the snippet — draft-07, 2019-09, or 2020-12 — it's baked into the generated script along with the schema itself.</p>
+      </details>
 
       <h2>Related posts</h2>
       <ul>

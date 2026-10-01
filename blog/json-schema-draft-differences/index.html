@@ -32,15 +32,29 @@
     <meta name="twitter:card" content="summary_large_image" />
 
     <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "JSON Schema draft-07 vs 2019-09 vs 2020-12: what actually changed",
-        "datePublished": "2026-09-08",
-        "dateModified": "2026-09-08",
-        "author": { "@type": "Organization", "name": "Schema Validator" },
-        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/json-schema-draft-differences/"
-      }
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "JSON Schema draft-07 vs 2019-09 vs 2020-12: what actually changed",
+  "image": "https://schema-validator-livid.vercel.app/og-image.png",
+  "datePublished": "2026-09-08",
+  "dateModified": "2026-09-08",
+  "author": {
+    "@type": "Organization",
+    "name": "Schema Validator"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Schema Validator",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://schema-validator-livid.vercel.app/icon-512.png"
+    }
+  },
+  "keywords": "json schema draft differences, json schema",
+  "wordCount": 1230,
+  "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/json-schema-draft-differences/"
+}
     </script>
       <script type="application/ld+json">
 {
@@ -78,6 +92,19 @@
       <h1>JSON Schema draft-07 vs 2019-09 vs 2020-12: what actually changed</h1>
       <p class="lede">A practical rundown, not a spec diff — what you'll actually run into picking a draft for a real project.</p>
 
+      <h2>What a "draft" actually is</h2>
+      <p>
+        JSON Schema isn't one frozen spec — it's a series of dated drafts, each identified by the
+        <code>$schema</code> URI at the top of a schema file (e.g. <code>"$schema": "https://json-schema.org/draft/2020-12/schema"</code>).
+        Validators have to pick which draft's rules to apply, because the same keyword can mean slightly different
+        things, or not exist at all, across drafts. That's the whole source of confusion this post exists to clear up:
+        not "which is newest" but "which one does my schema, and the tool reading it, actually agree on."
+      </p>
+      <p>
+        Three drafts matter in practice today: draft-07, 2019-09, and 2020-12. Older ones (draft-04, draft-06) still
+        show up in legacy tooling but are rarely worth targeting for anything new.
+      </p>
+
       <h2>draft-07 (2018)</h2>
       <p>
         The most widely deployed draft, still the default in a lot of tooling and libraries. Has <code>if</code>/<code>then</code>/<code>else</code>
@@ -101,6 +128,57 @@
         for extensible vocabularies. This is the right default for a new schema with no compatibility constraint.
       </p>
 
+      <h2>How to use this when checking your own schema</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and paste your schema into the schema pane.</li>
+        <li>If the schema has a <code>$schema</code> field with a recognized draft URI, the draft dropdown auto-switches to match and a toast confirms which draft it detected — no manual guessing.</li>
+        <li>If there's no <code>$schema</code> field (common in hand-written or older schemas), pick a draft from the dropdown yourself, based on which library or API you're targeting.</li>
+        <li>Validate a sample payload against it and check the error messages — if a keyword you expect to work is silently ignored, that's usually a sign the selected draft doesn't support it the way you think.</li>
+      </ol>
+
+      <h2>Why the draft you pick actually matters</h2>
+      <p>
+        The array-<code>items</code> change between draft-07 and 2020-12 is the one that bites people most: in
+        draft-07, <code>items</code> as an array meant "validate each position against the corresponding sub-schema."
+        In 2020-12, that same tuple-validation job moved to <code>prefixItems</code>, and <code>items</code> went back
+        to meaning "validate every element against one schema." If you paste a draft-07-style tuple schema into a
+        2020-12 validator without translating it, it won't error — it'll just validate something other than what
+        you intended, which is worse than an error, since nothing tells you it's wrong.
+      </p>
+      <p>
+        Picking the wrong draft for a given schema doesn't always fail loudly. Most of the time it fails quietly:
+        a keyword gets ignored, a constraint you thought was enforced isn't, and the first time you notice is when
+        bad data gets through that a correctly-drafted schema would have caught.
+      </p>
+
+      <h2>Where a mismatched draft causes real problems</h2>
+      <p>
+        Online validators and documentation examples don't always say which draft they're demonstrating, and schema
+        authoring tools sometimes default to whatever draft they shipped with years ago rather than the current one.
+        A generic "paste JSON, see if it's valid" checker that has no concept of drafts at all can't catch this kind
+        of mismatch — it'll happily accept a 2020-12 schema being validated under draft-07 assumptions, because
+        syntactically both are just JSON. The failure only shows up in what actually gets allowed or rejected at
+        validation time, not in whether the schema document itself parses.
+      </p>
+
+      <h2>Everyday situations where this comes up</h2>
+      <ul>
+        <li>Copying a schema example from a blog post or Stack Overflow answer without checking which draft it was written against, then wondering why a keyword "doesn't work."</li>
+        <li>Upgrading a codebase's validation library (e.g. a new ajv major version) and discovering it defaults to a newer draft than schemas were authored for.</li>
+        <li>Inheriting a schema file with no <code>$schema</code> field at all and having to reverse-engineer which draft it targets from the keywords it uses.</li>
+        <li>Writing a new schema from scratch with no external constraint — the easy case, just use 2020-12.</li>
+        <li>Integrating against a third-party API's published schema and needing to match its draft exactly so your local validation agrees with theirs.</li>
+      </ul>
+
+      <h2>Tips and common mistakes</h2>
+      <p>
+        Always put an explicit <code>$schema</code> field in schemas you author — it costs one line and removes all
+        ambiguity for the next person (or tool) that opens the file. Don't assume "no errors" means "same validation
+        behavior" across drafts — the array-<code>items</code> case above is exactly this trap. And when in doubt,
+        validate a known-good and a known-bad sample payload under both drafts you're considering; if the results
+        differ, that difference is exactly what you need to understand before shipping.
+      </p>
+
       <h2>Which one should you pick?</h2>
       <ul>
         <li><strong>New project, no constraints:</strong> 2020-12.</li>
@@ -110,11 +188,38 @@
 
       <a class="cta" href="/">Try it on your own schema</a>
 
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>What does the <code>$schema</code> field actually do?</summary>
+        <p>It's a URI identifying which JSON Schema draft the rest of the document should be interpreted under. A validator reads it to decide which keyword meanings and validation rules apply — it's metadata about the schema, not a constraint checked against your data.</p>
+      </details>
+      <details>
+        <summary>Is draft-07 deprecated?</summary>
+        <p>No. It's not the current draft, but it's still extremely widely used and well supported by every major validation library. "Older" isn't the same as "unsupported" here.</p>
+      </details>
+      <details>
+        <summary>Can I mix drafts, like using a draft-07 schema with a 2020-12 <code>$ref</code> target?</summary>
+        <p>In general, no — treat a schema document and everything it references via <code>$ref</code> as needing to agree on draft. Mixing drafts across a <code>$ref</code> boundary is a common source of subtle bugs and isn't something most validators resolve for you automatically.</p>
+      </details>
+      <details>
+        <summary>Will my schema just throw an error if I pick the wrong draft?</summary>
+        <p>Not necessarily. Many draft differences change what a keyword means rather than making it invalid — the array-<code>items</code>/<code>prefixItems</code> change is the clearest example. The schema still "works," it just validates something other than what you intended, with no error to flag it.</p>
+      </details>
+      <details>
+        <summary>Does 2019-09 still matter if almost nobody targets it directly?</summary>
+        <p>Mostly for reading older schemas and understanding how <code>unevaluatedProperties</code>/<code>unevaluatedItems</code> and sibling keywords next to <code>$ref</code> were introduced. For new work, there's rarely a reason to pick 2019-09 over 2020-12.</p>
+      </details>
+      <details>
+        <summary>How do I find out which draft a schema I didn't write was built for?</summary>
+        <p>Check its <code>$schema</code> field first. If that's missing, paste it into <a href="/">Schema Validator</a> and try validating known-good sample data under each draft candidate — differing results for the same data under different drafts tells you which one the author actually had in mind.</p>
+      </details>
+
       <h2>Related posts</h2>
       <ul>
         <li><a href="/blog/handling-multi-file-json-schema-refs/">Handling multi-file JSON Schemas with $ref</a></li>
         <li><a href="/blog/common-json-schema-mistakes-linting-catches/">Common JSON Schema mistakes a linter catches (that validation won't)</a></li>
         <li><a href="/blog/generate-json-schema-from-example-payload/">How to generate a JSON Schema from an example payload</a></li>
+        <li><a href="/blog/anyof-vs-oneof/">anyOf vs oneOf in JSON Schema: what's the difference</a></li>
       </ul>
 
       <div class="ad-slot-frame">

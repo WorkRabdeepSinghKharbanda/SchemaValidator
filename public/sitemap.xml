@@ -8,169 +8,181 @@
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/batch-json-validator/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/blog/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://schema-validator-livid.vercel.app/blog/anyof-vs-oneof/</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://schema-validator-livid.vercel.app/blog/batch-validate-array-of-records/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/blog/common-json-schema-mistakes-linting-catches/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/blog/convert-json-to-yaml-without-losing-data/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/blog/fixing-common-json-syntax-errors/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/blog/generate-field-documentation-from-json-schema/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/blog/generate-json-schema-from-example-payload/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/blog/generate-sample-test-data-from-json-schema/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/blog/handling-multi-file-json-schema-refs/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/blog/how-json-schema-pattern-regex-works/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/blog/json-schema-draft-differences/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/blog/json-schema-to-typescript-interface/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/blog/openapi-vs-json-schema/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/blog/validate-json-in-ci/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://schema-validator-livid.vercel.app/blog/yaml-vs-json/</loc>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/csv-validator/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/json-repair/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/json-schema-diff/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/json-schema-docs-generator/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/json-schema-generator/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/json-schema-linter/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/json-to-typescript/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/json-validator/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/json-yaml-converter/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/openapi-validator/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/regex-tester/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/sample-json-generator/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/toml-validator/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -194,13 +206,13 @@
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/xml-validator/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://schema-validator-livid.vercel.app/yaml-validator/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

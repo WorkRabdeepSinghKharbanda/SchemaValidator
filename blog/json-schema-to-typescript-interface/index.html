@@ -29,15 +29,29 @@
     <meta name="twitter:card" content="summary_large_image" />
 
     <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Turn a JSON Schema into a TypeScript interface in seconds",
-        "datePublished": "2026-09-08",
-        "dateModified": "2026-09-08",
-        "author": { "@type": "Organization", "name": "Schema Validator" },
-        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/json-schema-to-typescript-interface/"
-      }
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Turn a JSON Schema into a TypeScript interface in seconds",
+  "image": "https://schema-validator-livid.vercel.app/og-image.png",
+  "datePublished": "2026-09-08",
+  "dateModified": "2026-09-08",
+  "author": {
+    "@type": "Organization",
+    "name": "Schema Validator"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Schema Validator",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://schema-validator-livid.vercel.app/icon-512.png"
+    }
+  },
+  "keywords": "json schema to typescript interface, json schema",
+  "wordCount": 1356,
+  "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/json-schema-to-typescript-interface/"
+}
     </script>
       <script type="application/ld+json">
 {
@@ -75,14 +89,52 @@
       <h1>Turn a JSON Schema into a TypeScript interface in seconds</h1>
       <p class="lede">Keeping a hand-written TypeScript type in sync with a JSON Schema by hand is exactly the kind of thing that should be automated.</p>
 
-      <h2>Why this drifts in the first place</h2>
-      <p>A JSON Schema validates data at runtime; a TypeScript interface types it at compile time. They describe the same shape, written twice, by hand, usually by two different people at two different times — which is exactly how they drift apart. A schema update that isn't mirrored into the type leaves TypeScript confidently wrong about what a value actually contains.</p>
+      <h2>What it is</h2>
+      <p>This is a JSON Schema–to–TypeScript converter: it reads a JSON Schema document and generates a TypeScript <code>interface</code> that describes the same shape, so the compile-time type and the runtime validation rule stop being two hand-maintained artifacts that can quietly disagree. It's worth being precise about what it converts <em>from</em> — this tool generates TypeScript from a JSON <strong>Schema</strong> (a <code>type</code>/<code>properties</code>/<code>required</code> document), not from a raw JSON data file. If you have an example payload instead of a schema, you'd first infer a schema from it (see the <a href="/blog/generate-json-schema-from-example-payload/">schema-from-example post</a>), then convert that schema to TypeScript.</p>
+      <p>It's also worth being precise about the output shape: this generates an <code>interface</code>, not a class and not a runtime type-checking function. An interface is a compile-time-only TypeScript construct — it disappears entirely when your code compiles to JavaScript, unlike a class which exists at runtime too.</p>
 
-      <h2>What a best-effort generator handles well</h2>
-      <p>The common cases — <code>type</code>, <code>properties</code>, <code>required</code>, array <code>items</code>, <code>enum</code>, and <code>oneOf</code>/<code>anyOf</code> as unions — map cleanly to TypeScript. Nested objects become their own named interfaces automatically, so a deeply nested schema doesn't produce one giant inline type.</p>
+      <h2>How to use it</h2>
+      <ol>
+        <li>Open the <a href="/json-to-typescript/">JSON Schema to TypeScript</a> tool or the main <a href="/">Schema Validator</a> app.</li>
+        <li>Paste your JSON Schema into the schema pane (write one from scratch, or infer one from example data first).</li>
+        <li>Run the TypeScript export from the schema pane's menu.</li>
+        <li>Copy the generated interface, or any nested interfaces it produced alongside it, into your codebase.</li>
+        <li>Review any field typed as <code>unknown</code> — that's the generator's signal it hit a schema construct it can't map cleanly, not a bug.</li>
+        <li>Re-run the export whenever the schema changes, so the interface doesn't go stale against it.</li>
+      </ol>
 
-      <h2>What still needs a human</h2>
-      <p>Conditional schemas (<code>if</code>/<code>then</code>/<code>else</code>), <code>allOf</code> composition, and tuple-style <code>items</code> don't map onto TypeScript cleanly enough to auto-generate correctly — these fall back to <code>unknown</code>, which is a signal to review that part of the type by hand, not a bug.</p>
+      <h2>Benefits</h2>
+      <p>A JSON Schema validates data at runtime; a TypeScript interface types it at compile time. They describe the same shape, written twice, by hand, usually by two different people at two different times — which is exactly how they drift apart. A schema update that isn't mirrored into the type leaves TypeScript confidently wrong about what a value actually contains, which is worse than having no type at all because it looks trustworthy. Generating the interface directly from the schema removes that manual mirroring step entirely: the type is always a faithful reflection of whatever the schema currently says.</p>
+      <p>Nested objects are also handled automatically as their own named interfaces, appended before the interface that references them, so a deeply nested schema doesn't collapse into one unreadable inline type — each nested shape gets its own clearly named declaration.</p>
+
+      <h2>Where other approaches fall short</h2>
+      <p>Hand-writing the TypeScript type alongside the schema means someone has to remember to update both files every time either changes — and in practice, one gets updated and the other doesn't, until a bug surfaces the mismatch. Some conversion tools only handle flat, single-level schemas and leave nested structures as an untyped blob, which defeats much of the point of having a type at all. Others target a different output than an interface — a class, a runtime validator function, or a type alias — which may not be what a given codebase's conventions call for.</p>
+
+      <h2>Everyday use cases</h2>
+      <ul>
+        <li>You have an existing JSON Schema (from an OpenAPI spec, a config validator, or an API contract) and want matching TypeScript types for a frontend or client library.</li>
+        <li>You're adding TypeScript to a codebase that already validates data with JSON Schema at runtime and want compile-time types to match without hand-transcription.</li>
+        <li>You changed a schema's required fields or added a new property and need the corresponding type updated to match, quickly.</li>
+        <li>You're reviewing a schema you didn't write and want a TypeScript view of it to reason about the shape more easily than reading raw JSON Schema syntax.</li>
+        <li>You're building a typed SDK around an API and want the request/response types generated from the same schema that validates the API's traffic.</li>
+      </ul>
+
+      <h2>Tips and common mistakes</h2>
+      <p>Don't treat the output as a full JSON-Schema-to-TypeScript implementation — it's deliberately best-effort. Schema features that don't map cleanly onto TypeScript's type system (conditional <code>if</code>/<code>then</code>/<code>else</code> logic, <code>allOf</code> composition, tuple-style <code>items</code>) fall back to <code>unknown</code> rather than guessing at a type that might be wrong. Treat every <code>unknown</code> in the output as a to-do, not a finished type. Also note that a <code>$ref</code> is resolved by its final path segment only, not against any reference schemas you've loaded separately — if your schema relies heavily on external <code>$ref</code>s, check the generated type names make sense rather than assuming full resolution happened.</p>
+      <p>A second mistake is generating once and forgetting about it as the schema continues to evolve — the same drift problem this tool exists to solve can creep back in if the generated interface isn't regenerated after every schema change. Since generation takes seconds, the cheapest habit is to re-run it as part of whatever process already updates the schema, rather than treating it as a one-time scaffolding step.</p>
+      <p>Finally, don't assume naming of nested interfaces will match your own naming conventions exactly — they're derived mechanically from the parent schema and field names. If your codebase has a strict naming scheme for types, do a quick pass renaming the generated nested interfaces (and their references) rather than fighting the generator to produce your exact convention.</p>
+
+      <h2>Interface vs. class vs. type: picking the right output</h2>
+      <p>TypeScript offers several ways to describe a shape, and it's worth being clear on why this tool produces an <code>interface</code> rather than the alternatives. A <code>class</code> is a runtime construct — it can hold methods, gets compiled into actual JavaScript, and can be instantiated with <code>new</code>; a JSON Schema describes data shape, not behavior, so generating a class would imply runtime semantics the schema never specified. A <code>type</code> alias and an <code>interface</code> are more interchangeable for describing plain object shapes, and an interface was chosen since it's the more common convention for describing data contracts in TypeScript codebases, supports declaration merging, and reads clearly when nested interfaces reference each other by name. If your project strictly prefers <code>type</code> aliases, converting the generated interface syntax to a type alias is a mechanical, low-risk find-and-replace.</p>
+
+      <h2>Frequently asked questions</h2>
+      <details><summary>Does this generate an interface, a class, or a type?</summary><p>An <code>interface</code> specifically — a compile-time-only TypeScript construct, not a class (which would exist at runtime too) and not a type alias. If your project's conventions require a class or a <code>type</code> instead, you'd adapt the generated interface by hand.</p></details>
+      <details><summary>Does this convert raw JSON data to TypeScript, or does it need a schema?</summary><p>It needs a JSON Schema as input, not a raw JSON data file. Converting a plain JSON example into a schema first is a separate step — see <a href="/blog/generate-json-schema-from-example-payload/">generating a schema from an example payload</a> — and then that schema can be converted to TypeScript.</p></details>
+      <details><summary>How are nested objects handled?</summary><p>Each nested object becomes its own named interface (using a pattern based on the parent and field names), appended before the interface that references it, rather than being inlined as one large unreadable type.</p></details>
+      <details><summary>What happens with $ref in the schema?</summary><p><code>$ref</code> is resolved by its final path segment to produce a type name — it isn't resolved against any separately uploaded reference schemas, so double-check the resulting name is what you'd expect if your schema uses external references.</p></details>
+      <details><summary>What schema features aren't supported?</summary><p>Conditional schemas (<code>if</code>/<code>then</code>/<code>else</code>), <code>allOf</code> composition, and tuple-style <code>items</code> don't map onto TypeScript's type system cleanly enough to auto-generate correctly, so these fall back to <code>unknown</code> as an explicit signal to review that part by hand.</p></details>
+      <details><summary>Are oneOf and anyOf supported?</summary><p>Yes — both are generated as TypeScript union types, since a value matching any one of several schemas maps naturally onto a union.</p></details>
+      <details><summary>Can I generate a type for a schema that's still being edited?</summary><p>Yes, but malformed or incomplete schema JSON won't produce a usable interface — fix any schema syntax errors first (the schema pane will flag them) before running the export.</p></details>
 
       <h2>Try it</h2>
       <p><a href="/json-to-typescript/">Schema Validator's TypeScript export</a> generates this directly from your schema, in the browser.</p>

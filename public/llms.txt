@@ -29,7 +29,10 @@ five supported data formats.
 - [JSON Schema Diff](https://schema-validator-livid.vercel.app/json-schema-diff/): comparing two versions of a schema.
 - [JSON Repair](https://schema-validator-livid.vercel.app/json-repair/): auto-fixing common JSON syntax slips (trailing commas, single quotes, unquoted keys) and some structural gaps (a missing comma or closing bracket).
 - [JSON Schema Docs Generator](https://schema-validator-livid.vercel.app/json-schema-docs-generator/): generating readable field documentation from a schema.
-- [Blog](https://schema-validator-livid.vercel.app/blog/): guides on JSON Schema drafts, schema generation, TypeScript export, linting, regex patterns, batch validation, $ref resolution, JSON repair, field docs, and format conversion.
+- [All Tools](https://schema-validator-livid.vercel.app/tools/): every tool above, grouped by category.
+- [Format Validators hub](https://schema-validator-livid.vercel.app/tools/format-validators/): JSON, YAML, TOML, XML, CSV validators grouped together.
+- [Schema Tools hub](https://schema-validator-livid.vercel.app/tools/schema-tools/): schema generation/conversion/linting/diffing/repair tools grouped together.
+- [Blog](https://schema-validator-livid.vercel.app/blog/): guides on JSON Schema drafts, schema generation, TypeScript export, linting, regex patterns, batch validation, $ref resolution, JSON repair, field docs, format conversion, YAML vs JSON, and anyOf vs oneOf.
 - [Privacy Policy](https://schema-validator-livid.vercel.app/#privacy): what's stored locally, AdSense cookie use, opt-out link.
 
 ## Notes for automated agents

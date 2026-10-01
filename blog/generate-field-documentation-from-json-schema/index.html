@@ -29,15 +29,29 @@
     <meta name="twitter:card" content="summary_large_image" />
 
     <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Generating field documentation from a JSON Schema for non-engineers",
-        "datePublished": "2026-09-08",
-        "dateModified": "2026-09-08",
-        "author": { "@type": "Organization", "name": "Schema Validator" },
-        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/generate-field-documentation-from-json-schema/"
-      }
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Generating field documentation from a JSON Schema for non-engineers",
+  "image": "https://schema-validator-livid.vercel.app/og-image.png",
+  "datePublished": "2026-09-08",
+  "dateModified": "2026-09-08",
+  "author": {
+    "@type": "Organization",
+    "name": "Schema Validator"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Schema Validator",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://schema-validator-livid.vercel.app/icon-512.png"
+    }
+  },
+  "keywords": "generate field documentation from json schema, json schema",
+  "wordCount": 1177,
+  "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/generate-field-documentation-from-json-schema/"
+}
     </script>
       <script type="application/ld+json">
 {
@@ -75,17 +89,67 @@
       <h1>Generating field documentation from a JSON Schema for non-engineers</h1>
       <p class="lede">A JSON Schema is a great contract for a validator. It's a terrible thing to hand a product manager and ask them to read.</p>
 
-      <h2>The audience problem</h2>
-      <p>A schema is written for a validation engine, not a person — nested <code>properties</code>/<code>items</code>/<code>$ref</code> structure that's perfectly parseable by ajv is genuinely hard to skim for someone checking "does this API accept a phone number field, and is it required." Handing over the raw schema either gets ignored or triggers a round of clarifying questions that a readable doc would have answered up front.</p>
+      <h2>What it is</h2>
+      <p>A schema is written for a validation engine, not a person — nested <code>properties</code>/<code>items</code>/<code>$ref</code> structure that's perfectly parseable by a validator is genuinely hard to skim for someone checking "does this API accept a phone number field, and is it required." Handing over the raw schema either gets ignored or triggers a round of clarifying questions that a readable doc would have answered up front. A field documentation generator converts that structure into the thing a non-engineer actually wants: a flat table of field names, plain-English types, whether each is required, and any constraints worth knowing (an enum's allowed values, a format string) — instead of a tree they have to mentally parse themselves.</p>
+      <p>Generating that table directly from the schema, rather than writing it by hand, also solves a sync problem that hand-written docs always eventually have: a hand-maintained field reference drifts from the schema the moment either one changes without the other being updated, and nobody remembers to update both at once. A doc generated straight from the current schema can't describe a field that no longer exists, because it's reading the schema itself, not someone's memory of it from three sprints ago.</p>
 
-      <h2>What a field doc needs that a schema doesn't have</h2>
-      <p>Plain field names, a plain-English type description, whether it's required, and any constraints worth knowing (an enum's allowed values, a format) — laid out as a table, not a nested tree structure.</p>
+      <h2>How to use it</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and paste or build your schema in the schema pane.</li>
+        <li>Open the schema pane's "⋯" menu and choose the field-docs export option.</li>
+        <li>Pick Markdown if the doc is going into a repo or wiki, or a PDF if it needs to be shared as-is with someone outside engineering.</li>
+        <li>For the PDF option, the output comes pre-branded — a dark header band, your content as a formatted table, and a footer with a timestamp — so it reads like a finished report rather than a raw export, without any extra formatting work on your end.</li>
+        <li>Send the result directly; because it's generated from the schema the moment you asked for it, it reflects the schema's current state.</li>
+      </ol>
 
-      <h2>Keeping it in sync automatically</h2>
-      <p>The same problem that affects hand-written TypeScript types affects hand-written docs: they drift from the schema the moment either one changes without the other being updated. Generating the doc directly from the current schema means it can't describe a field that no longer exists.</p>
+      <h2>Benefits</h2>
+      <p>The biggest win is audience fit: a product manager, support engineer, or external partner doesn't need to know what <code>$ref</code> or <code>additionalProperties</code> mean to read a table of field names, types, and whether they're required. Because the doc is generated rather than maintained separately, there's no second artifact to keep in sync by hand — the schema stays the single source of truth, and the doc is just a different view of it. The PDF output specifically is meant to be sent as-is, not reformatted first, which removes the "let me clean this up before sending" step that otherwise delays sharing a field reference with someone non-technical.</p>
 
-      <h2>Try it</h2>
-      <p><a href="/json-schema-docs-generator/">Schema Validator's field docs export</a> generates a Markdown table (for a repo/wiki) or a branded PDF (ready to share as-is) directly from your schema.</p>
+      <h2>Where other approaches fall short</h2>
+      <p>Hand-writing a field reference in a wiki page or spreadsheet works right up until the schema changes and nobody remembers to update the doc — at which point the doc is actively misleading rather than just outdated, since it still looks authoritative. Pointing a non-engineer at the raw schema file instead avoids the sync problem but reintroduces the audience problem: a schema's nested, validator-oriented structure isn't something most non-engineers will read past the first few lines. General-purpose documentation generators built for full API specs are often heavier than what's needed when the actual ask is just "what fields does this JSON object have, and which ones are required" — a flat field table answers that directly without requiring a whole API documentation toolchain.</p>
+
+      <h2>Everyday use cases</h2>
+      <ul>
+        <li>Sharing a readable field reference with a product manager who needs to know what a form or API payload actually contains.</li>
+        <li>Handing a support team a quick lookup table for what's required vs. optional in a customer-facing data format.</li>
+        <li>Attaching a branded PDF field reference to a partner integration doc or contract appendix.</li>
+        <li>Keeping an internal wiki page's field table current by regenerating it from the schema each time it changes, instead of hand-editing the wiki.</li>
+        <li>Onboarding a new team member onto an existing schema faster than having them read the raw JSON Schema cold.</li>
+      </ul>
+
+      <h2>Tips and common mistakes</h2>
+      <p>Regenerate the doc after every schema change rather than keeping an old export around — the whole value of generating it from the schema is that it can't go stale, but only if you actually re-run the export instead of reusing yesterday's PDF.</p>
+      <p>Keep in mind that a generated field table reflects whatever naming and structure the schema itself uses — if a field name is a terse internal identifier rather than something self-explanatory, the generated doc will carry that same terseness through. Adding a <code>description</code> to each property in the schema (most JSON Schema drafts support it) is worth doing once, since a good generator will surface those descriptions in the output table, turning a bare field name into something a non-engineer can actually understand without needing to ask what it means.</p>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>How do I turn a JSON Schema into readable documentation?</summary>
+        <p>Use a field-docs generator that reads the schema's <code>properties</code>, types, <code>required</code> array, and constraints directly and lays them out as a table. In <a href="/">Schema Validator</a>, this is the schema pane's "⋯" menu's field-docs export, available as Markdown or a branded PDF.</p>
+      </details>
+      <details>
+        <summary>Can I export schema documentation as a PDF?</summary>
+        <p>Yes — the export can generate a branded PDF with a dark header, a formatted field table, and a footer with a timestamp, ready to share as-is rather than needing reformatting first.</p>
+      </details>
+      <details>
+        <summary>What's the difference between the Markdown and PDF export?</summary>
+        <p>Markdown is meant for a repo or wiki page where it'll live alongside other technical docs; the PDF is meant to be sent directly to someone outside engineering, with its own branded layout rather than plain text.</p>
+      </details>
+      <details>
+        <summary>Does the generated documentation stay in sync with the schema?</summary>
+        <p>Only if you regenerate it after the schema changes — the export reads the schema's current state each time you run it, so it can't describe a field that's since been removed, but it won't automatically update a doc you already downloaded.</p>
+      </details>
+      <details>
+        <summary>Will this document nested objects and arrays, not just top-level fields?</summary>
+        <p>The field table is generated from the schema's actual structure, including nested <code>properties</code> and array <code>items</code>, so a reader can see a nested object's own fields, not just that the parent field exists.</p>
+      </details>
+      <details>
+        <summary>Is this the same as generating an OpenAPI/Swagger doc site?</summary>
+        <p>No — this generates a field reference table for a single JSON Schema, not a full interactive API documentation site. It's the right tool when the actual need is "what fields does this object have," not a complete API portal.</p>
+      </details>
+      <details>
+        <summary>Do I need to write descriptions in my schema for the docs to be useful?</summary>
+        <p>No — field names, types, and required status are generated regardless of whether a schema has <code>description</code> fields. Adding descriptions makes the output more useful to a non-engineer reader, but it isn't a prerequisite for generating a basic field table.</p>
+      </details>
 
       <a class="cta" href="/json-schema-docs-generator/">Generate field docs now</a>
 

@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Google tag (gtag.js) — loaded unconditionally on every page, same as AdSense. -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SEEZP9MLKB"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-SEEZP9MLKB');
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YAML vs JSON: When to Use Which</title>
+    <meta
+      name="description"
+      content="A practical comparison of YAML and JSON — readability, comments, strictness, and tooling — and which one to pick for a given use case."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/blog/yaml-vs-json/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+    <!-- AdSense Auto ads loader — present on every page unconditionally, not gated behind
+         cookie consent. Deliberate owner decision; see CLAUDE.md's AdSense entry. -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5852027898822024" crossorigin="anonymous"></script>
+
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="YAML vs JSON: When to Use Which" />
+    <meta property="og:description" content="A practical comparison of YAML and JSON, and which one to pick for a given use case." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/blog/yaml-vs-json/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": "YAML vs JSON: when to use which",
+        "image": "https://schema-validator-livid.vercel.app/og-image.png",
+        "datePublished": "2026-10-01",
+        "dateModified": "2026-10-01",
+        "author": { "@type": "Organization", "name": "Schema Validator" },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Schema Validator",
+          "logo": { "@type": "ImageObject", "url": "https://schema-validator-livid.vercel.app/icon-512.png" }
+        },
+        "keywords": "yaml vs json, is yaml better than json, yaml json comparison",
+        "wordCount": 1087,
+        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/yaml-vs-json/"
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://schema-validator-livid.vercel.app/" },
+          { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://schema-validator-livid.vercel.app/blog/" },
+          { "@type": "ListItem", "position": 3, "name": "YAML vs JSON: when to use which" }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/blog/">Blog</a> / <span>YAML vs JSON: when to use which</span></nav>
+    <main class="wrap">
+      <h1>YAML vs JSON: when to use which</h1>
+      <p class="lede">Neither is "better" in general — they trade off readability against strictness, and the right choice depends on who's editing the file and how often.</p>
+
+      <h2>What they actually are</h2>
+      <p>
+        JSON and YAML both represent the same underlying data model — objects, arrays, strings, numbers,
+        booleans, null — just with different surface syntax. In fact YAML 1.2 is a strict superset of JSON:
+        any valid JSON document is also valid YAML. The differences that matter in practice are about how
+        each format is typically <em>written and read by humans</em>, not what they can represent.
+      </p>
+
+      <h2>How to compare the two on your own data</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and paste your data in whichever format you have.</li>
+        <li>Switch the format tab to the other format — the data pane reserializes it in place.</li>
+        <li>Compare both versions side by side; optionally validate either against the same JSON Schema to confirm nothing changed meaning.</li>
+      </ol>
+      <p>
+        See the <a href="/json-yaml-converter/">JSON ⇄ YAML converter</a> page for more on the conversion mechanics specifically.
+      </p>
+
+      <h2>Where JSON wins</h2>
+      <ul>
+        <li><strong>Machine-to-machine.</strong> JSON is the native wire format of nearly every HTTP API, and every language has a fast, built-in JSON parser. There's no ambiguity in how a JSON document should be parsed.</li>
+        <li><strong>Strictness.</strong> JSON's syntax is small and unambiguous — quoting rules, structure, and types are rigid, which makes it a good target when you want exactly one correct way to represent a value.</li>
+        <li><strong>Diffing and tooling.</strong> JSON's flat, bracket-delimited structure is easy for generic diff tools and linters to reason about, since whitespace carries no meaning.</li>
+      </ul>
+
+      <h2>Where YAML wins</h2>
+      <ul>
+        <li><strong>Human-edited config.</strong> YAML drops most of JSON's punctuation (quotes around keys, braces, commas) in favor of indentation, which is why it dominates for files people hand-edit often: Kubernetes manifests, GitHub Actions workflows, CI pipelines, Docker Compose files.</li>
+        <li><strong>Comments.</strong> YAML supports <code>#</code> comments natively; standard JSON has no comment syntax at all (this repo's own JSON panes work around that by tolerating JSONC-style comments, but that's an extension, not standard JSON).</li>
+        <li><strong>Multiline strings.</strong> YAML's block scalars (<code>|</code> and <code>&gt;</code>) make embedding a shell script or a long description readable; the JSON equivalent is one long escaped string on a single line.</li>
+      </ul>
+
+      <h2>Where YAML's flexibility bites you</h2>
+      <p>
+        YAML's permissiveness is also its biggest footgun. Unquoted values are type-inferred — <code>version: 1.0</code>
+        can silently become a float instead of a string, <code>enabled: yes</code> becomes a boolean in some
+        parsers and a string in others, and indentation errors can change a document's structure without any
+        syntax error being raised at all. JSON doesn't have this class of bug, because there's no implicit
+        type inference and no significant whitespace.
+      </p>
+
+      <h2>Everyday use cases</h2>
+      <ul>
+        <li>Writing a Kubernetes Deployment or a GitHub Actions workflow — YAML, because you'll hand-edit it repeatedly and want comments.</li>
+        <li>An API request/response body — JSON, because it's what HTTP clients and servers expect natively.</li>
+        <li>A one-off config file for a small script that only you will touch — either works; pick whichever your config-loading library already supports.</li>
+        <li>Generating config programmatically and never hand-editing it — JSON is simpler to produce correctly, since there's no indentation-sensitivity to get wrong.</li>
+        <li>Documenting an OpenAPI spec for readability — many teams maintain the source as YAML (for comments and multiline descriptions) and generate JSON for tooling that expects it.</li>
+      </ul>
+
+      <h2>Validate either one against the same schema</h2>
+      <p>
+        Since YAML and JSON represent the same data model, a single JSON Schema can validate both — you don't
+        need to maintain two sets of validation rules just because you maintain both a JSON and a YAML version
+        of the same config. <a href="/">Schema Validator</a> validates YAML and JSON against the identical
+        schema, so switching formats doesn't mean switching validation logic too.
+      </p>
+
+      <h2>Tooling and ecosystem support</h2>
+      <p>
+        Every mainstream language has a JSON parser in its standard library or one dependency away, and the
+        parsing itself is fast and unambiguous — there's exactly one way to read a given JSON document. YAML
+        parsing is more involved: the spec is large (YAML 1.1 and 1.2 even disagree on some edge cases, like
+        whether <code>yes</code>/<code>no</code> are booleans), and different libraries have historically
+        handled those edge cases differently. This is less of a concern today — most modern tooling has
+        converged on YAML 1.2 semantics — but it's part of why JSON remains the safer choice for anything
+        parsed by many different systems you don't all control.
+      </p>
+      <p>
+        Editor support also differs: JSON's rigid structure makes it easy for an editor to validate against a
+        schema and catch errors as you type (this is exactly what Monaco, the editor this app uses, does for
+        the JSON panes). YAML's significant whitespace makes equivalent tooling harder to get exactly right,
+        though most modern editors handle it reasonably well.
+      </p>
+
+      <h2>Common mistakes</h2>
+      <p>
+        The most common YAML mistake is assuming a value stays a string just because it looks like text — always
+        quote values that could be misread as a number, boolean, or date (version strings, phone numbers,
+        affirmative/negative words). A close second is inconsistent indentation — mixing tabs and spaces, or
+        losing track of nesting depth in a deeply nested manifest, which can silently change which key a value
+        belongs to without raising a syntax error. The most common JSON mistake, especially when a file was
+        hand-edited or copy-pasted from JavaScript source, is a trailing comma or single-quoted string — both
+        of which a strict JSON parser rejects outright, though this app's JSON panes tolerate both along with
+        comments (JSONC-style), so pasting slightly-off JSON here still works for a quick check.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Is YAML better than JSON?</summary>
+        <p>Neither is categorically better — YAML is friendlier for files people hand-edit often (comments, less punctuation); JSON is simpler and less ambiguous for machine-to-machine data and API payloads.</p>
+      </details>
+      <details>
+        <summary>Can every JSON file be read as YAML?</summary>
+        <p>Yes — YAML 1.2 is a superset of JSON, so any valid JSON document is also valid YAML.</p>
+      </details>
+      <details>
+        <summary>Why did my version number turn into a different value in YAML?</summary>
+        <p>YAML infers types from unquoted values — <code>1.0</code> can become a float, losing the trailing zero. Quote any value you need treated as a literal string.</p>
+      </details>
+      <details>
+        <summary>Can I validate both formats with the same JSON Schema?</summary>
+        <p>Yes — both represent the same underlying data model, so one schema covers both. <a href="/">Schema Validator</a> validates either against the identical schema.</p>
+      </details>
+      <details>
+        <summary>Which one should I use for a new Kubernetes or CI config?</summary>
+        <p>YAML — it's the standard for both ecosystems, and you'll benefit from comments and more readable multiline values.</p>
+      </details>
+
+      <a class="cta" href="/json-yaml-converter/">Convert between JSON and YAML now</a>
+
+      <h2>Related posts</h2>
+      <ul>
+        <li><a href="/blog/convert-json-to-yaml-without-losing-data/">Convert JSON to YAML (and back) without losing data</a></li>
+        <li><a href="/blog/fixing-common-json-syntax-errors/">Fixing common JSON syntax errors</a></li>
+        <li><a href="/blog/validate-json-in-ci/">Validating JSON config files in CI without a server</a></li>
+      </ul>
+
+      <div class="ad-slot-frame">
+        <span class="ad-slot-label">Advertisement</span>
+        <ins
+          class="adsbygoogle ad-slot"
+          style="display:block"
+          data-ad-client="ca-pub-5852027898822024"
+          data-ad-slot="3418754801"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        ></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
+    </main>
+    <footer>
+      <a href="/blog/">← Back to blog</a> · <a href="/">Schema Validator</a>
+    </footer>
+  </body>
+</html>

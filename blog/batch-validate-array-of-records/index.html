@@ -29,15 +29,29 @@
     <meta name="twitter:card" content="summary_large_image" />
 
     <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Batch-validating an array of records against one schema",
-        "datePublished": "2026-09-08",
-        "dateModified": "2026-09-08",
-        "author": { "@type": "Organization", "name": "Schema Validator" },
-        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/batch-validate-array-of-records/"
-      }
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Batch-validating an array of records against one schema",
+  "image": "https://schema-validator-livid.vercel.app/og-image.png",
+  "datePublished": "2026-09-08",
+  "dateModified": "2026-09-08",
+  "author": {
+    "@type": "Organization",
+    "name": "Schema Validator"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Schema Validator",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://schema-validator-livid.vercel.app/icon-512.png"
+    }
+  },
+  "keywords": "batch validate array of records, json schema",
+  "wordCount": 1254,
+  "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/batch-validate-array-of-records/"
+}
     </script>
       <script type="application/ld+json">
 {
@@ -75,19 +89,71 @@
       <h1>Batch-validating an array of records against one schema</h1>
       <p class="lede">Validating one record proves your schema works. Validating a thousand imported records proves your data does.</p>
 
-      <h2>Why single-record validation isn't enough</h2>
-      <p>A schema that correctly validates one hand-picked example doesn't tell you anything about the other 999 records in a real import. Bad data tends to cluster in edge cases — a null where a string was expected, a stray currency symbol, a date in the wrong format — that a single manually-checked example won't surface.</p>
+      <h2>What it is</h2>
+      <p>A schema that correctly validates one hand-picked example doesn't tell you anything about the other 999 records in a real import. Bad data tends to cluster in edge cases — a null where a string was expected, a stray currency symbol, a date in the wrong format — that a single manually-checked example won't surface. Batch mode validates every item of a top-level data array independently against one schema, rather than requiring you to run validation record by record.</p>
+      <p>The result is a per-record pass/fail table with a progress bar for larger batches, so you can see which specific records failed and why, not just an aggregate count. Batch mode follows the same rule as single-record validation: an empty schema is treated as trivially valid (a syntax-only check), so switching a half-finished schema into batch mode doesn't spam every row as a failure.</p>
 
-      <h2>What a per-record result actually needs to show</h2>
-      <p>An aggregate "12 of 1,000 failed" is a start, but not actionable on its own — you need to know exactly which 12, and why each one failed, without re-running validation on each one individually.</p>
+      <h2>How to use it</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> and write or paste your schema in the schema pane, same as single-record validation.</li>
+        <li>Paste a top-level array of records — JSON, YAML, or CSV — into the data pane.</li>
+        <li>Turn on batch mode from the toolbar, or the <a href="/batch-json-validator/">Batch JSON Validator</a> page, and validate.</li>
+        <li>Read the per-record table: each row shows pass/fail and, for failures, the specific validation error for that record.</li>
+        <li>Use "Export failing only" to pull just the broken records out as JSON, or "Export CSV" for the full result set, for a fix pass or a bug report.</li>
+      </ol>
 
-      <h2>Export just what's broken</h2>
-      <p>Once you can see which records failed, the next useful step is pulling just those out — for a fix pass, a bug report, or re-import after correction — rather than exporting the whole batch again and filtering by hand.</p>
+      <h2>Benefits</h2>
+      <p>An aggregate "12 of 1,000 failed" is a start, but not actionable on its own — you need to know exactly which 12, and why each one failed, without re-running validation on each one individually. Batch mode's per-record table gives you that directly, and the "export failing only" button means the next step — fixing those 12 records, or filing them as a bug report — doesn't require filtering the full export by hand. Because batch mode shares the same validation engine and format support (JSON, YAML, TOML, XML, CSV) as single-record mode, there's nothing different to learn about how the schema itself is interpreted; only the presentation of results changes.</p>
 
-      <h2>Try it</h2>
-      <p><a href="/batch-json-validator/">Schema Validator's batch mode</a> does exactly this — a per-record pass/fail table, a progress bar for large batches, and an "export failing only" button — for JSON, YAML, or CSV arrays alike.</p>
+      <h2>Where other approaches fall short</h2>
+      <p>Validating records one at a time by manually re-running a tool against each one doesn't scale past a handful of records, and it gets worse exactly when batch validation matters most — a large import where the failures are sparse and scattered, not clustered at the start. A general-purpose data-wrangling tool that can filter or spot-check an array doesn't actually check each record against a schema; it can tell you a field looks unusual, not that it violates a specific constraint. And exporting a full result set and filtering it down by hand in a spreadsheet works, but it's a manual step that a dedicated "failing only" export removes entirely.</p>
 
-      <a class="cta" href="/batch-json-validator/">Batch-validate your records</a>
+      <h2>Everyday use cases</h2>
+      <ul>
+        <li>Checking a CSV export from one system before importing it into another, to catch which rows don't match the target schema before the import fails partway through.</li>
+        <li>Validating a JSON array pulled from an API response against the schema you expect it to conform to, to confirm the API is actually returning what its docs say.</li>
+        <li>Spot-checking a batch of records generated by another tool (a data migration script, a seed-data generator) for schema conformance before using them in tests.</li>
+        <li>Reviewing a large configuration file that's structured as an array of similar entries (feature flags, routing rules) for the handful that drifted from the expected shape.</li>
+        <li>Triaging a bug report that says "some records are broken" by running the full array through batch mode to get an exact list instead of guessing.</li>
+        <li>Sanity-checking a batch of sample test data — whether hand-written or generated — against the schema it's supposed to represent, before using it in automated tests.</li>
+      </ul>
+
+      <h2>Reading the per-record results</h2>
+      <p>Each row in the results table carries its own pass/fail state and, for a failing row, the specific ajv error for that record — the same error detail single-record validation shows, just scoped to one item in the array rather than the whole document. That matters because two records can fail the same schema for entirely different reasons (one missing a required field, another with a value of the wrong type), and a plain aggregate count can't distinguish between "one systemic problem affecting every record" and "a handful of unrelated, one-off bad records" — the per-record table makes that distinction visible immediately.</p>
+
+      <h2>Tips and common mistakes</h2>
+      <p>Batch mode expects a top-level array — if your data is a single object or an object wrapping an array under a key, flatten it to the array itself first, or batch mode has nothing to iterate over. Also worth knowing: a passing result for a record only means it satisfies the schema you wrote, not that the schema itself is well-formed — pair batch validation with the <a href="/json-schema-linter/">schema linter</a> if you suspect the schema, not the data, might be the actual problem.</p>
+      <p>Another common mistake is writing and validating the schema against a single hand-picked record first, declaring it done, and only then discovering in batch mode that the same schema is far stricter (or looser) than intended once it meets the full range of real records. That's not a bug in batch mode — it's the exact gap single-record validation can't surface, which is the reason to run the full batch before trusting a schema is actually correct for a real dataset, not just for the one example used while writing it.</p>
+
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>What counts as a "batch" for batch validation?</summary>
+        <p>Any top-level JSON, YAML, or CSV array of records. Each item in that array is validated independently against the same schema, and shown as its own row in the results table.</p>
+      </details>
+      <details>
+        <summary>Can I validate a CSV file against a JSON Schema?</summary>
+        <p>Yes — CSV is one of the supported data formats, parsed into records and validated the same way as a JSON or YAML array, row by row.</p>
+      </details>
+      <details>
+        <summary>How do I get just the records that failed, not the whole batch?</summary>
+        <p>Use the "Export failing only" button in the results table — it downloads only the rows that didn't pass, as JSON, instead of the full batch.</p>
+      </details>
+      <details>
+        <summary>What happens if the schema pane is empty while batch mode is on?</summary>
+        <p>Every record is treated as trivially valid (a syntax-only check), matching how single-record validation handles an empty schema — it won't mark every row as a failure just because no schema has been written yet.</p>
+      </details>
+      <details>
+        <summary>Can I export the full batch results, not just the failures?</summary>
+        <p>Yes — "Export CSV" exports the complete per-record result set, pass and fail rows alike.</p>
+      </details>
+      <details>
+        <summary>Is there a command-line or scriptable way to batch-validate records?</summary>
+        <p>Not as a separate CLI — this is a browser-based tool. For re-running the same schema check outside the browser (in a script or CI), use the schema pane's "Copy as Node.js/Python snippet" feature, which templates a standalone validation script against your current schema.</p>
+      </details>
+      <details>
+        <summary>Is batch validation different from running the same schema in a loop myself?</summary>
+        <p>The end result is conceptually similar — each record checked independently against the same schema — but batch mode does it without writing any code: paste the array, turn on batch mode, and read the per-record table directly, including the progress bar for larger arrays and the one-click export of just the failing rows.</p>
+      </details>
 
       <h2>Related posts</h2>
       <ul>

@@ -88,6 +88,7 @@
     <main class="wrap">
       <h1>Generating field documentation from a JSON Schema for non-engineers</h1>
       <p class="lede">A JSON Schema is a great contract for a validator. It's a terrible thing to hand a product manager and ask them to read.</p>
+      <p class="beginner-note">New to JSON Schema? Start with <a href="/blog/what-is-json-schema/">What is a JSON Schema? A beginner's guide</a> first.</p>
 
       <h2>What it is</h2>
       <p>A schema is written for a validation engine, not a person — nested <code>properties</code>/<code>items</code>/<code>$ref</code> structure that's perfectly parseable by a validator is genuinely hard to skim for someone checking "does this API accept a phone number field, and is it required." Handing over the raw schema either gets ignored or triggers a round of clarifying questions that a readable doc would have answered up front. A field documentation generator converts that structure into the thing a non-engineer actually wants: a flat table of field names, plain-English types, whether each is required, and any constraints worth knowing (an enum's allowed values, a format string) — instead of a tree they have to mentally parse themselves.</p>

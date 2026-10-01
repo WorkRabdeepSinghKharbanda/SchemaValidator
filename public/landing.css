@@ -80,6 +80,16 @@ p.lede {
   font-size: 1.1rem;
 }
 
+.beginner-note {
+  margin: -8px 0 16px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.beginner-note a {
+  color: var(--accent);
+}
+
 pre {
   background: var(--bg-panel);
   border: 1px solid var(--border);

@@ -88,6 +88,7 @@
     <main class="wrap">
       <h1>How the JSON Schema `pattern` keyword actually works</h1>
       <p class="lede">`pattern` is just a regular expression tested against a string value — but a few gotchas trip people up regularly.</p>
+      <p class="beginner-note">New to JSON Schema? Start with <a href="/blog/what-is-json-schema/">What is a JSON Schema? A beginner's guide</a> first.</p>
 
       <h2>What it is</h2>
       <p>The <code>pattern</code> keyword constrains a string-typed schema value by regular expression: a value is valid only if the regex matches somewhere in it. That sounds simple, but two things trip people up constantly. First, it's unanchored by default — unlike some regex contexts, a pattern like <code>[0-9]+</code> matches if it appears <em>anywhere</em> in the string, not the whole thing, so it happily matches <code>"abc123def"</code> unless you anchor it yourself with <code>^</code> and <code>$</code>. Second, <code>pattern</code> is defined against the ECMA-262 regular expression dialect — the same one JavaScript uses — not PCRE, POSIX, or any other language's regex flavor. Named capture groups, lookbehind, and other dialect-specific features may behave differently, or not be supported at all, depending on which language's validator is compiling the pattern.</p>

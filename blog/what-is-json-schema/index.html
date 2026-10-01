@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Google tag (gtag.js) — loaded unconditionally on every page, same as AdSense. -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SEEZP9MLKB"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-SEEZP9MLKB');
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>What Is a JSON Schema? A Beginner's Guide</title>
+    <meta
+      name="description"
+      content="A plain-English introduction to JSON Schema for people who have never heard of it — what it is, why it exists, and how to try it with a real example."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://schema-validator-livid.vercel.app/blog/what-is-json-schema/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/landing.css" />
+    <!-- AdSense Auto ads loader — present on every page unconditionally, not gated behind
+         cookie consent. Deliberate owner decision; see CLAUDE.md's AdSense entry. -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5852027898822024" crossorigin="anonymous"></script>
+
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="What Is a JSON Schema? A Beginner's Guide" />
+    <meta property="og:description" content="A plain-English introduction to JSON Schema — what it is, why it exists, and how to try it." />
+    <meta property="og:url" content="https://schema-validator-livid.vercel.app/blog/what-is-json-schema/" />
+    <meta property="og:image" content="https://schema-validator-livid.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": "What is a JSON Schema? A beginner's guide",
+        "image": "https://schema-validator-livid.vercel.app/og-image.png",
+        "datePublished": "2026-10-01",
+        "dateModified": "2026-10-01",
+        "author": { "@type": "Organization", "name": "Schema Validator" },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Schema Validator",
+          "logo": { "@type": "ImageObject", "url": "https://schema-validator-livid.vercel.app/icon-512.png" }
+        },
+        "keywords": "what is json schema, json schema for beginners, json schema explained",
+        "wordCount": 1165,
+        "mainEntityOfPage": "https://schema-validator-livid.vercel.app/blog/what-is-json-schema/"
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Do I need to know how to code to use JSON Schema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No — a schema is just a text file written in JSON, and you can write or test one using only a browser-based tool, no programming required. Using one from inside your own code does require some programming, but writing and checking a schema does not."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is JSON Schema the same thing as JSON?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. JSON is a data format (like a sentence). A JSON Schema is a separate document, also written in JSON, that describes what a valid piece of JSON data is allowed to look like (like a grammar rule for that sentence)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What does \"validating against a schema\" actually mean?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "It means checking a piece of data against the rules in a schema and getting back either \"this matches\" or a list of exactly which rules it broke and where."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why not just check my data with if-statements in code instead?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "You can for a couple of fields, but it gets unwieldy fast for anything with many fields, nested data, or rules that need to apply in more than one place (e.g. the same shape checked in three different services). A schema expresses all the rules once, in one readable file, instead of scattered across if-statements in multiple codebases."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Where are JSON Schemas actually used?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Validating API request/response bodies, checking configuration files, describing the data shapes inside an OpenAPI/Swagger spec, validating form submissions, and as a contract between a frontend and backend team so both sides agree on what a piece of data should look like."
+            }
+          }
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://schema-validator-livid.vercel.app/" },
+          { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://schema-validator-livid.vercel.app/blog/" },
+          { "@type": "ListItem", "position": 3, "name": "What is a JSON Schema? A beginner's guide" }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/"><span class="brand">◆</span> Schema Validator</a>
+      <a href="/">Open the validator →</a>
+    </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/blog/">Blog</a> / <span>What is a JSON Schema? A beginner's guide</span></nav>
+    <main class="wrap">
+      <h1>What is a JSON Schema? A beginner's guide</h1>
+      <p class="lede">
+        If you've never heard the term before: a JSON Schema is just a way of writing down "here are the rules
+        this data has to follow" — in plain English first, then we'll show the actual syntax.
+      </p>
+
+      <h2>Start with JSON itself</h2>
+      <p>
+        JSON (JavaScript Object Notation) is a simple way of writing structured data as text. Here's a tiny
+        example describing a person:
+      </p>
+      <pre><code>{
+  "name": "Alex",
+  "age": 29,
+  "email": "alex@example.com"
+}</code></pre>
+      <p>
+        That's it — curly braces hold a set of <code>"key": value</code> pairs. Values can be text (in quotes),
+        numbers, <code>true</code>/<code>false</code>, lists (in square brackets), nested objects, or
+        <code>null</code>. JSON is everywhere: it's how most websites and apps send data back and forth, and how
+        a lot of config files and API responses are written.
+      </p>
+
+      <h2>The problem JSON alone doesn't solve</h2>
+      <p>
+        JSON only describes <em>that</em> something is structured data — it says nothing about whether the data
+        makes sense. This is also valid JSON:
+      </p>
+      <pre><code>{
+  "name": 42,
+  "age": "banana",
+  "email": "not an email at all"
+}</code></pre>
+      <p>
+        A JSON parser will accept that without complaint, because it's syntactically fine — braces match, quotes
+        match, commas are in the right places. But it's obviously wrong data: a name shouldn't be a number, an
+        age shouldn't be the word "banana," and that's not a real email address. JSON on its own has no way to
+        say "age has to be a number" or "email has to look like an email." That's the gap JSON Schema fills.
+      </p>
+
+      <h2>What a JSON Schema actually looks like</h2>
+      <p>Here's a schema that describes the rules for the "person" example above:</p>
+      <pre><code>{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "age": { "type": "integer", "minimum": 0 },
+    "email": { "type": "string", "format": "email" }
+  },
+  "required": ["name", "age", "email"]
+}</code></pre>
+      <p>
+        Read it line by line: the whole thing must be an <code>object</code>. It has three expected
+        <code>properties</code>: <code>name</code> must be text (a <code>string</code>), <code>age</code> must
+        be a whole number (<code>integer</code>) that's at least <code>0</code>, and <code>email</code> must be
+        text shaped like an email address. The <code>required</code> list says all three fields must be present
+        — leaving one out is itself a violation, separate from getting a value's type wrong.
+      </p>
+      <p>
+        Notice the schema is <em>also</em> written in JSON — it's just a JSON document whose job is to describe
+        the shape of a different JSON document. That's the whole trick: one simple, text-based format used both
+        for the data and for the rules about the data.
+      </p>
+
+      <h2>What "validating" means, concretely</h2>
+      <p>
+        Validating means taking a piece of data and a schema and checking the data against every rule in the
+        schema. The result is either "this is valid" (every rule was satisfied) or a list of specific problems —
+        for the broken example above, checking it against the schema would report that <code>name</code> should
+        be a string but got a number, <code>age</code> should be an integer but got a string, and
+        <code>email</code> doesn't match the email format. Instead of a human reading the data and eyeballing
+        what's wrong, a program (called a <strong>validator</strong>) does this mechanically and precisely,
+        every time, exactly the same way.
+      </p>
+
+      <h2>What about lists and nested data?</h2>
+      <p>
+        Real data is rarely just flat fields — it often has lists of things, or an object inside another
+        object. JSON Schema handles both the same way: describe the inner shape once, then say where it's
+        used. Say our "person" now has a list of hobbies and a nested address:
+      </p>
+      <pre><code>{
+  "name": "Alex",
+  "hobbies": ["chess", "running"],
+  "address": { "city": "Austin", "zip": "78701" }
+}</code></pre>
+      <p>The schema for that looks like this:</p>
+      <pre><code>{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "hobbies": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "address": {
+      "type": "object",
+      "properties": {
+        "city": { "type": "string" },
+        "zip": { "type": "string" }
+      },
+      "required": ["city", "zip"]
+    }
+  },
+  "required": ["name"]
+}</code></pre>
+      <p>
+        For <code>hobbies</code>, <code>"type": "array"</code> says it must be a list, and
+        <code>"items": { "type": "string" }</code> says every entry in that list must be a string — so
+        <code>["chess", 42]</code> would fail, because <code>42</code> isn't a string. For
+        <code>address</code>, the schema just nests another full object description (with its own
+        <code>properties</code> and <code>required</code>) inside the <code>address</code> field — a schema
+        inside a schema, as deep as your actual data goes.
+      </p>
+
+      <h2>Common beginner mistakes</h2>
+      <ul>
+        <li><strong>Forgetting <code>required</code>.</strong> Listing a field under <code>properties</code> only describes what it should look like <em>if present</em> — it doesn't make the field mandatory. A field that must always be there needs to be listed in <code>required</code> too.</li>
+        <li><strong>Mixing up <code>integer</code> and <code>number</code>.</strong> <code>integer</code> only allows whole numbers (<code>1</code>, <code>2</code>, <code>-5</code>); <code>number</code> allows decimals too (<code>1.5</code>). Using <code>number</code> for something that should always be a whole number (like a count of items) won't catch <code>2.5</code> as invalid.</li>
+        <li><strong>Expecting typos to be caught automatically.</strong> By default, JSON Schema doesn't reject extra fields that aren't in <code>properties</code> — a typo'd field name like <code>"emial"</code> is silently ignored rather than flagged, unless the schema explicitly sets <code>"additionalProperties": false</code>.</li>
+      </ul>
+
+      <h2>Try it yourself, step by step</h2>
+      <ol>
+        <li>Open <a href="/">Schema Validator</a> — you'll see two panes, one for the schema and one for the data.</li>
+        <li>Paste the schema example above into the left (schema) pane.</li>
+        <li>Paste the first ("good") example into the right (data) pane — it should show as valid.</li>
+        <li>Now paste the second ("broken") example instead — you'll see a list of exactly which fields are wrong and why, without writing a single line of code.</li>
+        <li>Try changing a value yourself (e.g. make <code>age</code> negative) and watch the error update live.</li>
+      </ol>
+
+      <h2>A few terms you'll see used a lot</h2>
+      <ul>
+        <li><strong>Schema</strong> — the JSON document describing the rules (what we built above).</li>
+        <li><strong>Validate / validation</strong> — the act of checking a piece of data against a schema.</li>
+        <li><strong>Validator</strong> — the program that does the checking (this app uses a widely-used one called <a href="https://ajv.js.org/" target="_blank" rel="noreferrer">ajv</a>).</li>
+        <li><strong>Draft</strong> — JSON Schema itself has had a few versions over the years (draft-07, 2019-09, 2020-12) — see <a href="/blog/json-schema-draft-differences/">this guide</a> if you want the details, but you can safely ignore this at first and use whichever one a tool picks for you.</li>
+        <li><strong>$ref</strong> — a way for one schema to reuse a piece of another schema instead of repeating it, covered in <a href="/blog/handling-multi-file-json-schema-refs/">this guide</a> once you're past the basics.</li>
+      </ul>
+
+      <h2>Why this matters beyond "neat trick"</h2>
+      <p>
+        Once a schema exists, it becomes useful in more places than just one manual check: it can generate
+        realistic sample data for tests, generate a plain-English field reference non-engineers can read,
+        generate a TypeScript type so your code and your data rules can't silently drift apart, and catch bad
+        data automatically in a CI pipeline before it ever reaches production. All of those build on the exact
+        same schema you'd write by hand for a single check — nothing extra to learn, just more uses for the
+        same file.
+      </p>
+
+      <a class="cta" href="/">Try your first schema now</a>
+
+      <h2>Related posts</h2>
+      <ul>
+        <li><a href="/blog/generate-json-schema-from-example-payload/">How to generate a JSON Schema from an example payload</a></li>
+        <li><a href="/blog/common-json-schema-mistakes-linting-catches/">Common JSON Schema mistakes a linter catches</a></li>
+        <li><a href="/blog/json-schema-draft-differences/">JSON Schema draft-07 vs 2019-09 vs 2020-12: what actually changed</a></li>
+      </ul>
+
+      <div class="ad-slot-frame">
+        <span class="ad-slot-label">Advertisement</span>
+        <ins
+          class="adsbygoogle ad-slot"
+          style="display:block"
+          data-ad-client="ca-pub-5852027898822024"
+          data-ad-slot="3418754801"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        ></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
+    </main>
+    <footer>
+      <a href="/blog/">← Back to blog</a> · <a href="/">Schema Validator</a>
+    </footer>
+  </body>
+</html>

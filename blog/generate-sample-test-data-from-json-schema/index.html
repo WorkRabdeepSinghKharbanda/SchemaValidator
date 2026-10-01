@@ -88,6 +88,7 @@
     <main class="wrap">
       <h1>Auto-generate sample test data from a JSON Schema</h1>
       <p class="lede">A hand-written test fixture can silently drift out of sync with the schema it's supposed to satisfy. Generated fixtures can't.</p>
+      <p class="beginner-note">New to JSON Schema? Start with <a href="/blog/what-is-json-schema/">What is a JSON Schema? A beginner's guide</a> first.</p>
 
       <h2>What it is</h2>
       <p>Sample data generation from a JSON Schema does the reverse of schema inference: instead of reading real data to produce a schema, it reads a schema and produces fake data that is guaranteed to satisfy it. Give it an object schema with <code>properties</code>, types, and constraints, and it returns a concrete JSON value — strings, numbers, nested objects, arrays — shaped exactly the way the schema describes.</p>

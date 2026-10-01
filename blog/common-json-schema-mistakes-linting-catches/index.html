@@ -88,6 +88,7 @@
     <main class="wrap">
       <h1>Common JSON Schema mistakes a linter catches (that validation won't)</h1>
       <p class="lede">A schema that compiles fine can still be quietly wrong in ways that only surface later, as a confusing bug report.</p>
+      <p class="beginner-note">New to JSON Schema? Start with <a href="/blog/what-is-json-schema/">What is a JSON Schema? A beginner's guide</a> first.</p>
 
       <h2>What it is</h2>
       <p>Validation and linting answer different questions. Validation asks "does this data satisfy this schema?" Linting asks "is this schema itself well-formed, in ways that won't show up as a validation error at all?" A schema can be perfectly valid JSON Schema — ajv compiles it without complaint — and still contain a mistake that quietly breaks your intent for every record that passes through it.</p>

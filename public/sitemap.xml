@@ -103,6 +103,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://schema-validator-livid.vercel.app/blog/what-is-json-schema/</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://schema-validator-livid.vercel.app/blog/yaml-vs-json/</loc>
     <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>

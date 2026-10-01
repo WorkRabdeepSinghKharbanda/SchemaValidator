@@ -88,6 +88,7 @@
     <main class="wrap">
       <h1>Handling multi-file JSON Schemas with $ref</h1>
       <p class="lede">A schema referencing another schema by <code>$ref</code> is only as validate-able as your tooling's ability to actually resolve it.</p>
+      <p class="beginner-note">New to JSON Schema? Start with <a href="/blog/what-is-json-schema/">What is a JSON Schema? A beginner's guide</a> first.</p>
 
       <h2>What it is</h2>
       <p><code>$ref</code> lets one JSON Schema point at another instead of repeating the same shape everywhere. A shared "Address" or "Money" object used by a dozen different schemas shouldn't be copy-pasted a dozen times — define it once, reference it everywhere. This is exactly how OpenAPI specs structure <code>components.schemas</code> internally (each operation's request/response schemas reference shared definitions by name), and it's just as useful in plain multi-file JSON Schema that has nothing to do with an API spec.</p>

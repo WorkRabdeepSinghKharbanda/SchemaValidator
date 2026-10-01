@@ -88,6 +88,7 @@
     <main class="wrap">
       <h1>Fixing common JSON syntax errors: trailing commas, single quotes, unquoted keys</h1>
       <p class="lede">JSON is strict on purpose, but the mistakes that break it are almost always the same handful, every time.</p>
+      <p class="beginner-note">New to JSON Schema? Start with <a href="/blog/what-is-json-schema/">What is a JSON Schema? A beginner's guide</a> first.</p>
 
       <h2>What it is</h2>
       <p>JSON looks almost identical to a JavaScript object literal, which is exactly why it's so easy to write invalid JSON without noticing: a trailing comma before a closing <code>}</code> or <code>]</code>, single-quoted strings instead of double, and unquoted object keys (<code>{ name: "value" }</code>) are all valid JavaScript and all rejected by a strict JSON parser. Beyond those three JS-isms, a dropped comma between two properties or an unterminated object or array are the other common way hand-edited or hand-copied JSON breaks — structural gaps rather than stylistic ones.</p>

@@ -88,6 +88,7 @@
     <main class="wrap">
       <h1>Convert JSON to YAML (and back) without losing data</h1>
       <p class="lede">A naive JSON↔YAML conversion usually works — until a type, an anchor, or a multiline string doesn't round-trip the way you expected.</p>
+      <p class="beginner-note">New to JSON Schema? Start with <a href="/blog/what-is-json-schema/">What is a JSON Schema? A beginner's guide</a> first.</p>
 
       <h2>What it is</h2>
       <p>Converting between JSON and YAML means parsing one format into an in-memory data structure, then serializing that structure back out in the other format. The data itself doesn't change — only its textual representation does — but a few of YAML's features don't have a clean one-to-one JSON equivalent, which is where naive conversions quietly lose fidelity. YAML supports unquoted strings that look like numbers or booleans (a version string like <code>1.0</code> can silently become a float if it isn't quoted), multiline block scalars for long strings, and anchors/aliases that let one block of YAML reference another instead of repeating it. JSON has no native equivalent for anchors, so converting YAML → JSON → YAML again can flatten an anchor into a repeated literal block — usually harmless, but worth knowing before you assume a round-trip preserved everything exactly as written.</p>

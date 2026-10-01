@@ -88,6 +88,7 @@
     <main class="wrap">
       <h1>Batch-validating an array of records against one schema</h1>
       <p class="lede">Validating one record proves your schema works. Validating a thousand imported records proves your data does.</p>
+      <p class="beginner-note">New to JSON Schema? Start with <a href="/blog/what-is-json-schema/">What is a JSON Schema? A beginner's guide</a> first.</p>
 
       <h2>What it is</h2>
       <p>A schema that correctly validates one hand-picked example doesn't tell you anything about the other 999 records in a real import. Bad data tends to cluster in edge cases — a null where a string was expected, a stray currency symbol, a date in the wrong format — that a single manually-checked example won't surface. Batch mode validates every item of a top-level data array independently against one schema, rather than requiring you to run validation record by record.</p>
